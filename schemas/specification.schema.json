@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.driftframe.org/site-reading-governance/v0.1/specification.schema.json",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v1.0/specification.schema.json",
   "title": "Site Reading Specification",
   "type": "object",
   "additionalProperties": false,

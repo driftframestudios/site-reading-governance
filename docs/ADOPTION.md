@@ -8,7 +8,7 @@
 4. Confirm the `governance-stewards` CODEOWNER team and repository access.
 5. Run `Governance` once and record the emitted status-check context.
 6. Review and install the versioned ruleset exports.
-7. Create and sign release `v0.1.0`.
+7. Create and sign release `v1.0.0`.
 
 ## Downstream contract workflow
 
@@ -37,7 +37,7 @@ Each consumer records:
 
 ```json
 {
-  "release": "v0.1.0",
+  "release": "v1.0.0",
   "commit": "0123456789abcdef0123456789abcdef01234567",
   "digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 }
@@ -67,4 +67,3 @@ Capture:
 - CODEOWNER team resolution;
 - signed release tag;
 - reviewer and accountable governance steward.
-

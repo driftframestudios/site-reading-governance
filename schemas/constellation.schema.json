@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.driftframe.org/site-reading-governance/v0.1/constellation.schema.json",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v1.0/constellation.schema.json",
   "title": "Comparative Site Reading Constellation",
   "type": "object",
   "additionalProperties": false,

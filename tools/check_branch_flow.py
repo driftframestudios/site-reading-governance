@@ -11,6 +11,8 @@ import sys
 BRANCH_PATTERN = re.compile(
     r"^(?:main|develop|"
     r"(?:feature|fix|chore|hotfix)/[a-z0-9]+(?:-[a-z0-9]+)*|"
+    r"forecast/(?:20[0-9]{2})-q[1-4]-r[1-9][0-9]*|"
+    r"evidence/[a-z0-9]+(?:-[a-z0-9]+)*|"
     r"release/(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)|"
     r"support/(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))$"
 )
@@ -21,7 +23,16 @@ def allowed_sources(base: str) -> tuple[str, ...]:
     if base == "main":
         return ("release/", "hotfix/")
     if base == "develop":
-        return ("feature/", "fix/", "chore/", "release/", "hotfix/", "support/")
+        return (
+            "feature/",
+            "fix/",
+            "chore/",
+            "forecast/",
+            "evidence/",
+            "release/",
+            "hotfix/",
+            "support/",
+        )
     if base.startswith("release/"):
         return ("fix/", "chore/")
     if base.startswith("support/"):

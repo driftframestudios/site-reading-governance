@@ -1,6 +1,7 @@
 # Schema Catalog
 
 All contracts use JSON Schema 2020-12 and stable HTTPS identifiers.
+Release `1.0.0` uses the stable `/v1.0/` identifier coordinate.
 
 | Schema | Record |
 | --- | --- |
@@ -33,8 +34,10 @@ Downstream repositories pin the governance release, commit, and digest. The
 reusable contract workflow validates each document with the selected schema from
 that immutable coordinate.
 
+Artifact locators use opaque `governed://` or `evidence://` references. Date-time
+values carry an RFC 3339 timezone, and numeric values remain finite.
+
 ## Evolution
 
 Compatible fields arrive in minor releases. Consumer-shaping changes arrive in
 major releases with examples, migration guidance, and invalidation analysis.
-

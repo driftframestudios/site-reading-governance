@@ -52,8 +52,12 @@ jobs:
           python-version: "3.13"
           cache: ""
       - name: Validate pinned contract
+        env:
+          DOCUMENT_PATH: ${{ inputs.document_path }}
+          SCHEMA_NAME: ${{ inputs.schema_name }}
         run: >-
           python3 governance/tools/validate_governance.py
-          --schema governance/schemas/${{ inputs.schema_name }}
-          --document source/${{ inputs.document_path }}
-
+          --governance-root governance
+          --source-root source
+          --schema-name "$SCHEMA_NAME"
+          --document-path "$DOCUMENT_PATH"

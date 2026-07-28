@@ -9,6 +9,9 @@ The package is private-repository ready. Its examples use synthetic identifiers,
 its automation uses read-only permissions by default, and its ruleset exports
 can be reviewed before installation through the GitHub Rulesets API.
 
+The current governance schema release is `1.0.0`; stable schema identifiers use
+the `/v1.0/` coordinate.
+
 ## Constellation
 
 | Repository role | Purpose | Authority |
@@ -45,6 +48,7 @@ library and carries zero runtime package dependencies.
 ```bash
 python3 tools/validate_governance.py
 python3 tools/check_language.py
+python3 tools/scan_secret_shapes.py
 python3 -m unittest discover -s tests -v
 ```
 
@@ -67,7 +71,11 @@ python3 tools/validate_governance.py \
 - [`examples/`](examples/) — valid synthetic exemplars for every contract
 - [`.github/workflows/`](.github/workflows/) — reusable validation workflows
 - [`rulesets/`](rulesets/) — reviewable GitHub repository ruleset exports
-- [`tools/`](tools/) and [`tests/`](tests/) — dependency-free validation
+- [`audits/repository-security-review-2026-07-28.md`](audits/repository-security-review-2026-07-28.md)
+  — five-repository review scope, remediations, evidence boundaries, and open
+  production receipts
+- [`tools/`](tools/) and [`tests/`](tests/) — dependency-free contract, language,
+  secret-shape, and regression validation
 
 ## Versioning
 
@@ -85,4 +93,3 @@ exploration; governed comparisons use immutable release coordinates.
 The language policy is derived from the Notion field-guide page
 [Semantic Attractor Design — Negation-Aware Instructions](https://app.notion.com/p/abcb29b960a842ce8f1a409408a29257).
 The local guide records the applied interpretation and the automated checks.
-
