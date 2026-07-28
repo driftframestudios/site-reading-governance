@@ -23,15 +23,19 @@ environment and accountable organization.
 
 ## Promotion path
 
-The first hosted release can move through:
+Release `0.1.0` moved through:
 
 1. repository initialization on `main`;
-2. `develop` creation from the protected baseline;
-3. ruleset review and installation;
-4. required validation workflow activation;
-5. CODEOWNER confirmation;
-6. signed `v0.1.0` release;
-7. downstream constellation pinning by tag, commit, and digest.
+2. `develop` creation from the baseline;
+3. `feature/constellation-foundation` review into `develop`;
+4. required governance validation on the release coordinate;
+5. `release/0.1.0` review into `main`;
+6. `develop` synchronization to the released commit;
+7. downstream constellation pinning by commit and Git tree digest.
+
+Ruleset installation, organization-specific CODEOWNER confirmation, and signed
+tag publication remain accountable adoption receipts for the hosting
+organization.
 
 ## Known extension points
 
@@ -41,4 +45,3 @@ The first hosted release can move through:
 - retention schedules and jurisdictional overlays;
 - artifact attestation when the selected GitHub plan supports it;
 - organization-specific scientific, Quality, and Regulatory roles.
-
