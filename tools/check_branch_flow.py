@@ -74,11 +74,12 @@ def main(argv: list[str] | None = None) -> int:
         print("Branch-flow check requires both base and head coordinates.")
         return 2
 
-    # Allow automated Dependabot branches to bypass the branch-flow validation.
-    # Dependabot creates branches with the `dependabot/` prefix which are
-    # expected and should not fail the repository's GitFlow-like enforcement.
-    if args.head.startswith("dependabot/"):
-        print(f"Dependabot branch {args.head!r} detected — skipping branch-flow check.")
+    # Allow automated maintenance/updater branches to bypass the branch-flow validation.
+    # These bots create branches with predictable prefixes which are expected and
+    # should not fail the repository's GitFlow-like enforcement.
+    skip_prefixes = ("dependabot/", "renovate/")
+    if any(args.head.startswith(p) for p in skip_prefixes):
+        print(f"Automated branch {args.head!r} detected — skipping branch-flow check.")
         return 0
 
     findings = check_flow(args.base, args.head)
