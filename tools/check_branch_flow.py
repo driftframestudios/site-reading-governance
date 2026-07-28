@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sys
 
@@ -74,12 +75,21 @@ def main(argv: list[str] | None = None) -> int:
         print("Branch-flow check requires both base and head coordinates.")
         return 2
 
-    # Allow automated maintenance/updater branches to bypass the branch-flow validation.
-    # These bots create branches with predictable prefixes which are expected and
-    # should not fail the repository's GitFlow-like enforcement.
-    skip_prefixes = ("dependabot/", "renovate/")
-    if any(args.head.startswith(p) for p in skip_prefixes):
-        print(f"Automated branch {args.head!r} detected — skipping branch-flow check.")
+    # Use a regex whitelist for automated/updater branches. The whitelist is
+    # configurable via the SKIP_BRANCH_PATTERNS environment variable which should
+    # contain a single regular expression. If not set, we default to common
+    # automated-update prefixes (dependabot and renovate).
+    pattern_str = os.environ.get("SKIP_BRANCH_PATTERNS", r"^(?:dependabot/|renovate/)")
+    try:
+        skip_pattern = re.compile(pattern_str)
+    except re.error:
+        print(
+            "Invalid SKIP_BRANCH_PATTERNS regular expression; ignoring and continuing validation"
+        )
+        skip_pattern = None
+
+    if skip_pattern is not None and skip_pattern.match(args.head):
+        print(f"Automated branch {args.head!r} matched pattern {pattern_str!r} — skipping branch-flow check.")
         return 0
 
     findings = check_flow(args.base, args.head)
