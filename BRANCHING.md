@@ -49,6 +49,40 @@ connects each branch to intent.
 4. Tag the patch release.
 5. Reconcile the released commit into `develop` and active release branches.
 
+## Automated maintenance flow
+
+Automated dependency pull requests use a distinct, bounded coordinate contract.
+Admission requires three aligned facts:
+
+- the complete source branch matches the configured Dependabot or Renovate
+  grammar;
+- the pull-request author is the corresponding GitHub bot identity;
+- the target is `main` or `develop`.
+
+The current Dependabot configuration monitors GitHub Actions, so its admitted
+branch grammar begins with `dependabot/github_actions/`. A future package
+ecosystem extends the grammar and regression fixtures in the same reviewed
+change that enables that ecosystem. Renovate uses its default `renovate/`
+branch prefix and the hosted-app bot identity. A self-hosted Renovate caller
+adds its exact app identity through a reviewed policy change.
+
+GitHub security updates target the default branch. An accepted automation
+change on `main` is reconciled into `develop` so that the next release retains
+the dependency repair. Required checks, CODEOWNER review, immutable action
+references, and release evidence continue to apply to automated maintenance.
+Dependabot-triggered validation operates with a read-only GitHub token and
+Dependabot-scoped secrets. A dedicated read-only `pull_request_target` gate
+checks out the exact pull-request base commit into `.branch-policy-base` and
+executes its checker. Head content remains in the ordinary `pull_request`
+validation path, while the policy gate receives the head branch and author only
+as quoted event data. Automated changes continue through the same substantive
+tests and review gates as human-authored changes.
+
+The gate begins governing later proposals after its reviewed workflow exists on
+the default branch and its checker exists on each target base. The introducing
+pull request uses the previously released branch controls; accepted changes are
+merged forward so `main` and `develop` expose the same admission contract.
+
 ## Compatibility policy
 
 - A major schema release can require document migration.

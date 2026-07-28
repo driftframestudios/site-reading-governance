@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.driftframe.org/site-reading-governance/v1.0/common.schema.json",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/common.schema.json",
   "title": "Site Reading Common Definitions",
   "$defs": {
     "identifier": {
@@ -140,6 +140,217 @@
         },
         "digest": {
           "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "contractReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract_id",
+        "version",
+        "digest"
+      ],
+      "properties": {
+        "contract_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "version": {
+          "$ref": "#/$defs/semver"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "effectClass": {
+      "type": "string",
+      "enum": [
+        "read",
+        "narrow_write",
+        "broad_write",
+        "irreversible_effect"
+      ]
+    },
+    "evidencePosture": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "simulated",
+        "observed"
+      ]
+    },
+    "boundedScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tenant_ids",
+        "resource_types",
+        "record_limit",
+        "data_classes",
+        "environment_classes"
+      ],
+      "properties": {
+        "tenant_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        },
+        "resource_types": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          }
+        },
+        "record_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "data_classes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "synthetic",
+              "public",
+              "internal",
+              "confidential",
+              "regulated"
+            ]
+          }
+        },
+        "environment_classes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "local",
+              "continuous_integration",
+              "vendor_sandbox",
+              "qualification",
+              "staging",
+              "production"
+            ]
+          }
+        }
+      }
+    },
+    "resourceBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requests_per_minute",
+        "timeout_seconds",
+        "retry_attempts",
+        "max_payload_bytes"
+      ],
+      "properties": {
+        "requests_per_minute": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600
+        },
+        "retry_attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "max_payload_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1073741824
+        }
+      }
+    },
+    "executableCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "command",
+        "working_directory",
+        "expected_exit_code",
+        "artifact_ids"
+      ],
+      "properties": {
+        "check_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "command": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        },
+        "working_directory": {
+          "type": "string",
+          "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*/)*[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "maxLength": 300
+        },
+        "expected_exit_code": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "artifact_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        }
+      }
+    },
+    "recoveryRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner_role",
+        "containment",
+        "replacement_behavior",
+        "verification"
+      ],
+      "properties": {
+        "owner_role": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "containment": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 700
+        },
+        "replacement_behavior": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 700
+        },
+        "verification": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 700
         }
       }
     },

@@ -10,8 +10,9 @@ reproduced, challenged, superseded, and traced to accountable authority.
 
 1. **Authority is explicit.** Desired behavior, running-system truth, simulated
    behavior, comparison records, and organizational acceptance remain distinct.
-2. **Evidence is environment-bound.** A receipt identifies its environment,
-   build, configuration, fixture, test, performer, reviewer, and limitations.
+2. **Evidence context is explicit.** A receipt identifies its mode, environment,
+   build, configuration, fixture, test, performer or modeled role, reviewer,
+   assumptions, and limitations.
 3. **Forecasts remain recoverable.** Published simulation baselines are
    immutable. Learning creates a new release and preserves the earlier forecast.
 4. **Comparison is symmetric.** A divergence can reveal an implementation gap,
@@ -23,6 +24,12 @@ reproduced, challenged, superseded, and traced to accountable authority.
    invalidation records for affected claims.
 7. **Desired states lead.** Governance text, automation, comments, and
    identifiers describe the target behavior directly.
+8. **Callers receive bounded authority.** Services own named operations and
+   enforce typed input, scope, effect class, budget, approval, idempotency,
+   audit, and recovery at the execution boundary.
+9. **Orientation informs.** Machine Nodes and first receipts describe current
+   state and handoff while released policy and runtime identity authorize
+   effects.
 
 ## Decision rights
 
@@ -53,9 +60,11 @@ specified -> verified -> qualified -> validated -> accepted
 - **Accepted:** a named authority authorizes the stated scope.
 
 Each transition produces a receipt or acceptance record. Higher stages reference
-the evidence that supports the transition.
+the evidence that supports the transition. A future-reality simulation can model
+the complete lifecycle through `accepted` while retaining simulated evidence and
+simulation-only authority.
 
-## Required substantive receipt families
+## Substantive receipt families
 
 The delivery constellation tracks these families as first-class gates:
 
@@ -65,8 +74,69 @@ The delivery constellation tracks these families as first-class gates:
 3. production security, privacy, observability, support, and incident exercises;
 4. separate accountable scientific, Quality, and Regulatory acceptance.
 
-Synthetic and simulated evidence prepares these gates. Observed, environment-bound
-evidence closes them.
+Control Plane Profile v0.3 supports two distinct closure states:
+
+- **simulated closure** selects a versioned future reality, executes synthetic
+  scenarios, binds artifacts and assumptions, and closes all four families
+  inside that simulation;
+- **environment-observed closure** records separately observed system and
+  organizational evidence when a later collaboration elects to pursue it.
+
+A simulated closure uses modeled authority roles, requires no named person, and
+creates no production authorization. The closure manifest keeps these
+properties machine-verifiable.
+
+## Bounded caller lifecycle
+
+```text
+caller contract
+  -> service-owned operation
+  -> boundary decision
+  -> scoped approval when required
+  -> effect
+  -> call receipt
+  -> owned recovery or replay
+```
+
+The service boundary establishes identity, validates typed input, constrains
+tenant and record scope, applies the caller authority ceiling, enforces resource
+budgets, and records each decision. Broad and irreversible effects carry scoped,
+expiring approval. Side effects carry durable idempotency fingerprints.
+
+## Coordination Horizon
+
+A Coordination Horizon expresses sequenced work without prescribing a fixed
+number of temporal buckets. It records current items, entry and completion
+evidence, dependencies, retained effects, consequential questions, and a
+re-entry capsule. Teams can choose labels and cadence that fit the work.
+
+## Governed dependency automation
+
+Dependency automation follows a bounded-caller posture. An exception to the
+human GitFlow branch families requires three facts together: a complete
+Dependabot or Renovate branch grammar, the exact corresponding pull-request
+author, and a `main` or `develop` target. Ordinary tests, immutable action
+references, CODEOWNER review, and release evidence continue to apply.
+
+The enabled package ecosystem and admitted branch grammar advance in the same
+reviewed change. Dependabot-triggered workflows use read-only repository
+permission and Dependabot-scoped secrets. Security updates may still target the
+default `main` branch, and an accepted repair is reconciled into `develop`.
+The branch-admission gate uses a dedicated, read-only `pull_request_target`
+workflow to read pull-request coordinates while executing the checker from the
+exact base commit in `.branch-policy-base`. Proposed head content enters the
+ordinary `pull_request` validation path and supplies only quoted branch and
+author coordinates to the base-controlled policy.
+
+The branch-policy workflow and checker become active after their reviewed
+versions exist on the default branch and each protected target branch. The
+introducing pull request continues under the previously released controls, and
+the accepted policy is merged forward before it governs later proposals.
+
+The behavioral basis is maintained in GitHub's
+[Dependabot options reference](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference)
+and
+[Dependabot on GitHub Actions](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-on-actions).
 
 ## Change and invalidation
 

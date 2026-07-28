@@ -6,6 +6,50 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+- Bound Dependabot and Renovate branch exceptions to anchored grammars, exact
+  bot authors, and governed targets; added spoof and malformed-coordinate
+  regressions.
+- Isolated branch admission in a read-only `pull_request_target` workflow that
+  executes the checker from the exact base commit in a static checkout path.
+- Grouped GitHub Action minor and patch updates while preserving separate major
+  review coordinates.
+- Added root Machine Node, first-receipt, and Coordination Horizon records with
+  cross-record validation for contracts, campaign markings, and candidate
+  promotion posture.
+
+## [2.0.0] — 2026-07-28
+
+### Added
+
+- Control Plane Profile v0.3.
+- Generic Coordination Horizon and resumable re-entry contract.
+- Bounded caller, service-owned operation, approval, effect, and call-receipt
+  contracts.
+- Practitioner Probe and claim-veracity contracts.
+- Common Machine Node and first-receipt orientation contracts.
+- Executable future-reality closure for configured vendors, migration and
+  restore, production security and observability, and modeled Scientific,
+  Quality, and Regulatory acceptance.
+- Cross-record validation for authority ceilings, approvals, effects,
+  orientation links, probe proficiency, and four-family closure coverage.
+
+### Changed
+
+- Decision probabilities now name the event, horizon, basis, conditions,
+  recalibration triggers, and falsifiers.
+- Schema identifiers advance to the `/v2.0/` coordinate.
+- Simulated receipt closure and environment-observed closure are separate,
+  explicit evidence states.
+
+### Migration
+
+- Consumers update `metadata.schema_version` to `2.0.0`.
+- Decision records add the five probability-context fields.
+- Repository orientation adopts a Machine Node, first receipt, and Coordination
+  Horizon projection.
+- A simulated closure manifest can close the four substantive receipt families
+  inside one selected future reality.
+
 ## [1.0.0] — 2026-07-28
 
 ### Changed

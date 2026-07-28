@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/bounded-caller.schema.json",
+  "title": "Bounded Caller",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "caller_id",
+    "caller_kind",
+    "purpose",
+    "service_owner_role",
+    "identity",
+    "authority_ceiling",
+    "permitted_operation_ids",
+    "scope",
+    "resource_budget",
+    "tool_allowlist",
+    "egress_policy",
+    "delegation_policy",
+    "audit_requirements",
+    "expires_at",
+    "recovery",
+    "metadata"
+  ],
+  "properties": {
+    "caller_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "caller_kind": {
+      "type": "string",
+      "enum": [
+        "human",
+        "service",
+        "workflow",
+        "ai_agent",
+        "simulated_actor"
+      ]
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 800
+    },
+    "service_owner_role": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 120
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "principal",
+        "provider",
+        "audience",
+        "credential_reference"
+      ],
+      "properties": {
+        "principal": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 240
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "audience": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 240
+        },
+        "credential_reference": {
+          "$ref": "common.schema.json#/$defs/governedLocator"
+        }
+      }
+    },
+    "authority_ceiling": {
+      "$ref": "common.schema.json#/$defs/effectClass"
+    },
+    "permitted_operation_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "authority_exclusions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 500
+      }
+    },
+    "scope": {
+      "$ref": "common.schema.json#/$defs/boundedScope"
+    },
+    "resource_budget": {
+      "$ref": "common.schema.json#/$defs/resourceBudget"
+    },
+    "tool_allowlist": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9._-]+$",
+        "maxLength": 120
+      }
+    },
+    "egress_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "allowed_hosts",
+        "private_address_handling",
+        "verification"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "service_allowlist",
+            "isolated"
+          ]
+        },
+        "allowed_hosts": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9.-]+$",
+            "maxLength": 253
+          }
+        },
+        "private_address_handling": {
+          "type": "string",
+          "enum": [
+            "resolve_through_approved_endpoint",
+            "block_at_network_boundary"
+          ]
+        },
+        "verification": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 700
+        }
+      }
+    },
+    "delegation_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "maximum_depth",
+        "child_authority_rule"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "disabled",
+            "bounded"
+          ]
+        },
+        "maximum_depth": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8
+        },
+        "child_authority_rule": {
+          "type": "string",
+          "enum": [
+            "equal_or_narrower"
+          ]
+        }
+      }
+    },
+    "audit_requirements": {
+      "type": "array",
+      "minItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "caller_id",
+          "operation_id",
+          "scope",
+          "decision",
+          "effect_ids",
+          "result",
+          "timing",
+          "approval_ids",
+          "correlation_id"
+        ]
+      }
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "recovery": {
+      "$ref": "common.schema.json#/$defs/recoveryRoute"
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  }
+}

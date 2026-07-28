@@ -5,7 +5,10 @@ updates:
     schedule:
       interval: monthly
     open-pull-requests-limit: 5
-    labels:
-      - dependencies
-      - governance
-
+    groups:
+      github-actions-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch

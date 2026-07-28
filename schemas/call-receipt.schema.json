@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/call-receipt.schema.json",
+  "title": "Bounded Call Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "call_id",
+    "correlation_id",
+    "caller_id",
+    "caller_contract",
+    "operation_id",
+    "operation_version",
+    "input_digest",
+    "scope",
+    "effect_class",
+    "boundary_decision",
+    "approval_ids",
+    "idempotency_fingerprint",
+    "evidence_mode",
+    "outcome",
+    "effect_ids",
+    "output_digest",
+    "audit_artifact",
+    "resource_usage",
+    "started_at",
+    "completed_at",
+    "recovery",
+    "metadata"
+  ],
+  "properties": {
+    "call_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "correlation_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "caller_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "caller_contract": {
+      "$ref": "common.schema.json#/$defs/contractReference"
+    },
+    "operation_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "operation_version": {
+      "$ref": "common.schema.json#/$defs/semver"
+    },
+    "input_digest": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "scope": {
+      "$ref": "common.schema.json#/$defs/boundedScope"
+    },
+    "effect_class": {
+      "$ref": "common.schema.json#/$defs/effectClass"
+    },
+    "boundary_decision": {
+      "type": "string",
+      "enum": [
+        "authorized",
+        "approval_required",
+        "rejected"
+      ]
+    },
+    "approval_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "idempotency_fingerprint": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "evidence_mode": {
+      "$ref": "common.schema.json#/$defs/evidenceMode"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "replayed",
+        "rejected",
+        "failed",
+        "inconclusive"
+      ]
+    },
+    "effect_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "output_digest": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "audit_artifact": {
+      "$ref": "common.schema.json#/$defs/artifact"
+    },
+    "resource_usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_count",
+        "elapsed_milliseconds",
+        "retry_count",
+        "payload_bytes"
+      ],
+      "properties": {
+        "request_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "elapsed_milliseconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "retry_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "payload_bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "recovery": {
+      "$ref": "common.schema.json#/$defs/recoveryRoute"
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "effect_class": {
+            "enum": [
+              "broad_write",
+              "irreversible_effect"
+            ]
+          },
+          "boundary_decision": {
+            "const": "authorized"
+          }
+        },
+        "required": [
+          "effect_class",
+          "boundary_decision"
+        ]
+      },
+      "then": {
+        "properties": {
+          "approval_ids": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

@@ -22,7 +22,25 @@
       "window": "configured-vendor qualification run"
     }
   ],
+  "probability_of": "The selected readback strategy reconciles every injected ambiguous vendor outcome without creating duplicate vendor effects during the twelve-week implementation tranche.",
   "probability": 0.78,
+  "probability_horizon": {
+    "begins_on": "2026-07-29",
+    "ends_on": "2026-10-21",
+    "evaluation_event": "The configured conformance harness completes twenty exact replays and five injected ambiguous write outcomes."
+  },
+  "probability_basis": [
+    "The simulator already demonstrates stable identity lookup and deterministic payload comparison.",
+    "The selected vendor contract documents authoritative readback by stable external identity."
+  ],
+  "probability_conditions": [
+    "The implementation retains stable external identities across the selected vendor workflow.",
+    "The vendor sandbox provides the documented readback behavior throughout the evaluation horizon."
+  ],
+  "recalibration_triggers": [
+    "The vendor build or supported query contract changes.",
+    "A replay produces a duplicate effect or an unresolved ambiguous outcome."
+  ],
   "falsifiers": [
     "The configured vendor environment cannot query by the stable external identity.",
     "Authoritative readback latency exceeds the approved recovery objective."
@@ -30,7 +48,7 @@
   "decision_authority": "advisory",
   "status": "selected",
   "metadata": {
-    "schema_version": "1.0.0",
+    "schema_version": "2.0.0",
     "created_at": "2026-07-28T14:15:00Z",
     "updated_at": "2026-07-28T14:15:00Z",
     "owner": {

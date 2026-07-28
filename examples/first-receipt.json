@@ -1,0 +1,69 @@
+{
+  "first_receipt_id": "FIRST-RECEIPT-GOVERNANCE-001",
+  "machine_node_id": "NODE-GOVERNANCE-001",
+  "as_of": "2026-07-28T18:35:00Z",
+  "orientation_purpose": "Give each entering collaborator a compact, non-authorizing account of contracts, evidence, coordination, open receipts, and handoff.",
+  "authority_posture": {
+    "mode": "orientation_only",
+    "statement": "This receipt supports orientation; released policies, bounded operations, and accountable roles continue to authorize effects."
+  },
+  "contract_state": [
+    {
+      "contract_id": "CONTRACT-GOVERNANCE-CATALOG-001",
+      "version": "2.0.0",
+      "digest": "sha256:c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0"
+    }
+  ],
+  "evidence_posture": [
+    {
+      "claim": "All governance schemas and mapped examples pass local contract validation.",
+      "mode": "observed",
+      "assurance_stage": "verified",
+      "status": "active"
+    },
+    {
+      "claim": "The four substantive receipt families close inside the selected future-reality simulation.",
+      "mode": "simulated",
+      "assurance_stage": "validated",
+      "status": "active"
+    }
+  ],
+  "coordination_horizon_id": "HORIZON-BOUNDED-CALLER-001",
+  "current_horizon_summary": "The contract spine and future-reality closure manifest are reference-ready for downstream adoption and executable simulation.",
+  "open_receipts": [
+    "GOV-RCP-ACCEPT-001",
+    "GOV-RCP-DISPOSITION-001"
+  ],
+  "invalidation_conditions": [
+    "The governance schema release changes.",
+    "A linked evidence digest, assumption, or authority posture changes."
+  ],
+  "source_permissions": [
+    {
+      "source": "released-governance-contracts",
+      "permission": "read",
+      "verification": "Resolve the release, commit, and digest before consuming a contract."
+    },
+    {
+      "source": "bounded-operation-registry",
+      "permission": "execute_bounded",
+      "verification": "The call receipt confirms caller, operation, scope, approval, effects, result, and timing."
+    }
+  ],
+  "handoff": {
+    "recipient_role": "Constellation repository maintainer",
+    "next_safe_action": "Adopt the Machine Node, first receipt, Coordination Horizon, and bounded caller contracts with repository-specific values.",
+    "success_evidence": "Downstream examples validate against release 2.0.0 and preserve their repository-specific authority posture."
+  },
+  "metadata": {
+    "schema_version": "2.0.0",
+    "created_at": "2026-07-28T18:35:00Z",
+    "updated_at": "2026-07-28T18:35:00Z",
+    "owner": {
+      "actor_id": "OWNER-GOVERNANCE-001",
+      "display_name": "Governance Steward",
+      "role": "First receipt owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}
