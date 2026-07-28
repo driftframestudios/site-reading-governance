@@ -5,7 +5,12 @@
   "conditions": {
     "ref_name": {
       "include": [
-        "refs/tags/v*"
+        "refs/tags/v*",
+        "refs/tags/spec-v*",
+        "refs/tags/candidate-v*",
+        "refs/tags/governance-v*",
+        "refs/tags/comparison-v*",
+        "refs/tags/forecast-*"
       ],
       "exclude": []
     }
@@ -23,4 +28,3 @@
   ],
   "bypass_actors": []
 }
-
