@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/simulated-receipt-closure.schema.json",
+  "title": "Simulated Substantive Receipt Closure",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "closure_id",
+    "future_reality",
+    "evidence_mode",
+    "closure_status",
+    "environment_observed_closure",
+    "production_authorization_effect",
+    "receipt_closures",
+    "executable_checks",
+    "aggregate_outcome",
+    "aggregate_artifacts",
+    "limitations",
+    "divergence_triggers",
+    "metadata"
+  ],
+  "properties": {
+    "closure_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "future_reality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "future_reality_id",
+        "as_of",
+        "narrative",
+        "assumption_ids",
+        "source_coordinates",
+        "modeled_authority_roles"
+      ],
+      "properties": {
+        "future_reality_id": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date"
+        },
+        "narrative": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 1600
+        },
+        "assumption_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          }
+        },
+        "source_coordinates": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "common.schema.json#/$defs/versionedCoordinate"
+          }
+        },
+        "modeled_authority_roles": {
+          "type": "array",
+          "minItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 160
+          }
+        }
+      }
+    },
+    "evidence_mode": {
+      "type": "string",
+      "const": "simulated"
+    },
+    "closure_status": {
+      "type": "string",
+      "const": "closed_in_simulation"
+    },
+    "environment_observed_closure": {
+      "type": "string",
+      "const": "separate_unasserted_state"
+    },
+    "production_authorization_effect": {
+      "type": "string",
+      "const": "none"
+    },
+    "receipt_closures": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "simulated_receipt_id",
+          "family",
+          "claim",
+          "scope",
+          "scenario_ids",
+          "test_ids",
+          "simulated_environment",
+          "outcome",
+          "closure_statement",
+          "artifacts",
+          "modeled_authority_roles",
+          "limitations"
+        ],
+        "properties": {
+          "simulated_receipt_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "family": {
+            "type": "string",
+            "enum": [
+              "configured_vendor_environments",
+              "representative_migration_restore_rehearsals",
+              "production_security_observability",
+              "accountable_scientific_quality_regulatory_acceptance"
+            ]
+          },
+          "claim": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 1200
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 1200
+          },
+          "scenario_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "common.schema.json#/$defs/identifier"
+            }
+          },
+          "test_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "common.schema.json#/$defs/identifier"
+            }
+          },
+          "simulated_environment": {
+            "$ref": "common.schema.json#/$defs/environment"
+          },
+          "outcome": {
+            "type": "string",
+            "const": "passed"
+          },
+          "closure_statement": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 1200
+          },
+          "artifacts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "common.schema.json#/$defs/artifact"
+            }
+          },
+          "modeled_authority_roles": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 160
+            }
+          },
+          "limitations": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 5,
+              "maxLength": 700
+            }
+          }
+        }
+      }
+    },
+    "executable_checks": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "$ref": "common.schema.json#/$defs/executableCheck"
+      }
+    },
+    "aggregate_outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result",
+        "closed_family_count",
+        "expected_family_count",
+        "reproduction_statement"
+      ],
+      "properties": {
+        "result": {
+          "type": "string",
+          "const": "passed"
+        },
+        "closed_family_count": {
+          "type": "integer",
+          "const": 4
+        },
+        "expected_family_count": {
+          "type": "integer",
+          "const": 4
+        },
+        "reproduction_statement": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 900
+        }
+      }
+    },
+    "aggregate_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "common.schema.json#/$defs/artifact"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 900
+      }
+    },
+    "divergence_triggers": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 700
+      }
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  }
+}

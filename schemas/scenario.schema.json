@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.driftframe.org/site-reading-governance/v1.0/scenario.schema.json",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/scenario.schema.json",
   "title": "Specification-by-Example Scenario",
   "type": "object",
   "additionalProperties": false,

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.driftframe.org/site-reading-governance/v1.0/invalidation.schema.json",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/invalidation.schema.json",
   "title": "Assurance Invalidation and Re-evaluation",
   "type": "object",
   "additionalProperties": false,

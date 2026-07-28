@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/operation.schema.json",
+  "title": "Service-Owned Operation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "operation_id",
+    "version",
+    "name",
+    "service_owner_role",
+    "purpose",
+    "effect_class",
+    "input_contract",
+    "output_contract",
+    "scope_template",
+    "idempotency_policy",
+    "approval_policy",
+    "resource_budget",
+    "tool_binding",
+    "audit_fields",
+    "recovery",
+    "verification_checks",
+    "metadata"
+  ],
+  "properties": {
+    "operation_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "version": {
+      "$ref": "common.schema.json#/$defs/semver"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 160
+    },
+    "service_owner_role": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 120
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 800
+    },
+    "effect_class": {
+      "$ref": "common.schema.json#/$defs/effectClass"
+    },
+    "input_contract": {
+      "$ref": "common.schema.json#/$defs/contractReference"
+    },
+    "output_contract": {
+      "$ref": "common.schema.json#/$defs/contractReference"
+    },
+    "scope_template": {
+      "$ref": "common.schema.json#/$defs/boundedScope"
+    },
+    "idempotency_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "fingerprint_fields",
+        "retention_seconds",
+        "replay_behavior",
+        "verification"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "read_stable",
+            "durable_key"
+          ]
+        },
+        "fingerprint_fields": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "retention_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 31536000
+        },
+        "replay_behavior": {
+          "type": "string",
+          "enum": [
+            "return_recorded_result",
+            "reconcile_then_return"
+          ]
+        },
+        "verification": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 700
+        }
+      }
+    },
+    "approval_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "trigger",
+        "authority_role",
+        "validity_seconds",
+        "evidence_required"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "automatic",
+            "required"
+          ]
+        },
+        "trigger": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 500
+        },
+        "authority_role": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "validity_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400
+        },
+        "evidence_required": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 160
+          }
+        }
+      }
+    },
+    "resource_budget": {
+      "$ref": "common.schema.json#/$defs/resourceBudget"
+    },
+    "tool_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool_name",
+        "tool_version",
+        "implementation_digest"
+      ],
+      "properties": {
+        "tool_name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9._-]+$",
+          "maxLength": 120
+        },
+        "tool_version": {
+          "$ref": "common.schema.json#/$defs/semver"
+        },
+        "implementation_digest": {
+          "$ref": "common.schema.json#/$defs/digest"
+        }
+      }
+    },
+    "audit_fields": {
+      "type": "array",
+      "minItems": 7,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "caller_id",
+          "operation_id",
+          "operation_version",
+          "input_digest",
+          "scope",
+          "decision",
+          "approval_ids",
+          "effect_ids",
+          "result",
+          "timing",
+          "correlation_id"
+        ]
+      }
+    },
+    "recovery": {
+      "$ref": "common.schema.json#/$defs/recoveryRoute"
+    },
+    "verification_checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "common.schema.json#/$defs/executableCheck"
+      }
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "effect_class": {
+            "enum": [
+              "broad_write",
+              "irreversible_effect"
+            ]
+          }
+        },
+        "required": [
+          "effect_class"
+        ]
+      },
+      "then": {
+        "properties": {
+          "approval_policy": {
+            "properties": {
+              "mode": {
+                "const": "required"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

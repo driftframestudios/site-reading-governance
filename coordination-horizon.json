@@ -1,0 +1,97 @@
+{
+  "horizon_id": "HORIZON-GOVERNANCE-PROMOTION-002",
+  "title": "Governance 2.0 control-plane promotion",
+  "objective": "Settle Governance 2.0, Control Plane Profile 0.3.0, selected-future closure, bounded-caller contracts, and bot-bound dependency automation into one reviewable release.",
+  "as_of": "2026-07-28T17:30:02Z",
+  "current_item_ids": [
+    "WORK-GOVERNED-AUTOMATION-002",
+    "WORK-GOVERNANCE-PROMOTION-002"
+  ],
+  "work_items": [
+    {
+      "item_id": "WORK-CONTROL-PLANE-PROFILE-002",
+      "horizon_label": "Control-plane contract spine",
+      "sequence": 1,
+      "state": "complete",
+      "desired_state": "Governance schema release 2.0.0 expresses bounded callers, Practitioner Probes, veracity, orientation, probabilities, and selected-future closure.",
+      "entry_evidence": [
+        "Enterprise Human-AI Practitioner Registry assessment and approved implementation plan."
+      ],
+      "completion_evidence": [
+        "Every schema and mapped example passes the governance validator.",
+        "The selected-future closure contract represents all four substantive receipt families."
+      ],
+      "owner_role": "Governance contract steward",
+      "dependency_ids": []
+    },
+    {
+      "item_id": "WORK-GOVERNED-AUTOMATION-002",
+      "horizon_label": "Governed dependency automation",
+      "sequence": 2,
+      "state": "active",
+      "desired_state": "Dependabot and Renovate exceptions combine complete branch grammar, exact pull-request author, governed target, and the ordinary validation path.",
+      "entry_evidence": [
+        "Live Dependabot pull requests exposed the GitFlow branch-policy mismatch and stale label assumptions.",
+        "Official GitHub behavior identifies read-only tokens, Dependabot-scoped secrets, and default-branch security updates."
+      ],
+      "completion_evidence": [
+        "Spoof, malformed-coordinate, wrong-target, partial-coordinate, Dependabot, and Renovate regression tests pass.",
+        "Direct and reusable workflows bind the same pull-request author field.",
+        "Dependency configuration and admitted ecosystem grammar advance together."
+      ],
+      "owner_role": "Repository automation steward",
+      "dependency_ids": [
+        "WORK-CONTROL-PLANE-PROFILE-002"
+      ]
+    },
+    {
+      "item_id": "WORK-GOVERNANCE-PROMOTION-002",
+      "horizon_label": "Immutable governance promotion",
+      "sequence": 3,
+      "state": "settling",
+      "desired_state": "The promoted governance release identifies its immutable commit, digest, branch coordinate, schema release, and downstream adoption path.",
+      "entry_evidence": [
+        "All repository-local governance and automation checks pass."
+      ],
+      "completion_evidence": [
+        "A governed release branch targets main and records its immutable PR-head or release coordinate.",
+        "The Machine Node replaces candidate zeros with the promoted commit and digest.",
+        "Downstream repositories validate against the promoted schema and workflow coordinates."
+      ],
+      "owner_role": "Constellation release steward",
+      "dependency_ids": [
+        "WORK-GOVERNED-AUTOMATION-002"
+      ]
+    }
+  ],
+  "reentry_capsule": {
+    "current_state": "Governance 2.0 contracts and the bot-bound branch policy pass locally; release promotion and downstream immutable coordinates are settling.",
+    "recent_decisions": [
+      "DECISION-CONTROL-PLANE-PROFILE-003",
+      "DECISION-BOT-IDENTITY-BOUND-BRANCHES-001",
+      "DECISION-DEFAULT-BRANCH-SECURITY-UPDATES-001"
+    ],
+    "next_safe_action": "Run the full validation suite, promote through a release branch, and replace candidate provenance with immutable coordinates.",
+    "verification": "Confirm 2.0.0 schema conformance, 0.3.0 profile binding, selected-future and automation digests, campaign markings, read-only workflow permissions, and passing regression tests."
+  },
+  "retained_effects": [
+    "Simulation closure remains definitive only within its selected future reality.",
+    "Orientation records retain orientation-only authority.",
+    "Automation identity requires both branch grammar and exact pull-request author.",
+    "Ordinary validation and accountable review continue for automated maintenance."
+  ],
+  "consequential_questions": [
+    "Which promoted coordinate should downstream repositories pin after every local suite is green?",
+    "Which future automation caller provides enough value to justify a new explicit grammar and author binding?"
+  ],
+  "metadata": {
+    "schema_version": "2.0.0",
+    "created_at": "2026-07-28T17:30:02Z",
+    "updated_at": "2026-07-28T17:30:02Z",
+    "owner": {
+      "actor_id": "OWNER-GOVERNANCE-HORIZON-002",
+      "display_name": "Site Reading governance stewardship role",
+      "role": "Coordination Horizon owner"
+    }
+  }
+}

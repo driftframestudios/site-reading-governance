@@ -9,8 +9,11 @@ The package is private-repository ready. Its examples use synthetic identifiers,
 its automation uses read-only permissions by default, and its ruleset exports
 can be reviewed before installation through the GitHub Rulesets API.
 
-The current governance schema release is `1.0.0`; stable schema identifiers use
-the `/v1.0/` coordinate.
+The current governance schema release is `2.0.0`; stable schema identifiers use
+the `/v2.0/` coordinate. It implements **Control Plane Profile v0.3**, the
+Enterprise Human-AI Practitioner Registry-derived capability profile for
+bounded callers, veracity, orientation, coordination, and future-reality
+simulation.
 
 ## Constellation
 
@@ -29,16 +32,27 @@ independent source histories.
 
 ## Assurance grammar
 
-Every evidence-bearing document records two independent dimensions:
+Every evidence-bearing document records independent mode and assurance
+dimensions:
 
 - `evidence_mode`: `planned`, `simulated`, or `observed`
 - `assurance_stage`: `specified`, `verified`, `qualified`, `validated`, or
   `accepted`
 
-A simulation can model a projected accepted state while retaining
-`evidence_mode: simulated`, `authority: simulation_only`, and
-`actual_acceptance_required: true`. Accountable scientific, Quality, and
-Regulatory decisions use observed evidence and named organizational authority.
+A standard assurance receipt can model a projected accepted state while
+retaining `evidence_mode: simulated`, `authority: simulation_only`, and
+`actual_acceptance_required: true`.
+
+The v0.3 simulated-closure contract supplies a second, explicit posture for a
+selected future reality:
+
+- `closure_status: closed_in_simulation`
+- `environment_observed_closure: separate_unasserted_state`
+- `production_authorization_effect: none`
+
+This posture lets an executable simulation fully close the four substantive
+receipt families through modeled roles and synthetic environments. It makes no
+claim about a separately observed environment or production authorization.
 
 ## Quick start
 
@@ -67,13 +81,23 @@ python3 tools/validate_governance.py \
 - [`BRANCHING.md`](BRANCHING.md) — GitFlow-like lifecycle and release protocol
 - [`docs/NEGATION_AWARE_LANGUAGE.md`](docs/NEGATION_AWARE_LANGUAGE.md) —
   affirmative semantic-field guidance
+- [`docs/CONTROL_PLANE_V0_3.md`](docs/CONTROL_PLANE_V0_3.md) — bounded caller,
+  Practitioner Probe, Coordination Horizon, Machine Node, veracity, and
+  simulated-closure operating model
+- [`docs/MIGRATION_V1_TO_V2.md`](docs/MIGRATION_V1_TO_V2.md) — downstream
+  migration sequence and release validation
 - [`schemas/`](schemas/) — JSON Schema 2020-12 contracts
 - [`examples/`](examples/) — valid synthetic exemplars for every contract
+- [`machine-node.json`](machine-node.json), [`first-receipt.json`](first-receipt.json),
+  and [`coordination-horizon.json`](coordination-horizon.json) — root orientation
+  records for contracts, campaign markings, and immutable-promotion posture
 - [`.github/workflows/`](.github/workflows/) — reusable validation workflows
 - [`rulesets/`](rulesets/) — reviewable GitHub repository ruleset exports
 - [`audits/repository-security-review-2026-07-28.md`](audits/repository-security-review-2026-07-28.md)
   — five-repository review scope, remediations, evidence boundaries, and open
   production receipts
+- [`audits/dependency-automation-review-2026-07-28.md`](audits/dependency-automation-review-2026-07-28.md)
+  — five-repository bot-identity, branch grammar, workflow, and follow-up review
 - [`tools/`](tools/) and [`tests/`](tests/) — dependency-free contract, language,
   secret-shape, and regression validation
 

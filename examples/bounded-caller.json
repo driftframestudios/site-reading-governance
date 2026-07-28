@@ -1,0 +1,88 @@
+{
+  "caller_id": "CALLER-AI-EVIDENCE-001",
+  "caller_kind": "ai_agent",
+  "purpose": "Assemble a synthetic evidence packet from released operations while the service boundary retains authorization and effect control.",
+  "service_owner_role": "Evidence service owner",
+  "identity": {
+    "principal": "workload:simulated-evidence-agent",
+    "provider": "aws-iam",
+    "audience": "evidence-service",
+    "credential_reference": "governed://runtime/identity/simulated-evidence-agent"
+  },
+  "authority_ceiling": "broad_write",
+  "permitted_operation_ids": [
+    "OPERATION-SPECIMEN-PROJECTION-READ-001",
+    "OPERATION-EVIDENCE-BUNDLE-ASSEMBLE-001"
+  ],
+  "authority_exclusions": [
+    "Direct database statements remain outside the caller contract.",
+    "Credential material stays within the workload identity provider."
+  ],
+  "scope": {
+    "tenant_ids": [
+      "TENANT-SYNTHETIC-001"
+    ],
+    "resource_types": [
+      "specimen_projection",
+      "evidence_bundle"
+    ],
+    "record_limit": 250,
+    "data_classes": [
+      "synthetic"
+    ],
+    "environment_classes": [
+      "local",
+      "continuous_integration"
+    ]
+  },
+  "resource_budget": {
+    "requests_per_minute": 30,
+    "timeout_seconds": 60,
+    "retry_attempts": 2,
+    "max_payload_bytes": 1048576
+  },
+  "tool_allowlist": [
+    "specimen.read-projection",
+    "evidence.assemble-bundle"
+  ],
+  "egress_policy": {
+    "mode": "isolated",
+    "allowed_hosts": [],
+    "private_address_handling": "block_at_network_boundary",
+    "verification": "The synthetic harness records zero network socket attempts for the complete run."
+  },
+  "delegation_policy": {
+    "mode": "disabled",
+    "maximum_depth": 0,
+    "child_authority_rule": "equal_or_narrower"
+  },
+  "audit_requirements": [
+    "caller_id",
+    "operation_id",
+    "scope",
+    "decision",
+    "effect_ids",
+    "result",
+    "timing",
+    "approval_ids",
+    "correlation_id"
+  ],
+  "expires_at": "2026-10-28T18:00:00Z",
+  "recovery": {
+    "owner_role": "Evidence service owner",
+    "containment": "The boundary suspends the caller lease and preserves the complete call receipt.",
+    "replacement_behavior": "A reviewer selects a released recovery operation after inspecting the recorded scope and effects.",
+    "verification": "The audit stream contains lease suspension, review disposition, and successor call identifiers."
+  },
+  "metadata": {
+    "schema_version": "2.0.0",
+    "created_at": "2026-07-28T18:05:00Z",
+    "updated_at": "2026-07-28T18:05:00Z",
+    "owner": {
+      "actor_id": "OWNER-EVIDENCE-SERVICE-001",
+      "display_name": "Evidence Service Steward",
+      "role": "Bounded caller contract owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}

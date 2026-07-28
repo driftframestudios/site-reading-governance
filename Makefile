@@ -1,4 +1,6 @@
-.PHONY: validate test
+.PHONY: check validate test
+
+check: validate test
 
 validate:
 	python3 tools/validate_governance.py

@@ -1,0 +1,91 @@
+{
+  "probe_id": "PROBE-BOUNDED-CALLER-001",
+  "title": "AI as bounded caller",
+  "domain": "Enterprise automation authority",
+  "question": "How does the service preserve typed scope, least authority, approval, idempotency, audit, and recovery when an AI agent requests an operation?",
+  "why_it_matters": "A fluent caller can act at machine speed; an enterprise boundary keeps every effect attributable, constrained, replay-safe, reviewable, and recoverable.",
+  "population_cartographies": [
+    "executive",
+    "evaluator",
+    "quality",
+    "security",
+    "engineer",
+    "ai_collaborator"
+  ],
+  "proficiency_levels": [
+    {
+      "level": 1,
+      "focus": "Name the caller boundary",
+      "demonstration": "Explain why an AI agent is a distinct caller rather than an implicit service owner.",
+      "evidence": "The explanation names identity, operation, scope, decision, effect, and receipt.",
+      "repair_prompt": "Restate the flow from caller request through service-owned authorization."
+    },
+    {
+      "level": 2,
+      "focus": "Trace one typed request",
+      "demonstration": "Validate one request against the released input contract and bounded scope.",
+      "evidence": "The call receipt carries input digest, tenant scope, record limit, and operation version.",
+      "repair_prompt": "Add the missing contract coordinate or scope dimension and repeat validation."
+    },
+    {
+      "level": 3,
+      "focus": "Handle a realistic write",
+      "demonstration": "Execute an idempotent narrow write and reconcile an ambiguous response by authoritative readback.",
+      "evidence": "Exact replay returns one durable result and zero additional effects.",
+      "repair_prompt": "Move external I/O outside the database transaction and bind replay to a durable fingerprint."
+    },
+    {
+      "level": 4,
+      "focus": "Exercise approval and recovery edges",
+      "demonstration": "Route a broad write through scoped approval, expiry, failure containment, and successor recovery.",
+      "evidence": "Approval, effect, call receipt, and recovery identifiers form one attributable lineage.",
+      "repair_prompt": "Tighten the authority ceiling, approval validity, or recovery ownership exposed by the failed edge."
+    },
+    {
+      "level": 5,
+      "focus": "Review and repair the system",
+      "demonstration": "Challenge prompt injection, cross-tenant scope, replay collision, egress, recursion, and partial-audit cases.",
+      "evidence": "Adversarial fixtures produce bounded rejection or owned recovery with preserved audit evidence.",
+      "repair_prompt": "Convert each discovered gap into a contract change, failure twin, and falsifiable acceptance check."
+    }
+  ],
+  "technical_core": [
+    "The service owns named operations and evaluates authority at the execution boundary.",
+    "Typed input, effect class, tenant scope, resource budget, approval, idempotency, and audit form one contract.",
+    "Retrieved documents, tool descriptions, and vendor payloads enter as untrusted data with recorded provenance."
+  ],
+  "review_surfaces": [
+    "Caller identity and authority ceiling",
+    "Operation and input contract versions",
+    "Approval scope and expiry",
+    "Effect and call-receipt lineage",
+    "Recovery ownership and verification"
+  ],
+  "scenario_ids": [
+    "SCENARIO-AMBIGUOUS-WRITE-001"
+  ],
+  "claim_ids": [
+    "CLAIM-BOUNDED-BROAD-WRITE-001"
+  ],
+  "instruction_yield": [
+    "Select one released operation and submit typed input within the caller scope and resource budget.",
+    "Record the boundary decision, approvals, effects, result, and recovery path in an attributable call receipt."
+  ],
+  "code_comment_markers": [
+    "TARGET",
+    "CONTRAST",
+    "GUARD"
+  ],
+  "settlement_status": "settled",
+  "metadata": {
+    "schema_version": "2.0.0",
+    "created_at": "2026-07-28T18:30:00Z",
+    "updated_at": "2026-07-28T18:30:00Z",
+    "owner": {
+      "actor_id": "OWNER-PROBES-001",
+      "display_name": "Practitioner Probe Steward",
+      "role": "Probe contract owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}

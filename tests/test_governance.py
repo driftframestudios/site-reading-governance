@@ -36,6 +36,39 @@ class GovernancePackageTests(unittest.TestCase):
     def test_every_mapped_example_validates(self) -> None:
         self.assertEqual([], validation.validate_examples())
 
+    def test_root_orientation_records_form_one_coherent_control_surface(self) -> None:
+        self.assertEqual([], validation.validate_repository_orientation())
+
+    def test_candidate_provenance_requires_a_settling_promotion_item(self) -> None:
+        records = {
+            name: json.loads((ROOT / name).read_text(encoding="utf-8"))
+            for name in validation.ROOT_ORIENTATION_SCHEMAS
+        }
+        for item in records["coordination-horizon.json"]["work_items"]:
+            if item["item_id"] in records["coordination-horizon.json"][
+                "current_item_ids"
+            ]:
+                item["state"] = "active"
+        findings = validation._validate_repository_orientation_records(records)
+        self.assertTrue(
+            any("current settling promotion item" in finding.message for finding in findings),
+            findings,
+        )
+
+    def test_root_contract_digest_binds_material_contract_file(self) -> None:
+        records = {
+            name: json.loads((ROOT / name).read_text(encoding="utf-8"))
+            for name in validation.ROOT_ORIENTATION_SCHEMAS
+        }
+        records["machine-node.json"]["contracts"][0]["digest"] = (
+            "sha256:" + ("f" * 64)
+        )
+        findings = validation._validate_repository_orientation_records(records)
+        self.assertTrue(
+            any("must bind" in finding.message for finding in findings),
+            findings,
+        )
+
     def test_ruleset_exports_preserve_governed_flow(self) -> None:
         self.assertEqual([], validation.validate_rulesets())
 
@@ -43,7 +76,7 @@ class GovernancePackageTests(unittest.TestCase):
         self.assertEqual([], validation.validate_workflows())
 
     def test_release_branch_advances_main(self) -> None:
-        self.assertEqual([], branch_flow.check_flow("main", "release/1.0.0"))
+        self.assertEqual([], branch_flow.check_flow("main", "release/2.0.0"))
 
     def test_feature_branch_advances_develop(self) -> None:
         self.assertEqual(
@@ -62,10 +95,10 @@ class GovernancePackageTests(unittest.TestCase):
         )
 
     def test_release_branch_uses_unprefixed_semver(self) -> None:
-        self.assertTrue(branch_flow.check_flow("main", "release/v1.0.0"))
+        self.assertTrue(branch_flow.check_flow("main", "release/v2.0.0"))
 
     def test_schema_release_coordinates_are_current(self) -> None:
-        self.assertEqual("1.0.0", (ROOT / "VERSION").read_text().strip())
+        self.assertEqual("2.0.0", (ROOT / "VERSION").read_text().strip())
         for path in sorted((ROOT / "schemas").glob("*.schema.json")):
             schema = json.loads(path.read_text())
             self.assertTrue(schema["$id"].startswith(validation.SCHEMA_ID_PREFIX))
@@ -82,6 +115,119 @@ class GovernancePackageTests(unittest.TestCase):
     def test_feature_branch_routes_through_develop(self) -> None:
         findings = branch_flow.check_flow("main", "feature/1042-receipt-contract")
         self.assertTrue(findings)
+
+    def test_coordination_vocabulary_uses_generic_horizon(self) -> None:
+        self.assertEqual([], validation.validate_coordination_vocabulary())
+
+    def test_probability_names_event_horizon_basis_and_conditions(self) -> None:
+        schema = ROOT / "schemas" / "decision.schema.json"
+        document = json.loads((ROOT / "examples" / "decision.json").read_text())
+        for field in (
+            "probability_of",
+            "probability_horizon",
+            "probability_basis",
+            "probability_conditions",
+            "recalibration_triggers",
+        ):
+            candidate = dict(document)
+            candidate.pop(field)
+            findings = validation.SchemaValidator(schema).validate(candidate)
+            self.assertTrue(
+                any(field in finding.message for finding in findings),
+                (field, findings),
+            )
+
+    def test_broad_write_operation_requires_approval(self) -> None:
+        schema = ROOT / "schemas" / "operation.schema.json"
+        document = json.loads((ROOT / "examples" / "operation.json").read_text())
+        document["approval_policy"]["mode"] = "automatic"
+        findings = validation.SchemaValidator(schema).validate(document)
+        self.assertTrue(
+            any("required" in finding.message for finding in findings),
+            findings,
+        )
+
+    def test_authorized_broad_write_call_references_approval(self) -> None:
+        schema = ROOT / "schemas" / "call-receipt.schema.json"
+        document = json.loads(
+            (ROOT / "examples" / "call-receipt.json").read_text()
+        )
+        document["approval_ids"] = []
+        findings = validation.SchemaValidator(schema).validate(document)
+        self.assertTrue(
+            any("minItems" in finding.message for finding in findings),
+            findings,
+        )
+
+    def test_simulated_approval_uses_roles_and_simulation_authority(self) -> None:
+        schema = ROOT / "schemas" / "approval.schema.json"
+        document = json.loads((ROOT / "examples" / "approval.json").read_text())
+        self.assertNotIn("authority_actor", document)
+        self.assertEqual([], validation.SchemaValidator(schema).validate(document))
+        document["authority"] = "organizational"
+        findings = validation.SchemaValidator(schema).validate(document)
+        messages = " ".join(finding.message for finding in findings)
+        self.assertIn("authority_actor", messages)
+        self.assertIn("observed", messages)
+
+    def test_simulated_substantive_closure_is_explicitly_bounded(self) -> None:
+        schema = ROOT / "schemas" / "simulated-receipt-closure.schema.json"
+        document = json.loads(
+            (ROOT / "examples" / "simulated-receipt-closure.json").read_text()
+        )
+        self.assertEqual("closed_in_simulation", document["closure_status"])
+        self.assertEqual(
+            "separate_unasserted_state",
+            document["environment_observed_closure"],
+        )
+        self.assertEqual("none", document["production_authorization_effect"])
+        self.assertEqual([], validation.SchemaValidator(schema).validate(document))
+        for field, replacement in (
+            ("environment_observed_closure", "closed"),
+            ("production_authorization_effect", "production_approved"),
+        ):
+            candidate = json.loads(json.dumps(document))
+            candidate[field] = replacement
+            self.assertTrue(
+                validation.SchemaValidator(schema).validate(candidate),
+                field,
+            )
+
+    def test_simulated_closure_covers_four_distinct_families(self) -> None:
+        document = json.loads(
+            (ROOT / "examples" / "simulated-receipt-closure.json").read_text()
+        )
+        families = {
+            item["family"] for item in document["receipt_closures"]
+        }
+        self.assertEqual(
+            validation.SUBSTANTIVE_SIMULATED_RECEIPT_FAMILIES,
+            families,
+        )
+        document["receipt_closures"][1]["family"] = document[
+            "receipt_closures"
+        ][0]["family"]
+        findings = validation._validate_control_plane_examples(
+            {"simulated-receipt-closure.json": document}
+        )
+        self.assertTrue(
+            any("exactly once" in finding.message for finding in findings),
+            findings,
+        )
+
+    def test_machine_node_and_first_receipt_remain_non_authorizing(self) -> None:
+        node_schema = ROOT / "schemas" / "machine-node.schema.json"
+        node = json.loads((ROOT / "examples" / "machine-node.json").read_text())
+        receipt_schema = ROOT / "schemas" / "first-receipt.schema.json"
+        receipt = json.loads(
+            (ROOT / "examples" / "first-receipt.json").read_text()
+        )
+        node["authority"]["mode"] = "production_authority"
+        receipt["authority_posture"]["mode"] = "production_authority"
+        self.assertTrue(validation.SchemaValidator(node_schema).validate(node))
+        self.assertTrue(
+            validation.SchemaValidator(receipt_schema).validate(receipt)
+        )
 
     def test_simulated_receipt_requires_simulation_authority(self) -> None:
         schema = ROOT / "schemas" / "receipt.schema.json"

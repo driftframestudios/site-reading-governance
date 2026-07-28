@@ -70,9 +70,8 @@ and rotation posture while resolved values remain outside generated artifacts.
 
 ## Evidence boundaries
 
-This review establishes repository-level evidence. It does not represent a production
-penetration test, a cloud-account configuration assessment, or a credential-rotation
-rehearsal. The following receipts remain open until observed evidence closes them:
+This historical review establishes repository-level evidence. At review time,
+the following receipts were tracked for separate observed-state closure:
 
 - enable and verify GitHub secret scanning and push protection for all five private
   repositories;
@@ -88,10 +87,25 @@ rehearsal. The following receipts remain open until observed evidence closes the
 - close the configured-vendor, representative migration and restore, production
   observability, and Scientific, Quality, and Regulatory acceptance receipts.
 
+## Control Plane Profile v0.3 future-reality disposition
+
+Schema release `2.0.0` adds an executable future-reality closure path. A pinned
+simulation can close configured vendor environments, representative migration
+and restore rehearsals, production security and observability, and modeled
+Scientific, Quality, and Regulatory acceptance as
+`closed_in_simulation`.
+
+That manifest records environment-observed closure as a separate, unasserted
+state and grants zero production authorization. This preserves the historical
+review boundary while allowing the simulated constellation to reach a complete,
+authentic future state using synthetic environments, modeled roles, executable
+checks, and digest-bound artifacts.
+
 ## Release interpretation
 
-`site-reading-governance` advances to successor contract `1.0.0` because locator and
-timestamp rules narrow the accepted document set. The implementation, simulation,
-comparator, and program specification advance to `0.2.0`. Historical release
-coordinates remain preserved as lineage; current manifests bind to observed commits
-after their GitFlow-like release merges.
+`site-reading-governance` now advances to successor contract `2.0.0` because
+probability context and the control-plane records shape downstream documents.
+The implementation, simulation, comparator, and program specification align on
+Control Plane Profile `0.3.0`. Historical release coordinates remain preserved
+as lineage; current manifests bind to their repository-specific provenance
+after GitFlow-like release merges.
