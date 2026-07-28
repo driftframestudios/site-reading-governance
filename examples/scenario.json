@@ -1,0 +1,38 @@
+{
+  "scenario_id": "SCENARIO-AMBIGUOUS-WRITE-001",
+  "title": "Post-commit timeout converges through authoritative readback",
+  "rule_ids": [
+    "RULE-STABLE-IDENTITY-001",
+    "RULE-RECONCILIATION-001"
+  ],
+  "kind": "failure_twin",
+  "given": [
+    "A canonical specimen projection has stable request identity REQUEST-1042.",
+    "The configured vendor commits the projection and delays the response beyond the client deadline."
+  ],
+  "when": [
+    "The adapter records an ambiguous outcome and queries the vendor by stable request identity."
+  ],
+  "then": [
+    "Readback returns the committed vendor object and its canonical payload digest.",
+    "Reconciliation closes the request as committed.",
+    "The vendor contains one scientifically coherent specimen projection."
+  ],
+  "material_effect": "The scientist sees one authoritative specimen while operations retain a complete recovery trail.",
+  "recovery": {
+    "owner_role": "Integration operations owner",
+    "replacement_behavior": "Read authoritative vendor state, reconcile the digest, and route divergent content to the owned quarantine queue.",
+    "verification": "The recovery receipt binds the request identity, readback, digest comparison, and final disposition."
+  },
+  "metadata": {
+    "schema_version": "0.1.0",
+    "created_at": "2026-07-28T14:10:00Z",
+    "updated_at": "2026-07-28T14:10:00Z",
+    "owner": {
+      "actor_id": "OWNER-INTEGRATION-001",
+      "display_name": "Integration Lead",
+      "role": "Vendor integration owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}

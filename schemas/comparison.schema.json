@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v0.1/comparison.schema.json",
+  "title": "Actual and Simulation Comparison",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "comparison_id",
+    "constellation_version",
+    "specification",
+    "simulation",
+    "implementation",
+    "comparator",
+    "fixture_digest",
+    "executed_at",
+    "results",
+    "summary",
+    "adjudicators",
+    "metadata"
+  ],
+  "properties": {
+    "comparison_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "constellation_version": {
+      "$ref": "common.schema.json#/$defs/semver"
+    },
+    "specification": {
+      "$ref": "common.schema.json#/$defs/versionedCoordinate"
+    },
+    "simulation": {
+      "$ref": "common.schema.json#/$defs/versionedCoordinate"
+    },
+    "implementation": {
+      "$ref": "common.schema.json#/$defs/versionedCoordinate"
+    },
+    "comparator": {
+      "$ref": "common.schema.json#/$defs/versionedCoordinate"
+    },
+    "fixture_digest": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "executed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "result_id",
+          "scenario_id",
+          "semantic_area",
+          "classification",
+          "materiality",
+          "actual_observation",
+          "simulated_prediction",
+          "adjudication",
+          "owner_role",
+          "next_action"
+        ],
+        "properties": {
+          "result_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "scenario_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "semantic_area": {
+            "type": "string",
+            "enum": [
+              "scientific",
+              "workflow",
+              "vendor",
+              "migration_restore",
+              "security_privacy",
+              "observability",
+              "quality_regulatory",
+              "business"
+            ]
+          },
+          "classification": {
+            "type": "string",
+            "enum": [
+              "converged",
+              "desired_divergence",
+              "actual_gap",
+              "actual_defect",
+              "simulation_fault",
+              "shared_specification_violation",
+              "context_changed",
+              "receipt_pending",
+              "comparison_inconclusive"
+            ]
+          },
+          "materiality": {
+            "type": "string",
+            "enum": [
+              "informational",
+              "minor",
+              "major",
+              "critical"
+            ]
+          },
+          "actual_observation": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 1000
+          },
+          "simulated_prediction": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 1000
+          },
+          "adjudication": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1200
+          },
+          "owner_role": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "next_action": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 700
+          },
+          "receipt_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "common.schema.json#/$defs/identifier"
+            }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total",
+        "converged",
+        "material_divergences",
+        "pending_receipts"
+      ],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "converged": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "material_divergences": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pending_receipts": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "adjudicators": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "common.schema.json#/$defs/actor"
+      }
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  }
+}
