@@ -1,15 +1,18 @@
-# Governance contracts receive review from the stewardship team.
-* @driftframestudios/governance-stewards
+# Enforceable GitHub owner: @driftframestudios.
+# Accountability vocabulary: governance-stewards.
+# The repository is owned by a personal account, so organization-team syntax
+# becomes applicable only after an intentional move to an organization.
+* @driftframestudios
 
-/schemas/ @driftframestudios/governance-stewards
-/rulesets/ @driftframestudios/governance-stewards
-/.github/dependabot.yml @driftframestudios/governance-stewards
-/.github/workflows/ @driftframestudios/governance-stewards
-/tools/check_branch_flow.py @driftframestudios/governance-stewards
-/tools/validate_governance.py @driftframestudios/governance-stewards
-/tests/test_check_branch_flow.py @driftframestudios/governance-stewards
-/tests/test_governance.py @driftframestudios/governance-stewards
-/machine-node.json @driftframestudios/governance-stewards
-/first-receipt.json @driftframestudios/governance-stewards
-/coordination-horizon.json @driftframestudios/governance-stewards
-/docs/NEGATION_AWARE_LANGUAGE.md @driftframestudios/governance-stewards
+/schemas/ @driftframestudios
+/rulesets/ @driftframestudios
+/.github/dependabot.yml @driftframestudios
+/.github/workflows/ @driftframestudios
+/tools/check_branch_flow.py @driftframestudios
+/tools/validate_governance.py @driftframestudios
+/tests/test_check_branch_flow.py @driftframestudios
+/tests/test_governance.py @driftframestudios
+/machine-node.json @driftframestudios
+/first-receipt.json @driftframestudios
+/coordination-horizon.json @driftframestudios
+/docs/NEGATION_AWARE_LANGUAGE.md @driftframestudios
