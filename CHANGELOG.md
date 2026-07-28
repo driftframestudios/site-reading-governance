@@ -6,6 +6,8 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.1.0] — 2026-07-28
+
 ### Added
 
 - Governance and GitFlow-like branch contracts.
@@ -15,4 +17,3 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 - Synthetic examples, reusable GitHub Actions workflows, repository templates,
   CODEOWNERS, and ruleset exports.
 - Python standard-library validators and tests.
-
