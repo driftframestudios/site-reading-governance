@@ -23,13 +23,13 @@ environment and accountable organization.
 
 ## Promotion path
 
-Release `0.1.0` moved through:
+Release `1.0.0` moves through:
 
 1. repository initialization on `main`;
 2. `develop` creation from the baseline;
 3. `feature/constellation-foundation` review into `develop`;
 4. required governance validation on the release coordinate;
-5. `release/0.1.0` review into `main`;
+5. `release/1.0.0` review into `main`;
 6. `develop` synchronization to the released commit;
 7. downstream constellation pinning by commit and Git tree digest.
 
@@ -41,7 +41,20 @@ organization.
 
 - organization-specific CODEOWNER handles;
 - organization and repository IDs in ruleset installation tooling;
-- evidence-store locator policy;
+- organization-specific governed-locator resolver registry;
 - retention schedules and jurisdictional overlays;
 - artifact attestation when the selected GitHub plan supports it;
 - organization-specific scientific, Quality, and Regulatory roles.
+
+## Open governance receipts
+
+- `GOV-RCP-ACCEPT-001` — bind actual accountable acceptance to an immutable
+  external authorization record carrying identity assurance, signed time,
+  payload digest, and approved-system coordinate.
+- `GOV-RCP-DISPOSITION-001` — define the accountable exception disposition for
+  a failed or inconclusive receipt before any accepted assurance stage can
+  advance.
+
+These receipts preserve the current schema boundary explicitly. Their successor
+contracts will include examples, negative fixtures, migration guidance, and
+accountable Quality and security review.

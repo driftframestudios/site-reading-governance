@@ -17,9 +17,6 @@ jobs:
     name: governance-validation
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: ${{ inputs.package_path }}
     steps:
       - name: Check out caller source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -30,13 +27,36 @@ jobs:
         with:
           python-version: "3.13"
           cache: ""
-      - name: Validate governance package
+      - name: Validate bounded governance package
+        shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+          PACKAGE_PATH: ${{ inputs.package_path }}
         run: |
+          if [[ ! "$PACKAGE_PATH" =~ ^(\.|[A-Za-z0-9][A-Za-z0-9._/-]*)$ ]]; then
+            echo "Package path is outside the repository-relative grammar."
+            exit 2
+          fi
+          if [[ "$PACKAGE_PATH" != "." && (
+            "/$PACKAGE_PATH/" == *"/../"* ||
+            "/$PACKAGE_PATH/" == *"/./"* ||
+            "/$PACKAGE_PATH/" == *"//"*
+          ) ]]; then
+            echo "Package path contains a non-canonical segment."
+            exit 2
+          fi
+          package_root="$(realpath -m -- "$GITHUB_WORKSPACE/$PACKAGE_PATH")"
+          case "$package_root/" in
+            "$GITHUB_WORKSPACE/"*) ;;
+            *)
+              echo "Package path resolves outside the checked-out repository."
+              exit 2
+              ;;
+          esac
+          cd -- "$package_root"
           python3 tools/validate_governance.py
           python3 tools/check_language.py
+          python3 tools/scan_secret_shapes.py
           python3 -m unittest discover -s tests -v
-      - name: Check GitFlow-like pull-request coordinates
-        run: >-
-          python3 tools/check_branch_flow.py
-          --base "${{ github.base_ref }}"
-          --head "${{ github.head_ref }}"
+          python3 tools/check_branch_flow.py --base "$BASE_REF" --head "$HEAD_REF"

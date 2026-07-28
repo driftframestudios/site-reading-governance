@@ -12,6 +12,8 @@
 - `feature/<issue>-<slug>` — governance capability or compatible schema addition
 - `fix/<issue>-<slug>` — behavior repair destined for `develop`
 - `chore/<issue>-<slug>` — maintenance with stable external behavior
+- `forecast/<year>-q<quarter>-r<revision>` — preregistered forecast candidate
+- `evidence/<receipt>-<slug>` — redacted receipt-link and evidence-manifest change
 - `release/<semver>` — stabilization from `develop`
 - `hotfix/<issue>-<slug>` — urgent production repair from `main`
 - `support/<major.minor>` — time-bounded maintenance for a supported line
@@ -67,4 +69,3 @@ Commits describe the achieved state in imperative form, such as
 - compatibility and invalidation analysis;
 - security and privacy effect;
 - planned release class.
-

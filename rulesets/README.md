@@ -12,7 +12,10 @@ Before installation:
 5. install the `develop` ruleset after the branch exists;
 6. review the repository's active aggregate rule view.
 
+The release-tag export covers `v*`, `spec-v*`, `candidate-v*`,
+`governance-v*`, `comparison-v*`, and `forecast-*` coordinates so every
+constellation release family receives deletion, update, and signature controls.
+
 Installation uses an authenticated administrative workflow outside this package.
 The JSON exports remain versioned so policy changes receive the same review as
 schema changes.
-

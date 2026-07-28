@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.driftframe.org/site-reading-governance/v0.1/common.schema.json",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v1.0/common.schema.json",
   "title": "Site Reading Common Definitions",
   "$defs": {
     "identifier": {
@@ -74,6 +74,12 @@
         }
       }
     },
+    "governedLocator": {
+      "type": "string",
+      "pattern": "^(?:governed|evidence)://[a-z0-9][a-z0-9._/-]*$",
+      "minLength": 12,
+      "maxLength": 500
+    },
     "artifact": {
       "type": "object",
       "additionalProperties": false,
@@ -97,9 +103,7 @@
           "$ref": "#/$defs/digest"
         },
         "locator": {
-          "type": "string",
-          "minLength": 3,
-          "maxLength": 500
+          "$ref": "#/$defs/governedLocator"
         },
         "sensitivity": {
           "type": "string",

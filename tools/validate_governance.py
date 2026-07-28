@@ -6,12 +6,13 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import math
 import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
-from urllib.parse import urldefrag
+from urllib.parse import urldefrag, urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,6 +21,27 @@ EXAMPLE_DIR = ROOT / "examples"
 RULESET_DIR = ROOT / "rulesets"
 WORKFLOW_DIR = ROOT / ".github" / "workflows"
 DRAFT = "https://json-schema.org/draft/2020-12/schema"
+SCHEMA_RELEASE = "1.0.0"
+SCHEMA_ID_PREFIX = "https://schemas.driftframe.org/site-reading-governance/v1.0/"
+SCHEMA_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9-]*\.schema\.json$")
+DOCUMENT_PATH_PATTERN = re.compile(
+    r"^(?:[A-Za-z0-9][A-Za-z0-9._-]*/)*"
+    r"[A-Za-z0-9][A-Za-z0-9._-]*\.json$"
+)
+RFC3339_DATE_TIME = re.compile(
+    r"^(?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2})"
+    r"T(?:[01][0-9]|2[0-3]):[0-5][0-9]:(?:[0-5][0-9]|60)"
+    r"(?:\.[0-9]+)?"
+    r"(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])$"
+)
+RELEASE_TAG_INCLUDES = {
+    "refs/tags/v*",
+    "refs/tags/spec-v*",
+    "refs/tags/candidate-v*",
+    "refs/tags/governance-v*",
+    "refs/tags/comparison-v*",
+    "refs/tags/forecast-*",
+}
 
 
 @dataclass(frozen=True)
@@ -35,6 +57,18 @@ class DuplicateKeyError(ValueError):
     """Signal duplicate JSON keys with the key name preserved."""
 
 
+class NonFiniteNumberError(ValueError):
+    """Signal a numeric token outside the JSON number grammar."""
+
+
+class ReferenceResolutionError(ValueError):
+    """Signal a schema reference outside its bounded schema directory."""
+
+
+class ContractInputError(ValueError):
+    """Signal a reusable-workflow input outside the bounded path grammar."""
+
+
 def _object_with_unique_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     value: dict[str, Any] = {}
     for key, item in pairs:
@@ -44,10 +78,28 @@ def _object_with_unique_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     return value
 
 
+def _reject_non_finite(token: str) -> None:
+    raise NonFiniteNumberError(f"non-finite numeric token {token!r} is outside JSON")
+
+
+def _parse_finite_float(token: str) -> float:
+    value = float(token)
+    if not math.isfinite(value):
+        raise NonFiniteNumberError(
+            f"numeric token {token!r} exceeds the finite JSON domain"
+        )
+    return value
+
+
 def load_json(path: Path) -> Any:
     """Load strict UTF-8 JSON and preserve a precise source-path failure."""
     with path.open("r", encoding="utf-8") as handle:
-        return json.load(handle, object_pairs_hook=_object_with_unique_keys)
+        return json.load(
+            handle,
+            object_pairs_hook=_object_with_unique_keys,
+            parse_constant=_reject_non_finite,
+            parse_float=_parse_finite_float,
+        )
 
 
 class SchemaValidator:
@@ -55,6 +107,7 @@ class SchemaValidator:
 
     def __init__(self, schema_path: Path):
         self.schema_path = schema_path.resolve()
+        self.reference_root = self.schema_path.parent
         self.document_cache: dict[Path, Any] = {}
 
     def validate(self, instance: Any) -> list[Finding]:
@@ -69,7 +122,25 @@ class SchemaValidator:
 
     def _resolve_reference(self, reference: str, base_path: Path) -> tuple[Any, Path]:
         location, fragment = urldefrag(reference)
-        target_path = (base_path.parent / location).resolve() if location else base_path
+        parsed = urlsplit(location)
+        relative = Path(location)
+        if (
+            parsed.scheme
+            or parsed.netloc
+            or parsed.query
+            or relative.is_absolute()
+            or ".." in relative.parts
+        ):
+            raise ReferenceResolutionError(
+                f"schema reference {reference!r} leaves the bounded schema directory"
+            )
+        target_path = (base_path.parent / relative).resolve() if location else base_path
+        try:
+            target_path.relative_to(self.reference_root)
+        except ValueError as exc:
+            raise ReferenceResolutionError(
+                f"schema reference {reference!r} leaves the bounded schema directory"
+            ) from exc
         target = self._load_schema(target_path)
         if fragment:
             for token in fragment.lstrip("/").split("/"):
@@ -240,10 +311,18 @@ class SchemaValidator:
             except ValueError:
                 findings.append(Finding(path, "string must be an ISO 8601 date"))
         if schema.get("format") == "date-time":
-            try:
-                dt.datetime.fromisoformat(instance.replace("Z", "+00:00"))
-            except ValueError:
-                findings.append(Finding(path, "string must be an ISO 8601 date-time"))
+            match = RFC3339_DATE_TIME.fullmatch(instance)
+            if match is None:
+                findings.append(
+                    Finding(path, "string must be an RFC 3339 date-time with timezone")
+                )
+            else:
+                try:
+                    dt.date.fromisoformat(match.group("date"))
+                except ValueError:
+                    findings.append(
+                        Finding(path, "string must carry a valid RFC 3339 calendar date")
+                    )
         return findings
 
     @staticmethod
@@ -253,6 +332,8 @@ class SchemaValidator:
         path: str,
     ) -> list[Finding]:
         findings: list[Finding] = []
+        if isinstance(instance, float) and not math.isfinite(instance):
+            return [Finding(path, "number must be finite")]
         if "minimum" in schema and instance < schema["minimum"]:
             findings.append(Finding(path, "number is below minimum"))
         if "maximum" in schema and instance > schema["maximum"]:
@@ -271,7 +352,12 @@ def validate_schema_catalog() -> list[Finding]:
     for path in sorted(SCHEMA_DIR.glob("*.schema.json")):
         try:
             schema = load_json(path)
-        except (OSError, json.JSONDecodeError, DuplicateKeyError) as exc:
+        except (
+            OSError,
+            json.JSONDecodeError,
+            DuplicateKeyError,
+            NonFiniteNumberError,
+        ) as exc:
             findings.append(Finding(str(path.relative_to(ROOT)), str(exc)))
             continue
         relative = str(path.relative_to(ROOT))
@@ -280,6 +366,13 @@ def validate_schema_catalog() -> list[Finding]:
         schema_id = schema.get("$id")
         if not isinstance(schema_id, str) or not schema_id.startswith("https://"):
             findings.append(Finding(relative, "schema must carry a stable HTTPS $id"))
+        elif not schema_id.startswith(SCHEMA_ID_PREFIX):
+            findings.append(
+                Finding(
+                    relative,
+                    f"schema $id must use the {SCHEMA_RELEASE} release coordinate",
+                )
+            )
         elif schema_id in ids:
             findings.append(Finding(relative, f"schema $id {schema_id!r} is duplicated"))
         else:
@@ -297,7 +390,14 @@ def _walk_references(value: Any, base_path: Path, location: str) -> list[Finding
         if isinstance(reference, str):
             try:
                 SchemaValidator(base_path)._resolve_reference(reference, base_path)
-            except (OSError, KeyError, json.JSONDecodeError, DuplicateKeyError) as exc:
+            except (
+                OSError,
+                KeyError,
+                json.JSONDecodeError,
+                DuplicateKeyError,
+                NonFiniteNumberError,
+                ReferenceResolutionError,
+            ) as exc:
                 findings.append(Finding(location, f"reference {reference!r} fails: {exc}"))
         for key, child in value.items():
             findings.extend(_walk_references(child, base_path, f"{location}/{key}"))
@@ -332,11 +432,24 @@ def validate_examples() -> list[Finding]:
         try:
             record = load_json(example_path)
             records[example_name] = record
+            metadata = record.get("metadata", {})
+            if metadata.get("schema_version") != SCHEMA_RELEASE:
+                findings.append(
+                    Finding(
+                        f"examples/{example_name}.metadata.schema_version",
+                        f"governance schema version must equal {SCHEMA_RELEASE}",
+                    )
+                )
             for finding in SchemaValidator(schema_path).validate(record):
                 findings.append(
                     Finding(f"examples/{example_name}{finding.path[1:]}", finding.message)
                 )
-        except (OSError, json.JSONDecodeError, DuplicateKeyError) as exc:
+        except (
+            OSError,
+            json.JSONDecodeError,
+            DuplicateKeyError,
+            NonFiniteNumberError,
+        ) as exc:
             findings.append(Finding(f"examples/{example_name}", str(exc)))
 
     constellation = records.get("constellation.json", {})
@@ -386,7 +499,12 @@ def validate_rulesets() -> list[Finding]:
         relative = str(path.relative_to(ROOT))
         try:
             ruleset = load_json(path)
-        except (OSError, json.JSONDecodeError, DuplicateKeyError) as exc:
+        except (
+            OSError,
+            json.JSONDecodeError,
+            DuplicateKeyError,
+            NonFiniteNumberError,
+        ) as exc:
             findings.append(Finding(relative, str(exc)))
             continue
         for key in ("name", "target", "enforcement", "conditions", "rules"):
@@ -431,6 +549,21 @@ def validate_rulesets() -> list[Finding]:
             if "required_signatures" not in rule_types:
                 findings.append(
                     Finding(relative, "production coordinates require signatures")
+                )
+        if path.name == "release-tags.json":
+            includes = set(
+                ruleset.get("conditions", {})
+                .get("ref_name", {})
+                .get("include", [])
+            )
+            if includes != RELEASE_TAG_INCLUDES:
+                findings.append(
+                    Finding(
+                        relative,
+                        "release tag coverage differs: "
+                        f"expected {sorted(RELEASE_TAG_INCLUDES)}, "
+                        f"available {sorted(includes)}",
+                    )
                 )
     return findings
 
@@ -488,8 +621,58 @@ def validate_pair(schema_path: Path, document_path: Path) -> list[Finding]:
     try:
         document = load_json(document_path)
         return SchemaValidator(schema_path).validate(document)
-    except (OSError, json.JSONDecodeError, DuplicateKeyError) as exc:
+    except (
+        OSError,
+        json.JSONDecodeError,
+        DuplicateKeyError,
+        NonFiniteNumberError,
+        ReferenceResolutionError,
+    ) as exc:
         return [Finding(str(document_path), str(exc))]
+
+
+def _contained_file(root: Path, relative_path: str, label: str) -> Path:
+    """Resolve one existing relative file inside its declared root."""
+    root_path = root.resolve(strict=True)
+    candidate = (root_path / relative_path).resolve(strict=True)
+    try:
+        candidate.relative_to(root_path)
+    except ValueError as exc:
+        raise ContractInputError(f"{label} leaves its declared root") from exc
+    if not candidate.is_file():
+        raise ContractInputError(f"{label} resolves to a non-file path")
+    return candidate
+
+
+def validate_contract_request(
+    governance_root: Path,
+    source_root: Path,
+    schema_name: str,
+    document_path: str,
+) -> list[Finding]:
+    """Validate bounded reusable-workflow paths and the selected document."""
+    try:
+        if SCHEMA_NAME_PATTERN.fullmatch(schema_name) is None:
+            raise ContractInputError(
+                "schema name must be a direct lowercase *.schema.json filename"
+            )
+        if DOCUMENT_PATH_PATTERN.fullmatch(document_path) is None:
+            raise ContractInputError(
+                "document path must be a repository-relative JSON path"
+            )
+        schema_path = _contained_file(
+            governance_root / "schemas",
+            schema_name,
+            "schema name",
+        )
+        resolved_document = _contained_file(
+            source_root,
+            document_path,
+            "document path",
+        )
+    except (OSError, ContractInputError) as exc:
+        return [Finding("contract-request", str(exc))]
+    return validate_pair(schema_path, resolved_document)
 
 
 def report(findings: Iterable[Finding]) -> int:
@@ -508,9 +691,28 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--schema", type=Path)
     parser.add_argument("--document", type=Path)
+    parser.add_argument("--governance-root", type=Path)
+    parser.add_argument("--source-root", type=Path)
+    parser.add_argument("--schema-name")
+    parser.add_argument("--document-path")
     args = parser.parse_args(argv)
     if (args.schema is None) != (args.document is None):
         parser.error("--schema and --document travel together")
+    contract_values = (
+        args.governance_root,
+        args.source_root,
+        args.schema_name,
+        args.document_path,
+    )
+    if any(value is not None for value in contract_values) and any(
+        value is None for value in contract_values
+    ):
+        parser.error(
+            "--governance-root, --source-root, --schema-name, and "
+            "--document-path travel together"
+        )
+    if args.schema is not None and args.schema_name is not None:
+        parser.error("select either direct paths or a bounded contract request")
     return args
 
 
@@ -518,6 +720,15 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
     if args.schema:
         return report(validate_pair(args.schema, args.document))
+    if args.schema_name:
+        return report(
+            validate_contract_request(
+                args.governance_root,
+                args.source_root,
+                args.schema_name,
+                args.document_path,
+            )
+        )
     return report(
         [
             *validate_schema_catalog(),

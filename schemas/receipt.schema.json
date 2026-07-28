@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.driftframe.org/site-reading-governance/v0.1/receipt.schema.json",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v1.0/receipt.schema.json",
   "title": "Assurance Receipt",
   "type": "object",
   "additionalProperties": false,
