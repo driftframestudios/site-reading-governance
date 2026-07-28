@@ -33,6 +33,19 @@ class GovernancePackageTests(unittest.TestCase):
     def test_schema_catalog_is_coherent(self) -> None:
         self.assertEqual([], validation.validate_schema_catalog())
 
+    def test_schema_catalog_rejects_unsupported_evaluator_keywords(self) -> None:
+        findings = validation._validate_schema_keywords(
+            {
+                "type": "array",
+                "contains": {"const": "required-item"},
+            },
+            "synthetic.schema.json",
+        )
+        self.assertTrue(
+            any("contains" in finding.message for finding in findings),
+            findings,
+        )
+
     def test_every_mapped_example_validates(self) -> None:
         self.assertEqual([], validation.validate_examples())
 
@@ -52,6 +65,68 @@ class GovernancePackageTests(unittest.TestCase):
         findings = validation._validate_repository_orientation_records(records)
         self.assertTrue(
             any("current settling promotion item" in finding.message for finding in findings),
+            findings,
+        )
+
+    def test_released_provenance_closes_the_concrete_promotion_receipt(self) -> None:
+        records = {
+            name: json.loads((ROOT / name).read_text(encoding="utf-8"))
+            for name in validation.ROOT_ORIENTATION_SCHEMAS
+        }
+        commit = "a" * 40
+        digest = "sha256:" + ("b" * 64)
+        node = records["machine-node.json"]
+        first_receipt = records["first-receipt.json"]
+        promotion = records["promotion-receipt.json"]
+        horizon = records["coordination-horizon.json"]
+
+        node["lifecycle_state"] = "active"
+        node["current_provenance"] = {
+            "release": "governance-v2.0.1",
+            "commit": commit,
+            "digest": digest,
+        }
+        node["open_receipts"] = []
+        first_receipt["open_receipts"] = []
+        promotion["promotion_state"] = "released"
+        promotion["evidence_mode"] = "observed"
+        promotion["assurance_stage"] = "verified"
+        promotion["release_coordinate"] = {
+            "tag": "governance-v2.0.1",
+            "commit": commit,
+            "digest": digest,
+            "promoted_at": "2026-07-28T22:00:00Z",
+            "check_contexts": ["branch-policy", "governance-validation"],
+            "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
+            "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
+        }
+        for item in horizon["work_items"]:
+            if "promotion" in item["horizon_label"].lower():
+                item["state"] = "complete"
+
+        self.assertEqual(
+            [],
+            validation.SchemaValidator(
+                ROOT / "schemas" / "promotion-receipt.schema.json"
+            ).validate(promotion),
+        )
+        self.assertEqual(
+            [],
+            validation._validate_repository_orientation_records(records),
+        )
+
+    def test_candidate_promotion_schema_requires_zero_coordinates(self) -> None:
+        promotion = json.loads(
+            (ROOT / "examples" / "promotion-receipt.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        promotion["candidate_coordinate"]["commit"] = "a" * 40
+        findings = validation.SchemaValidator(
+            ROOT / "schemas" / "promotion-receipt.schema.json"
+        ).validate(promotion)
+        self.assertTrue(
+            any("value must equal" in finding.message for finding in findings),
             findings,
         )
 
@@ -76,7 +151,7 @@ class GovernancePackageTests(unittest.TestCase):
         self.assertEqual([], validation.validate_workflows())
 
     def test_release_branch_advances_main(self) -> None:
-        self.assertEqual([], branch_flow.check_flow("main", "release/2.0.0"))
+        self.assertEqual([], branch_flow.check_flow("main", "release/2.0.1"))
 
     def test_feature_branch_advances_develop(self) -> None:
         self.assertEqual(
@@ -95,10 +170,10 @@ class GovernancePackageTests(unittest.TestCase):
         )
 
     def test_release_branch_uses_unprefixed_semver(self) -> None:
-        self.assertTrue(branch_flow.check_flow("main", "release/v2.0.0"))
+        self.assertTrue(branch_flow.check_flow("main", "release/v2.0.1"))
 
     def test_schema_release_coordinates_are_current(self) -> None:
-        self.assertEqual("2.0.0", (ROOT / "VERSION").read_text().strip())
+        self.assertEqual("2.0.1", (ROOT / "VERSION").read_text().strip())
         for path in sorted((ROOT / "schemas").glob("*.schema.json")):
             schema = json.loads(path.read_text())
             self.assertTrue(schema["$id"].startswith(validation.SCHEMA_ID_PREFIX))

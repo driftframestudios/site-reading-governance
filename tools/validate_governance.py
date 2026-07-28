@@ -22,7 +22,7 @@ EXAMPLE_DIR = ROOT / "examples"
 RULESET_DIR = ROOT / "rulesets"
 WORKFLOW_DIR = ROOT / ".github" / "workflows"
 DRAFT = "https://json-schema.org/draft/2020-12/schema"
-SCHEMA_RELEASE = "2.0.0"
+SCHEMA_RELEASE = "2.0.1"
 SCHEMA_ID_PREFIX = "https://schemas.driftframe.org/site-reading-governance/v2.0/"
 SCHEMA_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9-]*\.schema\.json$")
 DOCUMENT_PATH_PATTERN = re.compile(
@@ -53,6 +53,7 @@ ROOT_ORIENTATION_SCHEMAS = {
     "machine-node.json": "machine-node.schema.json",
     "first-receipt.json": "first-receipt.schema.json",
     "coordination-horizon.json": "coordination-horizon.schema.json",
+    "promotion-receipt.json": "promotion-receipt.schema.json",
 }
 ROOT_ORIENTATION_CONTRACTS = {
     "CONTRACT-SELECTED-FUTURE-CLOSURE-002": "2.0.0",
@@ -81,6 +82,41 @@ LEGACY_COORDINATOR = re.compile(
     r"\bnow\s*/\s*next\s*/\s*later\s+coordinator\b",
     re.IGNORECASE,
 )
+SUPPORTED_SCHEMA_KEYWORDS = {
+    "$defs",
+    "$id",
+    "$ref",
+    "$schema",
+    "additionalProperties",
+    "allOf",
+    "anyOf",
+    "const",
+    "description",
+    "else",
+    "enum",
+    "exclusiveMaximum",
+    "exclusiveMinimum",
+    "format",
+    "if",
+    "items",
+    "maxItems",
+    "maxLength",
+    "maximum",
+    "minItems",
+    "minLength",
+    "minimum",
+    "oneOf",
+    "pattern",
+    "properties",
+    "required",
+    "then",
+    "title",
+    "type",
+    "uniqueItems",
+}
+SCHEMA_MAP_KEYWORDS = {"$defs", "properties"}
+SCHEMA_ARRAY_KEYWORDS = {"allOf", "anyOf", "oneOf"}
+SCHEMA_VALUE_KEYWORDS = {"additionalProperties", "else", "if", "items", "then"}
 
 
 @dataclass(frozen=True)
@@ -418,7 +454,50 @@ def validate_schema_catalog() -> list[Finding]:
             ids.add(schema_id)
         if path.name != "common.schema.json" and schema.get("type") != "object":
             findings.append(Finding(relative, "governance record root must be an object"))
+        findings.extend(_validate_schema_keywords(schema, relative))
         findings.extend(_walk_references(schema, path, relative))
+    return findings
+
+
+def _validate_schema_keywords(
+    schema: Any,
+    location: str,
+) -> list[Finding]:
+    """Reject schema vocabulary that the dependency-free evaluator cannot enforce."""
+    if isinstance(schema, bool):
+        return []
+    if not isinstance(schema, dict):
+        return [Finding(location, "schema position must contain an object or boolean")]
+
+    findings: list[Finding] = []
+    unsupported = set(schema) - SUPPORTED_SCHEMA_KEYWORDS
+    for keyword in sorted(unsupported):
+        findings.append(
+            Finding(
+                location,
+                f"schema keyword {keyword!r} is outside the supported evaluator vocabulary",
+            )
+        )
+    for keyword in SCHEMA_MAP_KEYWORDS:
+        value = schema.get(keyword, {})
+        if isinstance(value, dict):
+            for name, child in value.items():
+                findings.extend(
+                    _validate_schema_keywords(child, f"{location}/{keyword}/{name}")
+                )
+    for keyword in SCHEMA_ARRAY_KEYWORDS:
+        value = schema.get(keyword, [])
+        if isinstance(value, list):
+            for index, child in enumerate(value):
+                findings.extend(
+                    _validate_schema_keywords(child, f"{location}/{keyword}/{index}")
+                )
+    for keyword in SCHEMA_VALUE_KEYWORDS:
+        value = schema.get(keyword)
+        if isinstance(value, (dict, bool)):
+            findings.extend(
+                _validate_schema_keywords(value, f"{location}/{keyword}")
+            )
     return findings
 
 
@@ -751,11 +830,12 @@ def validate_repository_orientation() -> list[Finding]:
 def _validate_repository_orientation_records(
     records: dict[str, Any],
 ) -> list[Finding]:
-    """Check relationships across the three root orientation records."""
+    """Check relationships across the root orientation and promotion records."""
     findings: list[Finding] = []
     node = records["machine-node.json"]
     first_receipt = records["first-receipt.json"]
     horizon = records["coordination-horizon.json"]
+    promotion_receipt = records["promotion-receipt.json"]
 
     if node.get("machine_node_id") != first_receipt.get("machine_node_id"):
         findings.append(
@@ -831,6 +911,21 @@ def _validate_repository_orientation_records(
             Finding(
                 "first-receipt.json.open_receipts",
                 "open receipts must equal the Machine Node receipt set",
+            )
+        )
+    promotion_receipt_id = promotion_receipt.get("promotion_receipt_id")
+    if promotion_receipt_id != "RCP-GOVERNANCE-PROMOTION-002":
+        findings.append(
+            Finding(
+                "promotion-receipt.json.promotion_receipt_id",
+                "promotion receipt must use the governed repository receipt identity",
+            )
+        )
+    if promotion_receipt.get("target_release") != "governance-v2.0.1":
+        findings.append(
+            Finding(
+                "promotion-receipt.json.target_release",
+                "promotion receipt must bind the canonical governance-v2.0.1 tag",
             )
         )
 
@@ -933,6 +1028,85 @@ def _validate_repository_orientation_records(
                     "candidate provenance placeholders require an open promotion receipt",
                 )
             )
+        if promotion_receipt_id not in node.get("open_receipts", []):
+            findings.append(
+                Finding(
+                    "machine-node.json.open_receipts",
+                    "candidate provenance requires the concrete promotion receipt",
+                )
+            )
+        if (
+            promotion_receipt.get("promotion_state") != "candidate_pending"
+            or promotion_receipt.get("release_coordinate") is not None
+        ):
+            findings.append(
+                Finding(
+                    "promotion-receipt.json",
+                    "candidate provenance requires a pending promotion receipt",
+                )
+            )
+        if promotion_receipt.get("candidate_coordinate") != provenance:
+            findings.append(
+                Finding(
+                    "promotion-receipt.json.candidate_coordinate",
+                    "candidate promotion coordinates must equal Machine Node provenance",
+                )
+            )
+    elif not zero_commit and not zero_digest:
+        release_coordinate = promotion_receipt.get("release_coordinate")
+        if node.get("lifecycle_state") not in {"reference_ready", "active"}:
+            findings.append(
+                Finding(
+                    "machine-node.json.lifecycle_state",
+                    "released provenance requires a reference-ready or active lifecycle",
+                )
+            )
+        if promotion_receipt_id in node.get("open_receipts", []):
+            findings.append(
+                Finding(
+                    "machine-node.json.open_receipts",
+                    "released provenance requires the promotion receipt to be closed",
+                )
+            )
+        if (
+            promotion_receipt.get("promotion_state") != "released"
+            or not isinstance(release_coordinate, dict)
+        ):
+            findings.append(
+                Finding(
+                    "promotion-receipt.json",
+                    "released provenance requires observed promotion evidence",
+                )
+            )
+        elif (
+            release_coordinate.get("commit") != provenance.get("commit")
+            or release_coordinate.get("digest") != provenance.get("digest")
+            or release_coordinate.get("tag") != provenance.get("release")
+        ):
+            findings.append(
+                Finding(
+                    "promotion-receipt.json.release_coordinate",
+                    "release evidence must equal Machine Node provenance",
+                )
+            )
+        promotion_items = [
+            item
+            for item in work_items
+            if "promotion"
+            in " ".join(
+                str(item.get(field, ""))
+                for field in ("item_id", "horizon_label", "desired_state")
+            ).lower()
+        ]
+        if not promotion_items or not all(
+            item.get("state") == "complete" for item in promotion_items
+        ):
+            findings.append(
+                Finding(
+                    "coordination-horizon.json.work_items",
+                    "released provenance requires completed promotion work",
+                )
+            )
     return findings
 
 
@@ -1021,14 +1195,17 @@ def validate_rulesets() -> list[Finding]:
                     "required_status_checks", []
                 )
             }
-            if "governance-validation" not in contexts:
+            required_contexts = {"branch-policy", "governance-validation"}
+            missing_contexts = required_contexts - contexts
+            if missing_contexts:
                 findings.append(
                     Finding(
                         relative,
-                        "branch ruleset requires governance-validation status",
+                        "branch ruleset is missing required status contexts: "
+                        f"{sorted(missing_contexts)}",
                     )
                 )
-        if path.name in {"main.json", "release-tags.json"}:
+        if path.name in {"main.json", "release-hotfix.json", "release-tags.json"}:
             if "required_signatures" not in rule_types:
                 findings.append(
                     Finding(relative, "production coordinates require signatures")
@@ -1153,6 +1330,22 @@ def validate_workflows() -> list[Finding]:
                     "pull_request_target authority belongs only to branch-policy.yml",
                 )
             )
+        if path.name == "reusable-contract-validation.yml":
+            required_contract_fragments = {
+                "driftframestudios/site-reading-governance)":
+                    "governance repository requires an explicit allowlist",
+                r"^[0-9a-f]{40}$":
+                    "governance ref requires an immutable commit grammar",
+                '"$GOVERNANCE_REF" == "0000000000000000000000000000000000000000"':
+                    "governance ref requires explicit zero-placeholder rejection",
+                "GOVERNANCE_REPOSITORY: ${{ inputs.governance_repository }}":
+                    "repository input requires quoted environment projection",
+                "GOVERNANCE_REF: ${{ inputs.governance_ref }}":
+                    "ref input requires quoted environment projection",
+            }
+            for fragment, message in required_contract_fragments.items():
+                if fragment not in content:
+                    findings.append(Finding(relative, message))
         for reference in action_reference.findall(content):
             if reference.startswith("./"):
                 continue

@@ -9,7 +9,7 @@ The package is private-repository ready. Its examples use synthetic identifiers,
 its automation uses read-only permissions by default, and its ruleset exports
 can be reviewed before installation through the GitHub Rulesets API.
 
-The current governance schema release is `2.0.0`; stable schema identifiers use
+The current governance schema candidate is `2.0.1`; stable schema identifiers use
 the `/v2.0/` coordinate. It implements **Control Plane Profile v0.3**, the
 Enterprise Human-AI Practitioner Registry-derived capability profile for
 bounded callers, veracity, orientation, coordination, and future-reality
@@ -86,11 +86,15 @@ python3 tools/validate_governance.py \
   simulated-closure operating model
 - [`docs/MIGRATION_V1_TO_V2.md`](docs/MIGRATION_V1_TO_V2.md) — downstream
   migration sequence and release validation
+- [`docs/MIGRATION_V2_0_0_TO_V2_0_1.md`](docs/MIGRATION_V2_0_0_TO_V2_0_1.md) —
+  patch migration for promotion receipts, immutable workflow inputs, and policy
+  contexts
 - [`schemas/`](schemas/) — JSON Schema 2020-12 contracts
 - [`examples/`](examples/) — valid synthetic exemplars for every contract
 - [`machine-node.json`](machine-node.json), [`first-receipt.json`](first-receipt.json),
-  and [`coordination-horizon.json`](coordination-horizon.json) — root orientation
-  records for contracts, campaign markings, and immutable-promotion posture
+  [`coordination-horizon.json`](coordination-horizon.json), and
+  [`promotion-receipt.json`](promotion-receipt.json) — root orientation and
+  executable promotion records
 - [`.github/workflows/`](.github/workflows/) — reusable validation workflows
 - [`rulesets/`](rulesets/) — reviewable GitHub repository ruleset exports
 - [`audits/repository-security-review-2026-07-28.md`](audits/repository-security-review-2026-07-28.md)

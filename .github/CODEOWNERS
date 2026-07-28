@@ -1,7 +1,7 @@
 # Enforceable GitHub owner: @driftframestudios.
-# Accountability vocabulary: governance-stewards.
-# The repository is owned by a personal account, so organization-team syntax
-# becomes applicable only after an intentional move to an organization.
+# The repository is owned by a personal account. Accountable stewardship roles
+# remain recorded in governance artifacts while protected review resolves to
+# this eligible repository owner.
 * @driftframestudios
 
 /schemas/ @driftframestudios
@@ -14,6 +14,7 @@
 /tests/test_governance.py @driftframestudios
 /machine-node.json @driftframestudios
 /first-receipt.json @driftframestudios
+/promotion-receipt.json @driftframestudios
 /coordination-horizon.json @driftframestudios
 /docs/NEGATION_AWARE_LANGUAGE.md @driftframestudios
 /.github/CODEOWNERS @driftframestudios

@@ -42,6 +42,9 @@
         "required_status_checks": [
           {
             "context": "governance-validation"
+          },
+          {
+            "context": "branch-policy"
           }
         ]
       }

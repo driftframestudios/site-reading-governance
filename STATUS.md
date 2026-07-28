@@ -30,23 +30,24 @@ class.
 
 ## Promotion path
 
-Release `2.0.0` moves through:
+Candidate release `2.0.1` moves through:
 
 1. repository initialization on `main`;
 2. `develop` creation from the baseline;
 3. `feature/constellation-foundation` review into `develop`;
 4. required governance validation on the release coordinate;
-5. `release/2.0.0` review into `main`;
+5. `release/2.0.1` review into `main`;
 6. `develop` synchronization to the released commit;
 7. downstream constellation pinning by commit and Git tree digest.
 
-Ruleset installation, organization-specific CODEOWNER confirmation, and signed
-tag publication remain accountable adoption receipts for the hosting
-organization.
+The concrete promotion receipt records ruleset installation, resolvable
+CODEOWNER evidence, required checks, immutable coordinates, and signed-tag
+publication. Candidate placeholders remain visible until that observed receipt
+closes.
 
 ## Known extension points
 
-- organization-specific CODEOWNER handles;
+- repository-specific CODEOWNER identities and eligible-reviewer capacity;
 - organization and repository IDs in ruleset installation tooling;
 - organization-specific governed-locator resolver registry;
 - retention schedules and jurisdictional overlays;

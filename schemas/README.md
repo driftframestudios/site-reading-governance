@@ -1,7 +1,7 @@
 # Schema Catalog
 
 All contracts use JSON Schema 2020-12 and stable HTTPS identifiers.
-Release `2.0.0` uses the stable `/v2.0/` identifier coordinate and implements
+Release candidate `2.0.1` uses the stable `/v2.0/` identifier coordinate and implements
 Control Plane Profile v0.3.
 
 | Schema | Record |
@@ -20,6 +20,7 @@ Control Plane Profile v0.3.
 | `practitioner-probe.schema.json` | Five-level probe, technical core, review surfaces, scenarios, and instruction yield |
 | `machine-node.schema.json` | Non-authorizing machine orientation, provenance, campaigns, contracts, and consumers |
 | `first-receipt.schema.json` | Compact entry orientation, evidence posture, source permissions, and handoff |
+| `promotion-receipt.schema.json` | Candidate and observed repository-promotion evidence |
 | `simulated-receipt-closure.schema.json` | Executable future-reality closure of all four substantive receipt families |
 | `simulation-assumption.schema.json` | Time-bounded assumption, basis, owner, and falsifiers |
 | `receipt.schema.json` | Environment-bound assurance evidence |

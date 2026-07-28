@@ -6,6 +6,14 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+- Prepared candidate `2.0.1` with a schema-valid repository-promotion receipt
+  and an executable candidate-to-released lifecycle.
+- Required both `branch-policy` and `governance-validation` in versioned branch
+  rulesets and extended signature protection to release, hotfix, and support
+  branches.
+- Bound reusable contract validation to the approved governance repository and
+  a full immutable commit coordinate.
+- Standardized the governance release tag family as `governance-v<semver>`.
 - Bound Dependabot and Renovate branch exceptions to anchored grammars, exact
   bot authors, and governed targets; added spoof and malformed-coordinate
   regressions.

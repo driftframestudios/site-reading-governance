@@ -5,9 +5,10 @@ API. They encode the GitFlow-like protections described in `BRANCHING.md`.
 
 Before installation:
 
-1. confirm the CODEOWNER team exists and has repository access;
+1. confirm each CODEOWNER resolves and has eligible repository review access;
 2. run the validation workflow once and confirm the emitted check context;
-3. update the required status-check context if GitHub renders a qualified name;
+3. confirm both `branch-policy` and `governance-validation` resolve to emitted
+   GitHub Actions check contexts;
 4. confirm signed-commit and tag policy with the organization;
 5. install the `develop` ruleset after the branch exists;
 6. review the repository's active aggregate rule view.

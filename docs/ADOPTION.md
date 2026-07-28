@@ -5,10 +5,10 @@
 1. Create the private repository with `main` as its initial branch.
 2. Land this package through an administratively reviewed bootstrap change.
 3. Create `develop` from the protected `main` baseline.
-4. Confirm the `governance-stewards` CODEOWNER team and repository access.
+4. Confirm every configured CODEOWNER resolves to an eligible repository reviewer.
 5. Run `Governance` once and record the emitted status-check context.
 6. Review and install the versioned ruleset exports.
-7. Create and sign release `v2.0.0`.
+7. Create and sign canonical release `governance-v2.0.1`.
 
 ## Downstream contract workflow
 
@@ -37,7 +37,7 @@ Each consumer records:
 
 ```json
 {
-  "release": "v2.0.0",
+  "release": "governance-v2.0.1",
   "commit": "0123456789abcdef0123456789abcdef01234567",
   "digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 }
@@ -64,6 +64,6 @@ Capture:
 - installation actor and timestamp;
 - active aggregate-rule screenshot or API response;
 - emitted status-check context;
-- CODEOWNER team resolution;
+- CODEOWNER resolution and eligible-reviewer evidence;
 - signed release tag;
 - reviewer and accountable governance steward.

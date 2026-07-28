@@ -37,7 +37,7 @@ connects each branch to intent.
 2. Stabilize version metadata, changelog, migration notes, and examples.
 3. Run the full validation suite and downstream contract rehearsal.
 4. Merge the release into `main` through an approved pull request.
-5. Create a signed `v<semver>` tag on the merge commit.
+5. Create a signed `governance-v<semver>` tag on the merge commit.
 6. Merge the released state back into `develop`.
 7. Publish schema digests and downstream upgrade guidance.
 

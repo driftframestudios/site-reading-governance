@@ -20,6 +20,9 @@
       "type": "non_fast_forward"
     },
     {
+      "type": "required_signatures"
+    },
+    {
       "type": "pull_request",
       "parameters": {
         "required_approving_review_count": 2,
@@ -41,6 +44,9 @@
         "required_status_checks": [
           {
             "context": "governance-validation"
+          },
+          {
+            "context": "branch-policy"
           }
         ]
       }
