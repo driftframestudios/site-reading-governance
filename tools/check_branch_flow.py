@@ -73,6 +73,14 @@ def main(argv: list[str] | None = None) -> int:
     if bool(args.base) != bool(args.head):
         print("Branch-flow check requires both base and head coordinates.")
         return 2
+
+    # Allow automated Dependabot branches to bypass the branch-flow validation.
+    # Dependabot creates branches with the `dependabot/` prefix which are
+    # expected and should not fail the repository's GitFlow-like enforcement.
+    if args.head.startswith("dependabot/"):
+        print(f"Dependabot branch {args.head!r} detected — skipping branch-flow check.")
+        return 0
+
     findings = check_flow(args.base, args.head)
     if findings:
         print("Branch-flow check found coordinate differences:")
