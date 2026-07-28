@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v0.1/constellation.schema.json",
+  "title": "Comparative Site Reading Constellation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "constellation_id",
+    "name",
+    "version",
+    "repositories",
+    "authority_invariants",
+    "metadata"
+  ],
+  "properties": {
+    "constellation_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 180
+    },
+    "version": {
+      "$ref": "common.schema.json#/$defs/semver"
+    },
+    "repositories": {
+      "type": "array",
+      "minItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "role",
+          "repository",
+          "authority",
+          "visibility"
+        ],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "program_specification",
+              "enterprise_implementation",
+              "simulated_final_state",
+              "comparative_evidence",
+              "site_reading_governance"
+            ]
+          },
+          "repository": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+          },
+          "authority": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 300
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "private",
+              "internal",
+              "public"
+            ]
+          }
+        }
+      }
+    },
+    "authority_invariants": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 300
+      }
+    },
+    "release_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "specification_pin",
+        "simulation_baseline",
+        "comparison_cadence"
+      ],
+      "properties": {
+        "specification_pin": {
+          "type": "string",
+          "enum": [
+            "tag_commit_digest"
+          ]
+        },
+        "simulation_baseline": {
+          "type": "string",
+          "enum": [
+            "immutable_release"
+          ]
+        },
+        "comparison_cadence": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 120
+        }
+      }
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  }
+}

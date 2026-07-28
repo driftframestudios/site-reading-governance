@@ -1,0 +1,55 @@
+name: Receipt gap
+description: Record a material difference between available evidence and the required assurance state.
+title: "[Receipt] "
+labels:
+  - receipt-gap
+body:
+  - type: dropdown
+    id: family
+    attributes:
+      label: Receipt family
+      options:
+        - Configured vendor
+        - Migration and restore
+        - Security and observability
+        - Scientific acceptance support
+        - Quality acceptance support
+        - Regulatory acceptance support
+        - Engineering verification
+    validations:
+      required: true
+  - type: textarea
+    id: target_claim
+    attributes:
+      label: Target claim
+      description: State the desired, environment-bound claim.
+    validations:
+      required: true
+  - type: textarea
+    id: current_evidence
+    attributes:
+      label: Current evidence
+      description: Identify evidence mode, assurance stage, environment, source, and limitations.
+    validations:
+      required: true
+  - type: textarea
+    id: replacement_evaluation
+    attributes:
+      label: Replacement evaluation
+      description: Describe the execution, review, or acceptance that closes the gap.
+    validations:
+      required: true
+  - type: input
+    id: owner_role
+    attributes:
+      label: Accountable owner role
+    validations:
+      required: true
+  - type: input
+    id: target_date
+    attributes:
+      label: Target date
+      placeholder: YYYY-MM-DD
+    validations:
+      required: true
+

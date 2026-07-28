@@ -1,0 +1,13 @@
+{
+  "schema_map": {
+    "constellation.json": "constellation.schema.json",
+    "specification.json": "specification.schema.json",
+    "scenario.json": "scenario.schema.json",
+    "decision.json": "decision.schema.json",
+    "simulation-assumption.json": "simulation-assumption.schema.json",
+    "receipt.json": "receipt.schema.json",
+    "acceptance.json": "acceptance.schema.json",
+    "comparison.json": "comparison.schema.json",
+    "invalidation.json": "invalidation.schema.json"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "acceptance_id": "ACCEPTANCE-SIM-QUALITY-001",
+  "acceptance_type": "quality",
+  "scope": "Projected Quality acceptance for the simulated research-use specimen lifecycle and its supporting evidence package.",
+  "intended_use": "Demonstrate the shape of a complete Quality decision packet for later configured-environment execution and accountable review.",
+  "evidence_mode": "simulated",
+  "authority": "simulated_projection",
+  "actual_acceptance_required": true,
+  "status": "pending",
+  "receipt_ids": [
+    "RECEIPT-SIM-SAPIO-001"
+  ],
+  "decision_basis": [
+    "The simulation provides traceable rules, scenarios, execution artifacts, limitations, and re-evaluation triggers.",
+    "The projected decision remains separate from organizational Quality authority."
+  ],
+  "residual_risks": [
+    {
+      "risk": "Configured vendor behavior can differ from the emulator projection.",
+      "owner_role": "Vendor qualification lead",
+      "control": "Execute the shared conformance suite in the named tenant and bind results to the exact build and configuration.",
+      "review_date": "2026-08-31"
+    }
+  ],
+  "conditions": [
+    "Configured-vendor receipts reach observed qualification.",
+    "Representative migration and restore rehearsals reach observed qualification.",
+    "Production security and observability exercises receive accountable review."
+  ],
+  "effective_at": "2026-07-28T15:10:00Z",
+  "authority_actor": {
+    "actor_id": "ACTOR-SIM-QUALITY-001",
+    "display_name": "Projected Quality Authority",
+    "role": "Simulation role with advisory authority",
+    "organization": "Example Laboratory"
+  },
+  "reviewers": [
+    {
+      "actor_id": "ACTOR-SIM-REVIEWER-002",
+      "display_name": "Projected Validation Reviewer",
+      "role": "Simulation validation reviewer",
+      "organization": "Example Laboratory"
+    }
+  ],
+  "requalification_triggers": [
+    "Intended-use profile changes",
+    "Configured vendor build changes",
+    "Scientific workflow rules change"
+  ],
+  "metadata": {
+    "schema_version": "0.1.0",
+    "created_at": "2026-07-28T15:15:00Z",
+    "updated_at": "2026-07-28T15:15:00Z",
+    "owner": {
+      "actor_id": "OWNER-QUALITY-001",
+      "display_name": "Quality Evidence Steward",
+      "role": "Projected acceptance package owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}

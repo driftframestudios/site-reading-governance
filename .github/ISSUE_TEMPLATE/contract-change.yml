@@ -1,0 +1,54 @@
+name: Contract change
+description: Propose a governance or schema capability with examples and migration effects.
+title: "[Contract] "
+labels:
+  - contract
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the desired state, its material effect, and how collaborators can verify it.
+  - type: input
+    id: desired_state
+    attributes:
+      label: Desired state
+      description: State the capability or invariant directly.
+      placeholder: Every receipt binds the exact environment and configuration digest.
+    validations:
+      required: true
+  - type: textarea
+    id: material_effect
+    attributes:
+      label: Material effect
+      description: Explain the effect for technical, scientific, operational, or evaluative participants.
+    validations:
+      required: true
+  - type: textarea
+    id: contract_surface
+    attributes:
+      label: Contract surface
+      description: Name schemas, fields, examples, workflows, and consumers.
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Specification examples
+      description: Include ordinary success, boundary, failure twin, recovery, and falsifier where material.
+    validations:
+      required: true
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility and replacement path
+      description: Describe affected consumers, release class, and the successor path.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Verification
+      description: Name the observations that demonstrate the desired state.
+    validations:
+      required: true
+
