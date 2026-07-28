@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/practitioner-probe.schema.json",
+  "title": "Practitioner Probe",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "probe_id",
+    "title",
+    "domain",
+    "question",
+    "why_it_matters",
+    "population_cartographies",
+    "proficiency_levels",
+    "technical_core",
+    "review_surfaces",
+    "scenario_ids",
+    "claim_ids",
+    "instruction_yield",
+    "code_comment_markers",
+    "settlement_status",
+    "metadata"
+  ],
+  "properties": {
+    "probe_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 180
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 120
+    },
+    "question": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 900
+    },
+    "why_it_matters": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1200
+    },
+    "population_cartographies": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "executive",
+          "evaluator",
+          "scientist",
+          "quality",
+          "regulatory",
+          "security",
+          "operator",
+          "engineer",
+          "ai_collaborator"
+        ]
+      }
+    },
+    "proficiency_levels": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "level",
+          "focus",
+          "demonstration",
+          "evidence",
+          "repair_prompt"
+        ],
+        "properties": {
+          "level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "focus": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 200
+          },
+          "demonstration": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 700
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 700
+          },
+          "repair_prompt": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 700
+          }
+        }
+      }
+    },
+    "technical_core": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 700
+      }
+    },
+    "review_surfaces": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 300
+      }
+    },
+    "scenario_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "claim_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "instruction_yield": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 700
+      }
+    },
+    "code_comment_markers": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "TARGET",
+          "CONTRAST",
+          "GUARD"
+        ]
+      }
+    },
+    "settlement_status": {
+      "type": "string",
+      "enum": [
+        "draft_probe",
+        "review_ready",
+        "settled",
+        "superseded"
+      ]
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  }
+}

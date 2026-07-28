@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+from hashlib import sha256
 import json
 import math
 import re
@@ -21,8 +22,8 @@ EXAMPLE_DIR = ROOT / "examples"
 RULESET_DIR = ROOT / "rulesets"
 WORKFLOW_DIR = ROOT / ".github" / "workflows"
 DRAFT = "https://json-schema.org/draft/2020-12/schema"
-SCHEMA_RELEASE = "1.0.0"
-SCHEMA_ID_PREFIX = "https://schemas.driftframe.org/site-reading-governance/v1.0/"
+SCHEMA_RELEASE = "2.0.0"
+SCHEMA_ID_PREFIX = "https://schemas.driftframe.org/site-reading-governance/v2.0/"
 SCHEMA_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9-]*\.schema\.json$")
 DOCUMENT_PATH_PATTERN = re.compile(
     r"^(?:[A-Za-z0-9][A-Za-z0-9._-]*/)*"
@@ -42,6 +43,44 @@ RELEASE_TAG_INCLUDES = {
     "refs/tags/comparison-v*",
     "refs/tags/forecast-*",
 }
+SUBSTANTIVE_SIMULATED_RECEIPT_FAMILIES = {
+    "configured_vendor_environments",
+    "representative_migration_restore_rehearsals",
+    "production_security_observability",
+    "accountable_scientific_quality_regulatory_acceptance",
+}
+ROOT_ORIENTATION_SCHEMAS = {
+    "machine-node.json": "machine-node.schema.json",
+    "first-receipt.json": "first-receipt.schema.json",
+    "coordination-horizon.json": "coordination-horizon.schema.json",
+}
+ROOT_ORIENTATION_CONTRACTS = {
+    "CONTRACT-SELECTED-FUTURE-CLOSURE-002": "2.0.0",
+    "CONTRACT-AUTOMATION-BRANCH-POLICY-001": "1.0.0",
+}
+ROOT_ORIENTATION_CONTRACT_FILES = {
+    "CONTRACT-SELECTED-FUTURE-CLOSURE-002": (
+        SCHEMA_DIR / "simulated-receipt-closure.schema.json"
+    ),
+    "CONTRACT-AUTOMATION-BRANCH-POLICY-001": ROOT / "tools" / "check_branch_flow.py",
+}
+ROOT_ORIENTATION_CAMPAIGNS = {
+    "LIMS-ELN-OPEN-RECEIPTS",
+    "COMPARATIVE-LITERACY-COLLABORATION",
+    "SITE-READING-SYSTEM",
+}
+ZERO_COMMIT = "0" * 40
+ZERO_DIGEST = "sha256:" + ("0" * 64)
+EFFECT_CLASS_RANK = {
+    "read": 0,
+    "narrow_write": 1,
+    "broad_write": 2,
+    "irreversible_effect": 3,
+}
+LEGACY_COORDINATOR = re.compile(
+    r"\bnow\s*/\s*next\s*/\s*later\s+coordinator\b",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -474,6 +513,450 @@ def validate_examples() -> list[Finding]:
                 "pending receipt count must match result classifications",
             )
         )
+    findings.extend(_validate_control_plane_examples(records))
+    return findings
+
+
+def _validate_control_plane_examples(records: dict[str, Any]) -> list[Finding]:
+    """Check relationships that JSON Schema represents only within one record."""
+    findings: list[Finding] = []
+
+    horizon = records.get("coordination-horizon.json", {})
+    work_items = horizon.get("work_items", [])
+    work_ids = {item.get("item_id") for item in work_items}
+    current_ids = set(horizon.get("current_item_ids", []))
+    if not current_ids.issubset(work_ids):
+        findings.append(
+            Finding(
+                "examples/coordination-horizon.json",
+                "every current item must resolve to one declared work item",
+            )
+        )
+    sequences = [item.get("sequence") for item in work_items]
+    if len(sequences) != len(set(sequences)):
+        findings.append(
+            Finding(
+                "examples/coordination-horizon.json",
+                "work-item sequence values must be unique",
+            )
+        )
+
+    probe = records.get("practitioner-probe.json", {})
+    levels = sorted(
+        item.get("level") for item in probe.get("proficiency_levels", [])
+    )
+    if levels != [1, 2, 3, 4, 5]:
+        findings.append(
+            Finding(
+                "examples/practitioner-probe.json",
+                "proficiency levels must represent the complete one-through-five ladder",
+            )
+        )
+
+    caller = records.get("bounded-caller.json", {})
+    operation = records.get("operation.json", {})
+    approval = records.get("approval.json", {})
+    effect = records.get("effect.json", {})
+    call = records.get("call-receipt.json", {})
+    operation_id = operation.get("operation_id")
+    operation_version = operation.get("version")
+    effect_class = operation.get("effect_class")
+    if operation_id not in caller.get("permitted_operation_ids", []):
+        findings.append(
+            Finding(
+                "examples/bounded-caller.json",
+                "the example caller must permit the example operation",
+            )
+        )
+    ceiling = caller.get("authority_ceiling")
+    if (
+        ceiling in EFFECT_CLASS_RANK
+        and effect_class in EFFECT_CLASS_RANK
+        and EFFECT_CLASS_RANK[ceiling] < EFFECT_CLASS_RANK[effect_class]
+    ):
+        findings.append(
+            Finding(
+                "examples/bounded-caller.json",
+                "caller authority ceiling must cover the example operation effect",
+            )
+        )
+    for label, record in (
+        ("examples/approval.json", approval),
+        ("examples/effect.json", effect),
+        ("examples/call-receipt.json", call),
+    ):
+        if record.get("operation_id") != operation_id:
+            findings.append(
+                Finding(label, "operation identifier must match the operation example")
+            )
+        if record.get("operation_version") != operation_version:
+            findings.append(
+                Finding(label, "operation version must match the operation example")
+            )
+        if record.get("effect_class") != effect_class:
+            findings.append(
+                Finding(label, "effect class must match the operation example")
+            )
+    if call.get("caller_id") != caller.get("caller_id"):
+        findings.append(
+            Finding(
+                "examples/call-receipt.json",
+                "caller identifier must match the bounded-caller example",
+            )
+        )
+    if approval.get("approval_id") not in call.get("approval_ids", []):
+        findings.append(
+            Finding(
+                "examples/call-receipt.json",
+                "authorized broad-write call must reference the approval example",
+            )
+        )
+    if effect.get("effect_id") not in call.get("effect_ids", []):
+        findings.append(
+            Finding(
+                "examples/call-receipt.json",
+                "completed call must reference the effect example",
+            )
+        )
+    if effect.get("call_id") != call.get("call_id"):
+        findings.append(
+            Finding(
+                "examples/effect.json",
+                "effect call identifier must match the call-receipt example",
+            )
+        )
+
+    node = records.get("machine-node.json", {})
+    first_receipt = records.get("first-receipt.json", {})
+    if node.get("machine_node_id") != first_receipt.get("machine_node_id"):
+        findings.append(
+            Finding(
+                "examples/first-receipt.json",
+                "Machine Node identifier must match the orientation receipt",
+            )
+        )
+    if node.get("first_receipt_contract_id") != first_receipt.get(
+        "first_receipt_id"
+    ):
+        findings.append(
+            Finding(
+                "examples/machine-node.json",
+                "first-receipt identifier must resolve to the orientation example",
+            )
+        )
+    for label, record in (
+        ("examples/machine-node.json", node),
+        ("examples/first-receipt.json", first_receipt),
+    ):
+        if record.get("coordination_horizon_id") != horizon.get("horizon_id"):
+            findings.append(
+                Finding(label, "Coordination Horizon identifier must resolve")
+            )
+
+    closure = records.get("simulated-receipt-closure.json", {})
+    receipt_closures = closure.get("receipt_closures", [])
+    families = [item.get("family") for item in receipt_closures]
+    if set(families) != SUBSTANTIVE_SIMULATED_RECEIPT_FAMILIES:
+        findings.append(
+            Finding(
+                "examples/simulated-receipt-closure.json",
+                "simulated closure must cover each substantive receipt family exactly once",
+            )
+        )
+    if len(families) != len(set(families)):
+        findings.append(
+            Finding(
+                "examples/simulated-receipt-closure.json",
+                "simulated receipt families must be unique",
+            )
+        )
+    acceptance_roles = {
+        role
+        for item in receipt_closures
+        if item.get("family")
+        == "accountable_scientific_quality_regulatory_acceptance"
+        for role in item.get("modeled_authority_roles", [])
+    }
+    required_roles = {
+        "Scientific authority",
+        "Quality authority",
+        "Regulatory authority",
+    }
+    if not required_roles.issubset(acceptance_roles):
+        findings.append(
+            Finding(
+                "examples/simulated-receipt-closure.json",
+                "simulated accountable acceptance must represent Scientific, Quality, and Regulatory authority roles",
+            )
+        )
+    closure_artifact_ids = {
+        artifact.get("artifact_id")
+        for item in receipt_closures
+        for artifact in item.get("artifacts", [])
+    }
+    check_artifact_ids = {
+        artifact_id
+        for check in closure.get("executable_checks", [])
+        for artifact_id in check.get("artifact_ids", [])
+    }
+    if not closure_artifact_ids.issubset(check_artifact_ids):
+        findings.append(
+            Finding(
+                "examples/simulated-receipt-closure.json",
+                "each family closure artifact must be produced by an executable check",
+            )
+        )
+
+    decision = records.get("decision.json", {})
+    probability_horizon = decision.get("probability_horizon", {})
+    if probability_horizon.get("ends_on", "") < probability_horizon.get(
+        "begins_on", ""
+    ):
+        findings.append(
+            Finding(
+                "examples/decision.json",
+                "probability horizon end must be on or after its beginning",
+            )
+        )
+    return findings
+
+
+def validate_repository_orientation() -> list[Finding]:
+    """Validate root orientation records and their cross-record contract."""
+    findings: list[Finding] = []
+    records: dict[str, Any] = {}
+    for document_name, schema_name in ROOT_ORIENTATION_SCHEMAS.items():
+        document_path = ROOT / document_name
+        try:
+            record = load_json(document_path)
+            records[document_name] = record
+            for finding in SchemaValidator(SCHEMA_DIR / schema_name).validate(record):
+                findings.append(
+                    Finding(f"{document_name}{finding.path[1:]}", finding.message)
+                )
+        except (
+            OSError,
+            json.JSONDecodeError,
+            DuplicateKeyError,
+            NonFiniteNumberError,
+        ) as exc:
+            findings.append(Finding(document_name, str(exc)))
+
+    if set(records) != set(ROOT_ORIENTATION_SCHEMAS):
+        return findings
+    findings.extend(_validate_repository_orientation_records(records))
+    return findings
+
+
+def _validate_repository_orientation_records(
+    records: dict[str, Any],
+) -> list[Finding]:
+    """Check relationships across the three root orientation records."""
+    findings: list[Finding] = []
+    node = records["machine-node.json"]
+    first_receipt = records["first-receipt.json"]
+    horizon = records["coordination-horizon.json"]
+
+    if node.get("machine_node_id") != first_receipt.get("machine_node_id"):
+        findings.append(
+            Finding(
+                "first-receipt.json",
+                "Machine Node identifier must match the root orientation node",
+            )
+        )
+    if node.get("first_receipt_contract_id") != first_receipt.get(
+        "first_receipt_id"
+    ):
+        findings.append(
+            Finding(
+                "machine-node.json",
+                "first-receipt identifier must resolve to the root orientation receipt",
+            )
+        )
+    for name, record in (
+        ("machine-node.json", node),
+        ("first-receipt.json", first_receipt),
+    ):
+        if record.get("coordination_horizon_id") != horizon.get("horizon_id"):
+            findings.append(
+                Finding(name, "Coordination Horizon identifier must resolve")
+            )
+
+    node_contracts = node.get("contracts", [])
+    receipt_contracts = first_receipt.get("contract_state", [])
+    if node_contracts != receipt_contracts:
+        findings.append(
+            Finding(
+                "first-receipt.json.contract_state",
+                "contract state must equal the Machine Node contract set",
+            )
+        )
+    available_contracts = {
+        item.get("contract_id"): item.get("version")
+        for item in node_contracts
+        if isinstance(item, dict)
+    }
+    if available_contracts != ROOT_ORIENTATION_CONTRACTS:
+        findings.append(
+            Finding(
+                "machine-node.json.contracts",
+                "root contracts must bind the selected-future closure and "
+                "automation branch policy versions",
+            )
+        )
+    for index, contract in enumerate(node_contracts):
+        digest = contract.get("digest", "")
+        if digest == ZERO_DIGEST:
+            findings.append(
+                Finding(
+                    f"machine-node.json.contracts[{index}].digest",
+                    "released contract references require a material digest",
+                )
+            )
+        contract_id = contract.get("contract_id")
+        material_path = ROOT_ORIENTATION_CONTRACT_FILES.get(contract_id)
+        if material_path is not None:
+            material_digest = f"sha256:{sha256(material_path.read_bytes()).hexdigest()}"
+            if digest != material_digest:
+                findings.append(
+                    Finding(
+                        f"machine-node.json.contracts[{index}].digest",
+                        f"{contract_id} digest must bind "
+                        f"{material_path.relative_to(ROOT)}",
+                    )
+                )
+
+    if node.get("open_receipts") != first_receipt.get("open_receipts"):
+        findings.append(
+            Finding(
+                "first-receipt.json.open_receipts",
+                "open receipts must equal the Machine Node receipt set",
+            )
+        )
+
+    campaigns = node.get("campaigns", [])
+    campaign_ids = {
+        item.get("campaign_id") for item in campaigns if isinstance(item, dict)
+    }
+    if campaign_ids != ROOT_ORIENTATION_CAMPAIGNS:
+        findings.append(
+            Finding(
+                "machine-node.json.campaigns",
+                "root orientation must mark all three constellation campaigns",
+            )
+        )
+    for index, campaign in enumerate(campaigns):
+        if campaign.get("marking_schema_version") != SCHEMA_RELEASE:
+            findings.append(
+                Finding(
+                    f"machine-node.json.campaigns[{index}].marking_schema_version",
+                    f"campaign markings must use schema release {SCHEMA_RELEASE}",
+                )
+            )
+
+    work_items = horizon.get("work_items", [])
+    work_ids = {
+        item.get("item_id") for item in work_items if isinstance(item, dict)
+    }
+    current_ids = set(horizon.get("current_item_ids", []))
+    if not current_ids.issubset(work_ids):
+        findings.append(
+            Finding(
+                "coordination-horizon.json.current_item_ids",
+                "every current item must resolve to a declared work item",
+            )
+        )
+    sequences = [
+        item.get("sequence") for item in work_items if isinstance(item, dict)
+    ]
+    if len(sequences) != len(set(sequences)):
+        findings.append(
+            Finding(
+                "coordination-horizon.json.work_items",
+                "work-item sequence values must be unique",
+            )
+        )
+    for index, item in enumerate(work_items):
+        missing_dependencies = set(item.get("dependency_ids", [])) - work_ids
+        if missing_dependencies:
+            findings.append(
+                Finding(
+                    f"coordination-horizon.json.work_items[{index}].dependency_ids",
+                    "every dependency must resolve to a declared work item",
+                )
+            )
+
+    provenance = node.get("current_provenance", {})
+    zero_commit = provenance.get("commit") == ZERO_COMMIT
+    zero_digest = provenance.get("digest") == ZERO_DIGEST
+    if zero_commit != zero_digest:
+        findings.append(
+            Finding(
+                "machine-node.json.current_provenance",
+                "candidate commit and digest placeholders must settle together",
+            )
+        )
+    if zero_commit and zero_digest:
+        current_items = [
+            item
+            for item in work_items
+            if item.get("item_id") in current_ids
+        ]
+        promotion_items = [
+            item
+            for item in current_items
+            if "promotion"
+            in " ".join(
+                str(item.get(field, ""))
+                for field in ("item_id", "horizon_label", "desired_state")
+            ).lower()
+        ]
+        if node.get("lifecycle_state") != "settling":
+            findings.append(
+                Finding(
+                    "machine-node.json.lifecycle_state",
+                    "candidate provenance placeholders require a settling lifecycle",
+                )
+            )
+        if not any(item.get("state") == "settling" for item in promotion_items):
+            findings.append(
+                Finding(
+                    "coordination-horizon.json.current_item_ids",
+                    "candidate provenance placeholders require a current settling "
+                    "promotion item",
+                )
+            )
+        if not node.get("open_receipts"):
+            findings.append(
+                Finding(
+                    "machine-node.json.open_receipts",
+                    "candidate provenance placeholders require an open promotion receipt",
+                )
+            )
+    return findings
+
+
+def validate_coordination_vocabulary() -> list[Finding]:
+    """Keep the coordination abstraction independent of one time-bucket idiom."""
+    findings: list[Finding] = []
+    for path in sorted(ROOT.rglob("*")):
+        if (
+            path.is_file()
+            and ".git" not in path.parts
+            and "__pycache__" not in path.parts
+            and path.suffix in {".json", ".md", ".yml", ".yaml", ".py"}
+        ):
+            for line_number, line in enumerate(
+                path.read_text(encoding="utf-8").splitlines(),
+                start=1,
+            ):
+                if LEGACY_COORDINATOR.search(line):
+                    findings.append(
+                        Finding(
+                            f"{path.relative_to(ROOT)}:{line_number}",
+                            "use the generic Coordination Horizon abstraction",
+                        )
+                    )
     return findings
 
 
@@ -572,6 +1055,7 @@ def validate_workflows() -> list[Finding]:
     """Check workflow permissions and immutable third-party action coordinates."""
     findings: list[Finding] = []
     expected = {
+        "branch-policy.yml",
         "validate.yml",
         "reusable-governance-validation.yml",
         "reusable-contract-validation.yml",
@@ -593,6 +1077,81 @@ def validate_workflows() -> list[Finding]:
         if "permissions:\n  contents: read" not in content:
             findings.append(
                 Finding(relative, "workflow should declare read-only contents permission")
+            )
+        if path.name == "branch-policy.yml":
+            required_policy_fragments = {
+                "pull_request_target:": "branch policy requires base-context activation",
+                "repository: ${{ github.repository }}": (
+                    "branch policy checkout requires the base repository"
+                ),
+                "ref: ${{ github.event.pull_request.base.sha }}": (
+                    "branch policy checkout requires the immutable pull-request base"
+                ),
+                "path: .branch-policy-base": (
+                    "branch policy checkout requires its bounded static path"
+                ),
+                "sparse-checkout: tools/check_branch_flow.py": (
+                    "branch policy checkout requires only the released checker"
+                ),
+                "sparse-checkout-cone-mode: false": (
+                    "branch policy sparse checkout requires file-level selection"
+                ),
+                "working-directory: .branch-policy-base": (
+                    "branch policy execution requires the bounded base checkout"
+                ),
+                "BASE_REF: ${{ github.event.pull_request.base.ref }}": (
+                    "branch policy requires the event base branch"
+                ),
+                "HEAD_REF: ${{ github.event.pull_request.head.ref }}": (
+                    "branch policy requires the event head branch as quoted data"
+                ),
+                "PR_AUTHOR: ${{ github.event.pull_request.user.login }}": (
+                    "branch policy requires the event pull-request author"
+                ),
+                '--author "$PR_AUTHOR"': (
+                    "branch policy requires quoted author binding"
+                ),
+            }
+            for fragment, message in required_policy_fragments.items():
+                if fragment not in content:
+                    findings.append(Finding(relative, message))
+            if content.count("actions/checkout@") != 1:
+                findings.append(
+                    Finding(
+                        relative,
+                        "branch policy requires exactly one base-controlled checkout",
+                    )
+                )
+            if content.count(
+                "${{ github.event.pull_request.head.ref }}"
+            ) != 1:
+                findings.append(
+                    Finding(
+                        relative,
+                        "head branch data belongs only in the quoted checker argument",
+                    )
+                )
+            for fragment in (
+                "github.event.pull_request.head.sha",
+                "git fetch ",
+                "git checkout ",
+                "gh pr checkout",
+                "curl ",
+                "wget ",
+            ):
+                if fragment in content:
+                    findings.append(
+                        Finding(
+                            relative,
+                            f"branch policy contains head-retrieval surface {fragment!r}",
+                        )
+                    )
+        elif "pull_request_target:" in content:
+            findings.append(
+                Finding(
+                    relative,
+                    "pull_request_target authority belongs only to branch-policy.yml",
+                )
             )
         for reference in action_reference.findall(content):
             if reference.startswith("./"):
@@ -733,8 +1292,10 @@ def main(argv: list[str] | None = None) -> int:
         [
             *validate_schema_catalog(),
             *validate_examples(),
+            *validate_repository_orientation(),
             *validate_rulesets(),
             *validate_workflows(),
+            *validate_coordination_vocabulary(),
         ]
     )
 

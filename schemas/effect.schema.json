@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/effect.schema.json",
+  "title": "Bounded Operation Effect",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "effect_id",
+    "call_id",
+    "operation_id",
+    "operation_version",
+    "effect_class",
+    "evidence_mode",
+    "authority",
+    "status",
+    "scope",
+    "intended_state",
+    "state_before_digest",
+    "state_after_digest",
+    "idempotency_fingerprint",
+    "external_systems",
+    "artifact",
+    "occurred_at",
+    "recovery",
+    "metadata"
+  ],
+  "properties": {
+    "effect_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "call_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "operation_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "operation_version": {
+      "$ref": "common.schema.json#/$defs/semver"
+    },
+    "effect_class": {
+      "$ref": "common.schema.json#/$defs/effectClass"
+    },
+    "evidence_mode": {
+      "$ref": "common.schema.json#/$defs/evidenceMode"
+    },
+    "authority": {
+      "type": "string",
+      "enum": [
+        "simulation_only",
+        "engineering",
+        "organizational"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "simulated",
+        "applied",
+        "compensated",
+        "failed"
+      ]
+    },
+    "scope": {
+      "$ref": "common.schema.json#/$defs/boundedScope"
+    },
+    "intended_state": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1000
+    },
+    "state_before_digest": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "state_after_digest": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "idempotency_fingerprint": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "external_systems": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 120
+      }
+    },
+    "artifact": {
+      "$ref": "common.schema.json#/$defs/artifact"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "recovery": {
+      "$ref": "common.schema.json#/$defs/recoveryRoute"
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "evidence_mode": {
+            "const": "simulated"
+          }
+        },
+        "required": [
+          "evidence_mode"
+        ]
+      },
+      "then": {
+        "properties": {
+          "authority": {
+            "const": "simulation_only"
+          },
+          "status": {
+            "const": "simulated"
+          }
+        }
+      }
+    }
+  ]
+}

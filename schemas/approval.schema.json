@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/approval.schema.json",
+  "title": "Bounded Operation Approval",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "approval_id",
+    "request_id",
+    "operation_id",
+    "operation_version",
+    "input_digest",
+    "scope",
+    "effect_class",
+    "evidence_mode",
+    "authority",
+    "authority_role",
+    "decision",
+    "rationale",
+    "constraints",
+    "evidence_artifacts",
+    "requested_at",
+    "decided_at",
+    "expires_at",
+    "metadata"
+  ],
+  "properties": {
+    "approval_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "request_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "operation_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "operation_version": {
+      "$ref": "common.schema.json#/$defs/semver"
+    },
+    "input_digest": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "scope": {
+      "$ref": "common.schema.json#/$defs/boundedScope"
+    },
+    "effect_class": {
+      "$ref": "common.schema.json#/$defs/effectClass"
+    },
+    "evidence_mode": {
+      "$ref": "common.schema.json#/$defs/evidenceMode"
+    },
+    "authority": {
+      "type": "string",
+      "enum": [
+        "simulation_only",
+        "organizational"
+      ]
+    },
+    "authority_role": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 120
+    },
+    "authority_actor": {
+      "$ref": "common.schema.json#/$defs/actor"
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "approved",
+        "rejected",
+        "returned_for_revision",
+        "expired"
+      ]
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1200
+    },
+    "constraints": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 700
+      }
+    },
+    "evidence_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "common.schema.json#/$defs/artifact"
+      }
+    },
+    "requested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "decided_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "simulation_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "future_reality_id",
+        "assumption_ids",
+        "production_authorization_effect"
+      ],
+      "properties": {
+        "future_reality_id": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "assumption_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          }
+        },
+        "production_authorization_effect": {
+          "type": "string",
+          "const": "none"
+        }
+      }
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "evidence_mode": {
+            "const": "simulated"
+          }
+        },
+        "required": [
+          "evidence_mode"
+        ]
+      },
+      "then": {
+        "required": [
+          "simulation_context"
+        ],
+        "properties": {
+          "authority": {
+            "const": "simulation_only"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "authority": {
+            "const": "organizational"
+          }
+        },
+        "required": [
+          "authority"
+        ]
+      },
+      "then": {
+        "required": [
+          "authority_actor"
+        ],
+        "properties": {
+          "evidence_mode": {
+            "const": "observed"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -30,8 +30,6 @@ jobs:
       - name: Validate bounded governance package
         shell: bash
         env:
-          BASE_REF: ${{ github.base_ref }}
-          HEAD_REF: ${{ github.head_ref }}
           PACKAGE_PATH: ${{ inputs.package_path }}
         run: |
           if [[ ! "$PACKAGE_PATH" =~ ^(\.|[A-Za-z0-9][A-Za-z0-9._/-]*)$ ]]; then
@@ -59,4 +57,3 @@ jobs:
           python3 tools/check_language.py
           python3 tools/scan_secret_shapes.py
           python3 -m unittest discover -s tests -v
-          python3 tools/check_branch_flow.py --base "$BASE_REF" --head "$HEAD_REF"

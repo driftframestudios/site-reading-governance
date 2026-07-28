@@ -1,0 +1,68 @@
+{
+  "horizon_id": "HORIZON-BOUNDED-CALLER-001",
+  "title": "Bounded caller enterprise slice",
+  "objective": "Release one governed read, one idempotent narrow write, and one approval-gated broad write with reproducible simulated evidence.",
+  "as_of": "2026-07-28T18:00:00Z",
+  "current_item_ids": [
+    "WORK-OPERATION-CONTRACTS-001"
+  ],
+  "work_items": [
+    {
+      "item_id": "WORK-OPERATION-CONTRACTS-001",
+      "horizon_label": "Contract spine",
+      "sequence": 1,
+      "state": "active",
+      "desired_state": "Released contracts define caller authority, operation semantics, effects, approval, audit, and recovery.",
+      "entry_evidence": [
+        "Enterprise Human-AI Practitioner Registry review is complete."
+      ],
+      "completion_evidence": [
+        "Every contract example validates against governance schema release 2.0.0."
+      ],
+      "owner_role": "Governance steward",
+      "dependency_ids": []
+    },
+    {
+      "item_id": "WORK-SIMULATED-CLOSURE-001",
+      "horizon_label": "Simulated receipt closure",
+      "sequence": 2,
+      "state": "ready",
+      "desired_state": "Executable future-reality scenarios close all four substantive receipt families inside the simulation authority boundary.",
+      "entry_evidence": [
+        "Released operation and receipt contracts are available."
+      ],
+      "completion_evidence": [
+        "The closure manifest records closed_in_simulation and unclaimed environment-observed closure for every family."
+      ],
+      "owner_role": "Simulation steward",
+      "dependency_ids": [
+        "WORK-OPERATION-CONTRACTS-001"
+      ]
+    }
+  ],
+  "reentry_capsule": {
+    "current_state": "Contract design is active and the simulated closure fixture is ready for execution after schema release.",
+    "recent_decisions": [
+      "DECISION-RECONCILE-001"
+    ],
+    "next_safe_action": "Validate the bounded caller and operation examples, then execute the synthetic closure harness.",
+    "verification": "The governance validator and repository tests complete successfully."
+  },
+  "retained_effects": [
+    "The assurance grammar continues to distinguish simulated, observed, and planned evidence."
+  ],
+  "consequential_questions": [
+    "Which later implementation change would invalidate the future-reality assumptions?"
+  ],
+  "metadata": {
+    "schema_version": "2.0.0",
+    "created_at": "2026-07-28T18:00:00Z",
+    "updated_at": "2026-07-28T18:00:00Z",
+    "owner": {
+      "actor_id": "OWNER-COORDINATION-001",
+      "display_name": "Coordination Steward",
+      "role": "Cross-repository coordination owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}

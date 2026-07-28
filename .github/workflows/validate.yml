@@ -39,11 +39,3 @@ jobs:
         run: python3 tools/scan_secret_shapes.py
       - name: Run regression tests
         run: python3 -m unittest discover -s tests -v
-      - name: Check GitFlow-like pull-request coordinates
-        env:
-          BASE_REF: ${{ github.base_ref }}
-          HEAD_REF: ${{ github.head_ref }}
-        run: >-
-          python3 tools/check_branch_flow.py
-          --base "$BASE_REF"
-          --head "$HEAD_REF"

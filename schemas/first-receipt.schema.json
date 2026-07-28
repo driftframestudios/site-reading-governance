@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/first-receipt.schema.json",
+  "title": "First Receipt Orientation Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "first_receipt_id",
+    "machine_node_id",
+    "as_of",
+    "orientation_purpose",
+    "authority_posture",
+    "contract_state",
+    "evidence_posture",
+    "coordination_horizon_id",
+    "current_horizon_summary",
+    "open_receipts",
+    "invalidation_conditions",
+    "source_permissions",
+    "handoff",
+    "metadata"
+  ],
+  "properties": {
+    "first_receipt_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "machine_node_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "as_of": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "orientation_purpose": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 900
+    },
+    "authority_posture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "statement"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "const": "orientation_only"
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 700
+        }
+      }
+    },
+    "contract_state": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "common.schema.json#/$defs/contractReference"
+      }
+    },
+    "evidence_posture": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim",
+          "mode",
+          "assurance_stage",
+          "status"
+        ],
+        "properties": {
+          "claim": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 700
+          },
+          "mode": {
+            "$ref": "common.schema.json#/$defs/evidenceMode"
+          },
+          "assurance_stage": {
+            "$ref": "common.schema.json#/$defs/assuranceStage"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "designed_but_unexercised",
+              "speculative",
+              "superseded"
+            ]
+          }
+        }
+      }
+    },
+    "coordination_horizon_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "current_horizon_summary": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 900
+    },
+    "open_receipts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "invalidation_conditions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 700
+      }
+    },
+    "source_permissions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source",
+          "permission",
+          "verification"
+        ],
+        "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 240
+          },
+          "permission": {
+            "type": "string",
+            "enum": [
+              "read",
+              "propose",
+              "execute_bounded",
+              "approve"
+            ]
+          },
+          "verification": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 700
+          }
+        }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recipient_role",
+        "next_safe_action",
+        "success_evidence"
+      ],
+      "properties": {
+        "recipient_role": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "next_safe_action": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 700
+        },
+        "success_evidence": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 700
+        }
+      }
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  }
+}
