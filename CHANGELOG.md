@@ -6,6 +6,19 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+- Replaced line-local language matching with deterministic, structure-aware
+  policy `language-policy-v1.0.0`, a repository-independent standard-library
+  core, NFC case-preserving fingerprints, rich text/JSON/SARIF output, exact
+  fail-closed exemptions, a digest-pinned projection manifest, and an 89-case
+  executable union corpus.
+- Added a typed high-consequence language-control contract with target,
+  boundary, replacement, verification, ownership, and evidence fields.
+- Added a repository-owned Vale author-feedback layer for Markdown prose and
+  Python comments, with a checksum-verified immutable Vale release asset and
+  explicit separation from the deterministic governance gate.
+- Documented an inactive semantic shadow-review contract with bounded inputs,
+  advisory-only authority, privacy controls, reproducible coordinates,
+  measurable qualification thresholds, and accountable recovery.
 - Prepared candidate `2.0.1` with a schema-valid repository-promotion receipt
   and an executable candidate-to-released lifecycle.
 - Required both `branch-policy` and `governance-validation` in versioned branch

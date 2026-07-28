@@ -150,6 +150,57 @@ class GovernancePackageTests(unittest.TestCase):
     def test_workflows_use_bounded_permissions_and_immutable_actions(self) -> None:
         self.assertEqual([], validation.validate_workflows())
 
+    def test_vale_author_feedback_is_pinned_advisory_and_pr_only(self) -> None:
+        workflow = (
+            ROOT / ".github" / "workflows" / "validate.yml"
+        ).read_text(encoding="utf-8")
+        author_job = workflow.split("  author-feedback:", 1)[1].split(
+            "\n  governance-validation:",
+            1,
+        )[0]
+        governance_job = workflow.split("\n  governance-validation:", 1)[1]
+        self.assertIn(
+            "if: ${{ github.event_name == 'pull_request' }}",
+            author_job,
+        )
+        self.assertIn("continue-on-error: true", author_job)
+        self.assertIn(
+            "VALE_ARCHIVE: vale_3.15.2_Linux_64-bit.tar.gz",
+            author_job,
+        )
+        self.assertIn(
+            "fc72e64454d6bd7af91905d4faebbf411bae3eec17bb572f4101311212bc0d9e",
+            author_job,
+        )
+        self.assertIn(
+            "https://github.com/vale-cli/vale/releases/download/"
+            "v3.15.2/$VALE_ARCHIVE",
+            author_job,
+        )
+        self.assertIn("sha256sum --check --strict", author_job)
+        self.assertIn("--config=.vale.ini --no-global --no-exit", author_job)
+        self.assertIn("--minAlertLevel=warning .", author_job)
+        self.assertNotIn("vale", governance_job.lower())
+        self.assertNotIn("author-feedback", governance_job)
+        self.assertNotIn("needs:", author_job)
+        self.assertNotIn("vale-action", workflow.lower())
+        self.assertNotIn("reviewdog", workflow.lower())
+
+        configuration = (ROOT / ".vale.ini").read_text(encoding="utf-8")
+        documentation = (
+            ROOT / "docs" / "AUTHOR_FEEDBACK.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("MinAlertLevel = suggestion", configuration)
+        self.assertIn(
+            "default includes both warnings and suggestions",
+            documentation,
+        )
+        self.assertIn("CI requests `--minAlertLevel=warning`", documentation)
+        self.assertIn(
+            "vale --config=.vale.ini --no-global .",
+            documentation,
+        )
+
     def test_release_branch_advances_main(self) -> None:
         self.assertEqual([], branch_flow.check_flow("main", "release/2.0.1"))
 
@@ -454,14 +505,36 @@ class GovernancePackageTests(unittest.TestCase):
     def test_repository_secret_shape_scan_passes(self) -> None:
         self.assertEqual([], secret_shapes.scan_repository(ROOT))
 
+    def test_high_consequence_language_control_requires_complete_operational_fields(
+        self,
+    ) -> None:
+        schema = ROOT / "schemas" / "language-control.schema.json"
+        document = json.loads(
+            (ROOT / "examples" / "language-control.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual([], validation.SchemaValidator(schema).validate(document))
+        for field in (
+            "target_state",
+            "boundary",
+            "replacement_behavior",
+            "verification",
+            "owner_role",
+            "evidence",
+        ):
+            with self.subTest(field=field):
+                candidate = json.loads(json.dumps(document))
+                candidate.pop(field)
+                findings = validation.SchemaValidator(schema).validate(candidate)
+                self.assertTrue(
+                    any(field in finding.message for finding in findings),
+                    findings,
+                )
+
     def test_language_check_passes_repository(self) -> None:
-        findings = []
-        for path in language.repository_files():
-            if path.suffix == ".py":
-                findings.extend(language.check_python(path))
-            else:
-                findings.extend(language.check_text(path))
-        self.assertEqual([], findings)
+        result = language.scan_repository(ROOT)
+        self.assertEqual((), result.findings)
 
 
 if __name__ == "__main__":

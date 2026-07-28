@@ -53,7 +53,7 @@ evidence storage holds raw vendor payloads, regulated records, security findings
 and signed organizational decisions according to access, retention, and audit
 policy.
 
-**PRIVACY BOUNDARY:** regulated or identifying evidence must not enter Git history; the replacement behavior is a redacted manifest in Git and a digest-bound locator to the approved evidence store.
+**PRIVACY BOUNDARY:** regulated or identifying evidence must not enter Git history; the replacement behavior is a redacted manifest in Git and a digest-bound locator to the approved evidence store, and manifest validation verifies the locator and digest.
 
 ## Ruleset activation receipt
 

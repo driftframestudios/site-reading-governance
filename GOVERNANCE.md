@@ -185,4 +185,4 @@ Raw credentials, regulated records, personal data, exploitable security findings
 and unredacted tenant evidence stay in approved governed stores; repository
 records contain synthetic examples or redacted, digest-bound locators.
 
-**PRIVACY BOUNDARY:** these materials must not enter Git history; the replacement behavior is storage in the approved evidence system with least-privilege access, retention, and audit.
+**PRIVACY BOUNDARY:** these materials must not enter Git history; the replacement behavior is storage in the approved evidence system with least-privilege access, retention, and audit, and the repository content scan verifies that committed examples contain synthetic data or redacted locators.

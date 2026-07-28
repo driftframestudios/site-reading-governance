@@ -1,0 +1,12 @@
+extends: existence
+message: "Replace '%s' with the observation, source, or condition that supports the claim."
+level: suggestion
+ignorecase: true
+scope:
+  - sentence
+  - comment
+tokens:
+  - obviously
+  - clearly
+  - 'self[- ]evident'
+  - simply

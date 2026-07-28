@@ -1,0 +1,92 @@
+{
+  "assets": [
+    {
+      "asset_id": "language-policy-core",
+      "governance_path": "tools/language_policy_core.py",
+      "projection_path": "scripts/language_policy_core.py",
+      "sha256": "sha256:a5dbb90cf749c5e8d2d7fd235ebaae15887cb173e62a4a3aa70a29c3b3e90801"
+    },
+    {
+      "asset_id": "language-policy-qualification-corpus",
+      "governance_path": "language-policy/corpus-v1.json",
+      "projection_path": "language-policy/corpus-v1.json",
+      "sha256": "sha256:0886dba9f1938cb5fa192d0aedac925c6df794d2c0be9c2a6e85c1d0d456145c"
+    }
+  ],
+  "diagnostic_reason_codes": [
+    "EXEMPTION_REGISTRY_ENCODING_INVALID",
+    "EXEMPTION_REGISTRY_MISSING",
+    "EXEMPTION_REGISTRY_NOT_REGULAR_FILE",
+    "EXEMPTION_REGISTRY_OUTSIDE_ROOT",
+    "EXEMPTION_REGISTRY_SYMLINK",
+    "EXEMPTION_REGISTRY_UNREADABLE",
+    "SOURCE_PATH_ENCODING_INVALID",
+    "SOURCE_PATH_MISSING",
+    "SOURCE_PATH_NOT_REGULAR_FILE",
+    "SOURCE_PATH_OUTSIDE_ROOT",
+    "SOURCE_PATH_SYMLINK",
+    "SOURCE_PATH_UNREADABLE"
+  ],
+  "exemption_contract": {
+    "applied_receipts": "retained_in_text_json_sarif",
+    "exact_match_dimensions": "rule_id + path + fingerprint",
+    "match_multiplicity": "exactly_one_current_occurrence",
+    "registry_application": "all_or_nothing_fail_closed"
+  },
+  "exit_contract": {
+    "0": "no_active_findings",
+    "1": "actionable_policy_findings",
+    "2": "parse_or_exemption_integrity_failure"
+  },
+  "fingerprint_contract": "NFC-normalized, whitespace-collapsed, case-preserving path + rule_id + surface_kind + evidence; policy_release omitted",
+  "format_aliases": {
+    "md": "markdown",
+    "py": "python",
+    "yml": "yaml"
+  },
+  "manifest_version": "1.0.0",
+  "output_schema_version": "language-policy-output-v1",
+  "policy_release": "language-policy-v1.0.0",
+  "rules": {
+    "LANG001_UNPAIRED_PROHIBITION": {
+      "help": "Lead with the state to preserve, then name the hard boundary and the safe behavior collaborators can perform.",
+      "message": "Instruction names a prohibition without an affirmative target and replacement behavior in the same logical paragraph.",
+      "severity": "error"
+    },
+    "LANG002_NEGATIVE_IDENTIFIER": {
+      "help": "Name the state or capability the implementation provides.",
+      "message": "Identifier names blocked behavior rather than a desired capability.",
+      "severity": "error"
+    },
+    "LANG003_UNVERIFIABLE_TARGET": {
+      "help": "Name the check, evidence, receipt, metric, or review that verifies it.",
+      "message": "High-consequence target or boundary lacks an observable verification method in the same logical paragraph.",
+      "severity": "error"
+    },
+    "LANG900_PARSE_FAILURE": {
+      "help": "Repair the source so every applicable surface can be inspected.",
+      "message": "Authored content could not be parsed by the bounded reader.",
+      "severity": "error"
+    },
+    "LANG901_EXEMPTION_INVALID": {
+      "help": "Use a reviewed, exact, time-bounded exemption or remove stale policy.",
+      "message": "A language-policy exemption is invalid, expired, or unused.",
+      "severity": "error"
+    }
+  },
+  "supported_formats": [
+    "json",
+    "markdown",
+    "python",
+    "yaml"
+  ],
+  "surface_kinds": [
+    "authored_prose",
+    "code_comment",
+    "docstring",
+    "example",
+    "identifier",
+    "quote",
+    "structured_value"
+  ]
+}

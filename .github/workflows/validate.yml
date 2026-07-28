@@ -17,6 +17,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  author-feedback:
+    name: author-feedback (advisory)
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out governance source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install checksum-verified Vale
+        env:
+          VALE_ARCHIVE: vale_3.15.2_Linux_64-bit.tar.gz
+          VALE_SHA256: fc72e64454d6bd7af91905d4faebbf411bae3eec17bb572f4101311212bc0d9e
+        run: |
+          curl --fail --location --proto '=https' --tlsv1.2 \
+            --output "$RUNNER_TEMP/$VALE_ARCHIVE" \
+            "https://github.com/vale-cli/vale/releases/download/v3.15.2/$VALE_ARCHIVE"
+          echo "$VALE_SHA256  $RUNNER_TEMP/$VALE_ARCHIVE" | sha256sum --check --strict
+          mkdir -p "$RUNNER_TEMP/vale"
+          tar --extract --gzip --file "$RUNNER_TEMP/$VALE_ARCHIVE" \
+            --directory "$RUNNER_TEMP/vale"
+          echo "$RUNNER_TEMP/vale" >> "$GITHUB_PATH"
+      - name: Review authored prose and comments
+        continue-on-error: true
+        run: >-
+          vale --config=.vale.ini --no-global --no-exit
+          --minAlertLevel=warning .
+
   governance-validation:
     name: governance-validation
     runs-on: ubuntu-24.04

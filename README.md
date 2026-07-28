@@ -62,6 +62,7 @@ library and carries zero runtime package dependencies.
 ```bash
 python3 tools/validate_governance.py
 python3 tools/check_language.py
+python3 tools/check_language.py --format sarif
 python3 tools/scan_secret_shapes.py
 python3 -m unittest discover -s tests -v
 ```
@@ -80,7 +81,14 @@ python3 tools/validate_governance.py \
   model
 - [`BRANCHING.md`](BRANCHING.md) — GitFlow-like lifecycle and release protocol
 - [`docs/NEGATION_AWARE_LANGUAGE.md`](docs/NEGATION_AWARE_LANGUAGE.md) —
-  affirmative semantic-field guidance
+  affirmative semantic-field guidance and authoritative language policy
+- [`language-policy/`](language-policy/) — digest-pinned policy manifest,
+  89-case union corpus, and exact reviewed exemption inventory
+- [`docs/AUTHOR_FEEDBACK.md`](docs/AUTHOR_FEEDBACK.md) — advisory,
+  structure-aware Vale scope, rule severity, and checksum-verified tool
+  coordinate
+- [`docs/SEMANTIC_SHADOW_REVIEW.md`](docs/SEMANTIC_SHADOW_REVIEW.md) —
+  inactive, bounded contract for qualifying future semantic author feedback
 - [`docs/CONTROL_PLANE_V0_3.md`](docs/CONTROL_PLANE_V0_3.md) — bounded caller,
   Practitioner Probe, Coordination Horizon, Machine Node, veracity, and
   simulated-closure operating model
@@ -102,8 +110,9 @@ python3 tools/validate_governance.py \
   production receipts
 - [`audits/dependency-automation-review-2026-07-28.md`](audits/dependency-automation-review-2026-07-28.md)
   — five-repository bot-identity, branch grammar, workflow, and follow-up review
-- [`tools/`](tools/) and [`tests/`](tests/) — dependency-free contract, language,
-  secret-shape, and regression validation
+- [`tools/`](tools/) and [`tests/`](tests/) — dependency-free contract,
+  repository-independent language core with a bounded governance wrapper,
+  secret-shape checks, and regression validation
 
 ## Versioning
 

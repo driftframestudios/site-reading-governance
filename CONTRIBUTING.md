@@ -20,6 +20,10 @@ python3 tools/check_language.py
 python3 -m unittest discover -s tests -v
 ```
 
+Vale `3.15.2` can provide advisory author feedback with
+`vale --config=.vale.ini .`. The deterministic commands above remain the
+candidate-eligibility controls.
+
 ## Schema design
 
 - Use JSON Schema draft 2020-12.
@@ -29,7 +33,8 @@ python3 -m unittest discover -s tests -v
 - Represent important distinctions as enums or conditional contracts.
 - Require provenance, evidence mode, assurance stage, and ownership where the
   record makes an assurance claim.
-- Pair each hard safety or privacy boundary with its replacement behavior.
+- Pair each hard safety or privacy boundary with its replacement behavior and
+  observable verification.
 
 ## Review
 
@@ -46,4 +51,3 @@ Reviewers examine:
 
 Security disclosures follow [`SECURITY.md`](SECURITY.md). Regulated evidence and
 tenant details follow the governed-store boundary in [`GOVERNANCE.md`](GOVERNANCE.md).
-

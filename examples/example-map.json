@@ -20,6 +20,7 @@
     "receipt.json": "receipt.schema.json",
     "acceptance.json": "acceptance.schema.json",
     "comparison.json": "comparison.schema.json",
-    "invalidation.json": "invalidation.schema.json"
+    "invalidation.json": "invalidation.schema.json",
+    "language-control.json": "language-control.schema.json"
   }
 }

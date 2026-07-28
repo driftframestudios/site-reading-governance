@@ -27,6 +27,7 @@ Control Plane Profile v0.3.
 | `acceptance.schema.json` | Scientific, Quality, Regulatory, and other accountable decisions |
 | `comparison.schema.json` | Pinned actual/simulation result and adjudication |
 | `invalidation.schema.json` | Change-triggered re-evaluation and successor evidence |
+| `language-control.schema.json` | Typed target, boundary, replacement, verification, ownership, and evidence for high-consequence instructions |
 | `common.schema.json` | Shared identifiers, actors, artifacts, metrics, and boundaries |
 
 ## Contract invariants
@@ -49,6 +50,8 @@ Control Plane Profile v0.3.
 - Governance records close their property surface to make drift visible.
 - Hard safety, privacy, and Regulatory boundaries include protected state,
   explicit constraint, replacement behavior, and verification.
+- Consequential language controls bind an affirmative target and safe replacement
+  to an accountable owner, observable verification, and durable evidence.
 
 ## Consumer pinning
 

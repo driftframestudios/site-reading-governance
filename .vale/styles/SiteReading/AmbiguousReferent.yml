@@ -1,0 +1,7 @@
+extends: existence
+message: "Name the subject for '%s' when multiple referents remain plausible."
+level: suggestion
+ignorecase: false
+scope: sentence
+raw:
+  - '\b(?:This|That|These|Those)\s+(?:is|are|was|were|will|should|can|could)\b'
