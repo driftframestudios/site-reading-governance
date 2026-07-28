@@ -1,0 +1,48 @@
+{
+  "invalidation_id": "INVALIDATION-SAPIO-BUILD-001",
+  "triggered_at": "2026-07-28T17:00:00Z",
+  "trigger": {
+    "change_type": "environment",
+    "description": "The configured Sapio tenant moved to a vendor build with a revised relationship API.",
+    "source_reference": "governed://change/vendor-build-2026-07"
+  },
+  "affected_records": [
+    "SPEC-VENDOR-WRITE-001",
+    "RECEIPT-SIM-SAPIO-001"
+  ],
+  "earlier_assurance_stage": "qualified",
+  "target_assurance_stage": "qualified",
+  "impact": "Relationship projection, ambiguous-outcome readback, and rollback evidence require execution against the revised build.",
+  "replacement_evaluation": {
+    "scenario_ids": [
+      "SCENARIO-AMBIGUOUS-WRITE-001"
+    ],
+    "receipt_families": [
+      "configured_vendor"
+    ],
+    "success_criteria": [
+      "The revised build preserves one canonical vendor effect across exact replay.",
+      "Authoritative readback reconciles every injected pre-commit and post-commit timeout.",
+      "Relationship parity matches the canonical specimen graph."
+    ]
+  },
+  "owner": {
+    "actor_id": "OWNER-VENDOR-001",
+    "display_name": "Vendor Qualification Lead",
+    "role": "Vendor conformance owner",
+    "organization": "Example Laboratory"
+  },
+  "target_date": "2026-08-15",
+  "status": "open",
+  "metadata": {
+    "schema_version": "0.1.0",
+    "created_at": "2026-07-28T17:05:00Z",
+    "updated_at": "2026-07-28T17:05:00Z",
+    "owner": {
+      "actor_id": "OWNER-EVIDENCE-001",
+      "display_name": "Evidence Steward",
+      "role": "Comparative evidence owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}

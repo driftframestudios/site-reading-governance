@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v0.1/common.schema.json",
+  "title": "Site Reading Common Definitions",
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*$",
+      "minLength": 3,
+      "maxLength": 96
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "minLength": 2,
+      "maxLength": 96
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "evidenceMode": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "simulated",
+        "observed"
+      ]
+    },
+    "assuranceStage": {
+      "type": "string",
+      "enum": [
+        "specified",
+        "verified",
+        "qualified",
+        "validated",
+        "accepted"
+      ]
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor_id",
+        "display_name",
+        "role"
+      ],
+      "properties": {
+        "actor_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "role": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "organization": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 160
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "media_type",
+        "digest",
+        "locator",
+        "sensitivity"
+      ],
+      "properties": {
+        "artifact_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "media_type": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 120
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 500
+        },
+        "sensitivity": {
+          "type": "string",
+          "enum": [
+            "public",
+            "internal",
+            "confidential",
+            "regulated"
+          ]
+        },
+        "retention_class": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 96
+        }
+      }
+    },
+    "versionedCoordinate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "release",
+        "commit",
+        "digest"
+      ],
+      "properties": {
+        "release": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "commit": {
+          "$ref": "#/$defs/commit"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environment_id",
+        "class",
+        "region",
+        "configuration_digest"
+      ],
+      "properties": {
+        "environment_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "class": {
+          "type": "string",
+          "enum": [
+            "local",
+            "continuous_integration",
+            "vendor_sandbox",
+            "qualification",
+            "staging",
+            "production"
+          ]
+        },
+        "region": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "configuration_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "vendor_build": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "schema_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metric_id",
+        "unit",
+        "numerator",
+        "denominator",
+        "comparison",
+        "threshold",
+        "observed",
+        "window"
+      ],
+      "properties": {
+        "metric_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "numerator": {
+          "type": "number"
+        },
+        "denominator": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "comparison": {
+          "type": "string",
+          "enum": [
+            "at_least",
+            "at_most",
+            "exactly"
+          ]
+        },
+        "threshold": {
+          "type": "number"
+        },
+        "observed": {
+          "type": "number"
+        },
+        "window": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      }
+    },
+    "boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "boundary_id",
+        "boundary_type",
+        "protected_state",
+        "explicit_constraint",
+        "replacement_behavior",
+        "verification"
+      ],
+      "properties": {
+        "boundary_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "boundary_type": {
+          "type": "string",
+          "enum": [
+            "safety",
+            "privacy",
+            "regulatory"
+          ]
+        },
+        "protected_state": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 500
+        },
+        "explicit_constraint": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 500
+        },
+        "replacement_behavior": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 500
+        },
+        "verification": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 500
+        }
+      }
+    },
+    "recordMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "created_at",
+        "updated_at",
+        "owner"
+      ],
+      "properties": {
+        "schema_version": {
+          "$ref": "#/$defs/semver"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "owner": {
+          "$ref": "#/$defs/actor"
+        }
+      }
+    }
+  }
+}

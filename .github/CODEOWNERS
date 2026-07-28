@@ -1,0 +1,8 @@
+# Governance contracts receive review from the stewardship team.
+* @driftframestudios/governance-stewards
+
+/schemas/ @driftframestudios/governance-stewards
+/rulesets/ @driftframestudios/governance-stewards
+/.github/workflows/ @driftframestudios/governance-stewards
+/docs/NEGATION_AWARE_LANGUAGE.md @driftframestudios/governance-stewards
+
