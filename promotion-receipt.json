@@ -1,12 +1,12 @@
 {
   "promotion_receipt_id": "RCP-GOVERNANCE-PROMOTION-002",
   "repository": "driftframestudios/site-reading-governance",
-  "target_release": "governance-v2.0.1",
+  "target_release": "governance-v2.0.2",
   "promotion_state": "candidate_pending",
   "evidence_mode": "planned",
   "assurance_stage": "specified",
   "candidate_coordinate": {
-    "release": "candidate-governance-v2.0.1",
+    "release": "candidate-governance-v2.0.2",
     "commit": "0000000000000000000000000000000000000000",
     "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
   },
@@ -19,7 +19,7 @@
   ],
   "accountable_role": "Constellation release steward",
   "metadata": {
-    "schema_version": "2.0.1",
+    "schema_version": "2.0.2",
     "created_at": "2026-07-28T21:00:00Z",
     "updated_at": "2026-07-28T21:00:00Z",
     "owner": {

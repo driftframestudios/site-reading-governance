@@ -8,7 +8,7 @@
 4. Confirm every configured CODEOWNER resolves to an eligible repository reviewer.
 5. Run `Governance` once and record the emitted status-check context.
 6. Review and install the versioned ruleset exports.
-7. Create and sign canonical release `governance-v2.0.1`.
+7. Create and sign canonical release `governance-v2.0.2`.
 
 ## Downstream contract workflow
 
@@ -37,7 +37,7 @@ Each consumer records:
 
 ```json
 {
-  "release": "governance-v2.0.1",
+  "release": "governance-v2.0.2",
   "commit": "0123456789abcdef0123456789abcdef01234567",
   "digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 }

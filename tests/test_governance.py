@@ -89,7 +89,7 @@ class GovernancePackageTests(unittest.TestCase):
 
         node["lifecycle_state"] = "active"
         node["current_provenance"] = {
-            "release": "governance-v2.0.1",
+            "release": "governance-v2.0.2",
             "commit": commit,
             "digest": digest,
         }
@@ -99,7 +99,7 @@ class GovernancePackageTests(unittest.TestCase):
         promotion["evidence_mode"] = "observed"
         promotion["assurance_stage"] = "verified"
         promotion["release_coordinate"] = {
-            "tag": "governance-v2.0.1",
+            "tag": "governance-v2.0.2",
             "commit": commit,
             "digest": digest,
             "promoted_at": "2026-07-28T22:00:00Z",
@@ -209,7 +209,7 @@ class GovernancePackageTests(unittest.TestCase):
         )
 
     def test_release_branch_advances_main(self) -> None:
-        self.assertEqual([], branch_flow.check_flow("main", "release/2.0.1"))
+        self.assertEqual([], branch_flow.check_flow("main", "release/2.0.2"))
 
     def test_feature_branch_advances_develop(self) -> None:
         self.assertEqual(
@@ -228,10 +228,10 @@ class GovernancePackageTests(unittest.TestCase):
         )
 
     def test_release_branch_uses_unprefixed_semver(self) -> None:
-        self.assertTrue(branch_flow.check_flow("main", "release/v2.0.1"))
+        self.assertTrue(branch_flow.check_flow("main", "release/v2.0.2"))
 
     def test_schema_release_coordinates_are_current(self) -> None:
-        self.assertEqual("2.0.1", (ROOT / "VERSION").read_text().strip())
+        self.assertEqual("2.0.2", (ROOT / "VERSION").read_text().strip())
         for path in sorted((ROOT / "schemas").glob("*.schema.json")):
             schema = json.loads(path.read_text())
             self.assertTrue(schema["$id"].startswith(validation.SCHEMA_ID_PREFIX))
@@ -400,19 +400,148 @@ class GovernancePackageTests(unittest.TestCase):
             findings,
         )
 
-    def test_exact_decimal_contract_requires_precision_scale_and_unit(self) -> None:
+    def test_exact_decimal_contract_requires_profile_and_quantity_role(self) -> None:
         schema = ROOT / "schemas" / "data-contract.schema.json"
         document = json.loads((ROOT / "examples" / "data-contract.json").read_text())
-        field = document["entities"][1]["fields"][2]
-        for required_field in ("precision", "scale", "unit"):
+        result_fields = document["entities"][1]["fields"]
+        field_index = next(
+            index
+            for index, field in enumerate(result_fields)
+            if field["field_id"] == "FIELD-RESULT-RAW-VALUE-001"
+        )
+        field = result_fields[field_index]
+        for required_field in ("numeric_profile_id", "quantity_role"):
             candidate = json.loads(json.dumps(document))
-            candidate["entities"][1]["fields"][2].pop(required_field)
+            candidate["entities"][1]["fields"][field_index].pop(required_field)
             findings = validation.SchemaValidator(schema).validate(candidate)
             self.assertTrue(
                 any(required_field in item.message for item in findings),
                 (required_field, findings),
             )
         self.assertEqual("exact_decimal", field["semantic_type"])
+
+    def test_data_contract_digest_binds_canonical_material(self) -> None:
+        records = load_database_examples()
+        records["data-contract.json"]["title"] = "Changed laboratory contract title"
+        findings = validation._validate_database_examples(records)
+        self.assertTrue(
+            any("digest must bind" in item.message for item in findings),
+            findings,
+        )
+
+    def test_tenant_owned_entities_require_composite_identity_and_isolation(self) -> None:
+        records = load_database_examples()
+        specimen = records["data-contract.json"]["entities"][0]
+        specimen["primary_key_field_ids"] = ["FIELD-SPECIMEN-ID-001"]
+        specimen["constraints"] = [
+            constraint
+            for constraint in specimen["constraints"]
+            if constraint["constraint_type"] != "row_level_security"
+        ]
+        findings = validation._validate_database_examples(records)
+        messages = " ".join(item.message for item in findings)
+        self.assertIn("primary keys must lead with tenant identity", messages)
+        self.assertIn("row-level-security constraint", messages)
+
+    def test_downstream_data_contract_validation_includes_semantic_links(self) -> None:
+        schema = ROOT / "schemas" / "data-contract.schema.json"
+        document = json.loads((ROOT / "examples" / "data-contract.json").read_text())
+        document["entities"][0]["primary_key_field_ids"] = [
+            "FIELD-SPECIMEN-ID-001"
+        ]
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            candidate = Path(temporary_directory) / "data-contract.json"
+            candidate.write_text(json.dumps(document), encoding="utf-8")
+            findings = validation.validate_pair(schema, candidate)
+        self.assertTrue(
+            any("primary keys must lead with tenant identity" in item.message for item in findings),
+            findings,
+        )
+
+    def test_tenant_foreign_keys_preserve_tenant_identity(self) -> None:
+        records = load_database_examples()
+        result = records["data-contract.json"]["entities"][1]
+        specimen_reference = next(
+            constraint
+            for constraint in result["constraints"]
+            if constraint["constraint_id"] == "CONSTRAINT-RESULT-SPECIMEN-001"
+        )
+        specimen_reference["field_ids"] = ["FIELD-RESULT-SPECIMEN-ID-001"]
+        specimen_reference["referenced_field_ids"] = ["FIELD-SPECIMEN-ID-001"]
+        findings = validation._validate_database_examples(records)
+        self.assertTrue(
+            any(
+                "foreign keys must lead with matching tenant identities" in item.message
+                for item in findings
+            ),
+            findings,
+        )
+
+    def test_numeric_and_digest_profiles_bind_physical_representations(self) -> None:
+        records = load_database_examples()
+        contract = records["data-contract.json"]
+        contract["numeric_profiles"][0]["physical_type"] = "numeric(18,6)"
+        contract["digest_profiles"][0]["byte_length"] = 64
+        findings = validation._validate_database_examples(records)
+        messages = " ".join(item.message for item in findings)
+        self.assertIn("precision and scale must match", messages)
+        self.assertIn("byte length must match", messages)
+
+    def test_engine_and_external_identity_profiles_have_explicit_bounds(self) -> None:
+        records = load_database_examples()
+        contract = records["data-contract.json"]
+        contract["database"]["supported_major_versions"] = [18]
+        contract["identity_profiles"][1]["maximum_length"] = 95
+        findings = validation._validate_database_examples(records)
+        messages = " ".join(item.message for item in findings)
+        self.assertIn("selected database engine version", messages)
+        self.assertIn("bounded physical type", messages)
+
+    def test_quantity_binding_preserves_source_and_canonical_roles(self) -> None:
+        records = load_database_examples()
+        binding = records["data-contract.json"]["entities"][1][
+            "quantity_bindings"
+        ][0]
+        binding["raw_unit_field_id"] = "FIELD-RESULT-CANONICAL-UNIT-001"
+        binding["provenance_digest_field_id"] = "FIELD-UNKNOWN-001"
+        findings = validation._validate_database_examples(records)
+        messages = " ".join(item.message for item in findings)
+        self.assertIn("expected representation role", messages)
+        self.assertIn("quantity binding field must resolve", messages)
+
+    def test_quantity_profiles_share_one_interpretation_coordinate(self) -> None:
+        records = load_database_examples()
+        records["data-contract.json"]["numeric_profiles"][1]["method_revision"] = (
+            "METHOD-5.0"
+        )
+        findings = validation._validate_database_examples(records)
+        self.assertTrue(
+            any(
+                "share one assay, analyte, and method coordinate" in item.message
+                for item in findings
+            ),
+            findings,
+        )
+
+    def test_append_only_entity_requires_temporal_and_privilege_controls(self) -> None:
+        records = load_database_examples()
+        result = records["data-contract.json"]["entities"][1]
+        result["fields"] = [
+            field
+            for field in result["fields"]
+            if field.get("temporal_role") != "recording_time"
+        ]
+        result["constraints"] = [
+            constraint
+            for constraint in result["constraints"]
+            if constraint["constraint_type"]
+            not in {"append_only", "privilege_boundary"}
+        ]
+        findings = validation._validate_database_examples(records)
+        messages = " ".join(item.message for item in findings)
+        self.assertIn("append-only constraint", messages)
+        self.assertIn("privilege-boundary constraint", messages)
+        self.assertIn("occurrence and recording instants", messages)
 
     def test_data_contract_accepts_bounded_migration_history_relations(self) -> None:
         schema = ROOT / "schemas" / "data-contract.schema.json"
@@ -462,7 +591,12 @@ class GovernancePackageTests(unittest.TestCase):
     ) -> None:
         records = load_database_examples()
         contract = records["data-contract.json"]
-        contract["entities"][0]["fields"][1]["physical_type"] = "text"
+        collected_at = next(
+            field
+            for field in contract["entities"][0]["fields"]
+            if field["field_id"] == "FIELD-SPECIMEN-COLLECTED-AT-001"
+        )
+        collected_at["physical_type"] = "text"
         contract["entities"][1]["constraints"][0]["referenced_field_ids"] = [
             "FIELD-UNKNOWN-001"
         ]

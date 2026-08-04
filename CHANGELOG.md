@@ -6,6 +6,14 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+- Expanded the generic data-contract surface with tenant-composite identity,
+  forced row-level-security metadata, internal and external identity profiles,
+  finite occurrence and recording instants, assay-specific numeric profiles,
+  versioned UCUM mapping, conversion and rounding provenance, content-digest
+  profiles, and controlled append-only write behavior.
+- Added cross-record validation and failure-twin tests for profile resolution,
+  tenant-preserving keys, quantity provenance, digest storage, and privilege
+  boundaries.
 - Aligned the synthetic database-change evidence chain with Flyway Community
   13.0.0 while keeping the governance contracts tool neutral; schema evolution,
   vendor lifecycle, cross-platform data movement, and acceptance retain separate
@@ -29,7 +37,7 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 - Documented an inactive semantic shadow-review contract with bounded inputs,
   advisory-only authority, privacy controls, reproducible coordinates,
   measurable qualification thresholds, and accountable recovery.
-- Prepared candidate `2.0.1` with a schema-valid repository-promotion receipt
+- Prepared candidate `2.0.2` with a schema-valid repository-promotion receipt
   and an executable candidate-to-released lifecycle.
 - Required both `branch-policy` and `governance-validation` in versioned branch
   rulesets and extended signature protection to release, hotfix, and support

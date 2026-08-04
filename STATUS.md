@@ -7,6 +7,7 @@
 | Governance model | Reference-ready | Document review and tests |
 | Branching model | Reference-ready | Ruleset alignment tests |
 | JSON schemas | Reference-ready | Meta-structure and exemplar validation |
+| Enterprise data contract | Reference-ready | Profile resolution, tenant isolation, quantity lineage, digest, and write-policy mutation tests |
 | Example corpus | Reference-ready | Every example validates against its declared schema |
 | Control Plane Profile v0.3 | Reference-ready | Cross-record semantic validation and failure-twin tests |
 | Simulated substantive closure | Reference-ready | Four-family future-reality manifest and executable-check contracts |
@@ -30,13 +31,13 @@ class.
 
 ## Promotion path
 
-Candidate release `2.0.1` moves through:
+Candidate release `2.0.2` moves through:
 
 1. repository initialization on `main`;
 2. `develop` creation from the baseline;
 3. `feature/constellation-foundation` review into `develop`;
 4. required governance validation on the release coordinate;
-5. `release/2.0.1` review into `main`;
+5. `release/2.0.2` review into `main`;
 6. `develop` synchronization to the released commit;
 7. downstream constellation pinning by commit and Git tree digest.
 

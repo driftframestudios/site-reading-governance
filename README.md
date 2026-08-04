@@ -9,7 +9,7 @@ The package is private-repository ready. Its examples use synthetic identifiers,
 its automation uses read-only permissions by default, and its ruleset exports
 can be reviewed before installation through the GitHub Rulesets API.
 
-The current governance schema candidate is `2.0.1`; stable schema identifiers use
+The current governance schema candidate is `2.0.2`; stable schema identifiers use
 the `/v2.0/` coordinate. It implements **Control Plane Profile v0.3**, the
 Enterprise Human-AI Practitioner Registry-derived capability profile for
 bounded callers, veracity, orientation, coordination, and future-reality
@@ -90,6 +90,15 @@ booleans, identifiers, and relational integrity. Interchange documents render
 migration instants as RFC 3339 UTC values while the data contract retains the
 database-native representation.
 
+The `2.0.2` data-contract surface makes the enterprise target executable. It
+binds tenant-owned rows through tenant-leading primary and foreign keys plus
+forced row-level-security metadata. Internal UUIDs and constrained external
+identities remain distinct. Scientific results preserve source and canonical
+quantities, versioned assay and method numeric profiles, source and UCUM units,
+conversion and rounding provenance, and a typed content digest. Append-only
+ledgers retain original events and express corrections through supersession;
+controlled service operations and privilege constraints own table writes.
+
 ## Quick start
 
 Requirements: Python 3.11 or newer. The validation path uses the Python standard
@@ -133,6 +142,9 @@ python3 tools/validate_governance.py \
 - [`docs/MIGRATION_V2_0_0_TO_V2_0_1.md`](docs/MIGRATION_V2_0_0_TO_V2_0_1.md) —
   patch migration for promotion receipts, immutable workflow inputs, and policy
   contexts
+- [`docs/MIGRATION_V2_0_1_TO_V2_0_2.md`](docs/MIGRATION_V2_0_1_TO_V2_0_2.md) —
+  data-contract convergence for tenant isolation, scientific quantities,
+  provenance, and controlled append-only behavior
 - [`schemas/`](schemas/) — JSON Schema 2020-12 contracts
 - [`examples/`](examples/) — valid synthetic exemplars for every contract
 - [`machine-node.json`](machine-node.json), [`first-receipt.json`](first-receipt.json),

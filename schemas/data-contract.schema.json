@@ -5,19 +5,30 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "representation_id",
     "data_contract_id",
     "version",
     "contract_digest",
+    "contract_digest_scope",
     "title",
     "purpose",
     "status",
     "database",
+    "isolation_policy",
+    "identity_profiles",
+    "numeric_profiles",
+    "unit_vocabularies",
+    "digest_profiles",
+    "write_policies",
     "entities",
     "compatibility",
     "invalidation_triggers",
     "metadata"
   ],
   "properties": {
+    "representation_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
     "data_contract_id": {
       "$ref": "common.schema.json#/$defs/identifier"
     },
@@ -26,6 +37,12 @@
     },
     "contract_digest": {
       "$ref": "common.schema.json#/$defs/digest"
+    },
+    "contract_digest_scope": {
+      "type": "string",
+      "enum": [
+        "governance_canonical_json_v1_excluding_contract_digest"
+      ]
     },
     "title": {
       "type": "string",
@@ -51,9 +68,11 @@
       "required": [
         "engine_family",
         "engine_version",
+        "supported_major_versions",
         "extensions",
         "collation",
         "database_timezone",
+        "canonical_json_profile",
         "settings_digest",
         "migration_history_table"
       ],
@@ -74,6 +93,16 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 80
+        },
+        "supported_major_versions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 999
+          }
         },
         "extensions": {
           "type": "array",
@@ -109,6 +138,11 @@
           "minLength": 1,
           "maxLength": 80
         },
+        "canonical_json_profile": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 160
+        },
         "settings_digest": {
           "$ref": "common.schema.json#/$defs/digest"
         },
@@ -116,6 +150,484 @@
           "type": "string",
           "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)?$",
           "maxLength": 120
+        }
+      }
+    },
+    "isolation_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "isolation_policy_id",
+        "tenant_identity_profile_id",
+        "ownership_model",
+        "row_security_mode",
+        "session_context_binding",
+        "access_posture",
+        "privileged_operation_boundary",
+        "verification_digest"
+      ],
+      "properties": {
+        "isolation_policy_id": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "tenant_identity_profile_id": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "ownership_model": {
+          "type": "string",
+          "enum": [
+            "tenant_composite_identity"
+          ]
+        },
+        "row_security_mode": {
+          "type": "string",
+          "enum": [
+            "forced_row_level_security"
+          ]
+        },
+        "session_context_binding": {
+          "type": "string",
+          "enum": [
+            "authenticated_tenant_context"
+          ]
+        },
+        "access_posture": {
+          "type": "string",
+          "enum": [
+            "policy_authorized_only"
+          ]
+        },
+        "privileged_operation_boundary": {
+          "type": "string",
+          "enum": [
+            "accountable_migration_and_support_roles"
+          ]
+        },
+        "verification_digest": {
+          "$ref": "common.schema.json#/$defs/digest"
+        }
+      }
+    },
+    "identity_profiles": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "identity_profile_id",
+          "identity_kind",
+          "physical_type",
+          "normalization",
+          "comparison_semantics"
+        ],
+        "properties": {
+          "identity_profile_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "identity_kind": {
+            "type": "string",
+            "enum": [
+              "internal_uuid",
+              "external_constrained"
+            ]
+          },
+          "physical_type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "normalization": {
+            "type": "string",
+            "enum": [
+              "canonical_uuid",
+              "unicode_nfc_preserve_case_trim_outer_whitespace"
+            ]
+          },
+          "comparison_semantics": {
+            "type": "string",
+            "enum": [
+              "uuid_equality",
+              "bytewise_text_equality"
+            ]
+          },
+          "maximum_length": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4096
+          },
+          "collation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "value_pattern": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "namespace_components": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "maxLength": 120
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "identity_kind": {
+                  "const": "internal_uuid"
+                }
+              },
+              "required": [
+                "identity_kind"
+              ]
+            },
+            "then": {
+              "properties": {
+                "physical_type": {
+                  "const": "uuid"
+                },
+                "normalization": {
+                  "const": "canonical_uuid"
+                },
+                "comparison_semantics": {
+                  "const": "uuid_equality"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "identity_kind": {
+                  "const": "external_constrained"
+                }
+              },
+              "required": [
+                "identity_kind"
+              ]
+            },
+            "then": {
+              "required": [
+                "maximum_length",
+                "collation",
+                "value_pattern",
+                "namespace_components"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "numeric_profiles": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "numeric_profile_id",
+          "version",
+          "representation_role",
+          "assay_code",
+          "analyte_code",
+          "method_revision",
+          "physical_type",
+          "precision",
+          "scale",
+          "finite_required",
+          "rounding_mode",
+          "rounding_scale",
+          "source_lexeme_policy"
+        ],
+        "properties": {
+          "numeric_profile_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "version": {
+            "$ref": "common.schema.json#/$defs/semver"
+          },
+          "representation_role": {
+            "type": "string",
+            "enum": [
+              "source_quantity",
+              "canonical_quantity",
+              "conversion_factor"
+            ]
+          },
+          "assay_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "analyte_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "method_revision": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "physical_type": {
+            "type": "string",
+            "pattern": "^(?:numeric|decimal)\\([1-9][0-9]*,[0-9]+\\)$",
+            "maxLength": 120
+          },
+          "precision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "scale": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "finite_required": {
+            "const": true
+          },
+          "lower_bound": {
+            "type": "string",
+            "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+            "maxLength": 200
+          },
+          "upper_bound": {
+            "type": "string",
+            "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+            "maxLength": 200
+          },
+          "rounding_mode": {
+            "type": "string",
+            "enum": [
+              "half_even",
+              "half_up",
+              "toward_zero",
+              "exact"
+            ]
+          },
+          "rounding_scale": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "source_lexeme_policy": {
+            "type": "string",
+            "enum": [
+              "preserved_for_trace",
+              "canonical_decimal_only"
+            ]
+          }
+        }
+      }
+    },
+    "unit_vocabularies": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "unit_vocabulary_id",
+          "system",
+          "version",
+          "canonical_code_pattern",
+          "mapping_scope",
+          "source_unit_policy",
+          "mapping_revision_required",
+          "exception_route"
+        ],
+        "properties": {
+          "unit_vocabulary_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "system": {
+            "type": "string",
+            "enum": [
+              "UCUM",
+              "organization_controlled"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "canonical_code_pattern": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "mapping_scope": {
+            "type": "string",
+            "enum": [
+              "assay_analyte_method_revision"
+            ]
+          },
+          "source_unit_policy": {
+            "type": "string",
+            "enum": [
+              "preserve_source_and_canonical"
+            ]
+          },
+          "mapping_revision_required": {
+            "const": true
+          },
+          "exception_route": {
+            "type": "string",
+            "enum": [
+              "owned_mapping_review"
+            ]
+          }
+        }
+      }
+    },
+    "digest_profiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "digest_profile_id",
+          "algorithm",
+          "physical_type",
+          "byte_length",
+          "canonicalization_profile",
+          "content_scope",
+          "envelope_schema_version"
+        ],
+        "properties": {
+          "digest_profile_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "algorithm": {
+            "type": "string",
+            "enum": [
+              "sha-256",
+              "sha-384",
+              "sha-512"
+            ]
+          },
+          "physical_type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "byte_length": {
+            "type": "integer",
+            "minimum": 16,
+            "maximum": 128
+          },
+          "canonicalization_profile": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 160
+          },
+          "content_scope": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 300
+          },
+          "envelope_schema_version": {
+            "$ref": "common.schema.json#/$defs/semver"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "algorithm": {
+                  "const": "sha-256"
+                }
+              },
+              "required": [
+                "algorithm"
+              ]
+            },
+            "then": {
+              "properties": {
+                "byte_length": {
+                  "const": 32
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "write_policies": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "write_policy_id",
+          "mutation_model",
+          "application_write_path",
+          "table_privilege_posture",
+          "original_record_policy",
+          "correction_model",
+          "concurrency_control",
+          "verification_digest"
+        ],
+        "properties": {
+          "write_policy_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "mutation_model": {
+            "type": "string",
+            "enum": [
+              "version_guarded_projection",
+              "append_only_ledger",
+              "controlled_reference_data"
+            ]
+          },
+          "application_write_path": {
+            "type": "string",
+            "enum": [
+              "service_owned_operation",
+              "database_owned_operation"
+            ]
+          },
+          "table_privilege_posture": {
+            "type": "string",
+            "enum": [
+              "controlled_boundary_only"
+            ]
+          },
+          "original_record_policy": {
+            "type": "string",
+            "enum": [
+              "retained_with_lineage"
+            ]
+          },
+          "correction_model": {
+            "type": "string",
+            "enum": [
+              "versioned_transition",
+              "superseding_record"
+            ]
+          },
+          "concurrency_control": {
+            "type": "string",
+            "enum": [
+              "expected_version_guard",
+              "idempotent_append_guard"
+            ]
+          },
+          "verification_digest": {
+            "$ref": "common.schema.json#/$defs/digest"
+          }
         }
       }
     },
@@ -131,9 +643,12 @@
           "purpose",
           "data_class",
           "retention_class",
+          "tenant_scope",
+          "write_policy_id",
           "fields",
           "primary_key_field_ids",
-          "constraints"
+          "constraints",
+          "quantity_bindings"
         ],
         "properties": {
           "entity_id": {
@@ -163,6 +678,88 @@
             "type": "string",
             "minLength": 2,
             "maxLength": 96
+          },
+          "tenant_scope": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "scope_mode",
+              "row_security_mode",
+              "policy_name",
+              "policy_digest"
+            ],
+            "properties": {
+              "scope_mode": {
+                "type": "string",
+                "enum": [
+                  "tenant_owned",
+                  "global_reference"
+                ]
+              },
+              "tenant_field_id": {
+                "$ref": "common.schema.json#/$defs/identifier"
+              },
+              "composite_identity_required": {
+                "type": "boolean"
+              },
+              "row_security_mode": {
+                "type": "string",
+                "enum": [
+                  "forced_row_level_security",
+                  "global_reference_acl"
+                ]
+              },
+              "context_binding": {
+                "type": "string",
+                "enum": [
+                  "authenticated_tenant_context",
+                  "accountable_global_role"
+                ]
+              },
+              "policy_name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "maxLength": 120
+              },
+              "policy_digest": {
+                "$ref": "common.schema.json#/$defs/digest"
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "scope_mode": {
+                      "const": "tenant_owned"
+                    }
+                  },
+                  "required": [
+                    "scope_mode"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "tenant_field_id",
+                    "composite_identity_required",
+                    "context_binding"
+                  ],
+                  "properties": {
+                    "composite_identity_required": {
+                      "const": true
+                    },
+                    "row_security_mode": {
+                      "const": "forced_row_level_security"
+                    },
+                    "context_binding": {
+                      "const": "authenticated_tenant_context"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "write_policy_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
           },
           "fields": {
             "type": "array",
@@ -201,7 +798,9 @@
                     "text",
                     "controlled_term",
                     "json_document",
-                    "binary_reference"
+                    "binary_reference",
+                    "scientific_unit",
+                    "content_digest"
                   ]
                 },
                 "physical_type": {
@@ -231,20 +830,32 @@
                 "generated_expression_digest": {
                   "$ref": "common.schema.json#/$defs/digest"
                 },
-                "precision": {
-                  "type": "integer",
-                  "minimum": 1,
-                  "maximum": 1000
+                "identity_profile_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
                 },
-                "scale": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 1000
+                "numeric_profile_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
                 },
-                "unit": {
+                "quantity_role": {
                   "type": "string",
-                  "minLength": 1,
-                  "maxLength": 80
+                  "enum": [
+                    "source_value",
+                    "canonical_value",
+                    "conversion_factor"
+                  ]
+                },
+                "unit_vocabulary_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "unit_role": {
+                  "type": "string",
+                  "enum": [
+                    "source_label",
+                    "canonical_code"
+                  ]
+                },
+                "digest_profile_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
                 },
                 "temporal_semantics": {
                   "type": "string",
@@ -254,11 +865,43 @@
                     "civil_local_date_time"
                   ]
                 },
+                "temporal_role": {
+                  "type": "string",
+                  "enum": [
+                    "occurrence_time",
+                    "recording_time",
+                    "effective_time",
+                    "expiry_time"
+                  ]
+                },
+                "finite_required": {
+                  "type": "boolean"
+                },
+                "source_representation_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
                 "controlled_vocabulary_id": {
                   "$ref": "common.schema.json#/$defs/identifier"
                 }
               },
               "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "semantic_type": {
+                        "const": "identifier"
+                      }
+                    },
+                    "required": [
+                      "semantic_type"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "identity_profile_id"
+                    ]
+                  }
+                },
                 {
                   "if": {
                     "properties": {
@@ -272,9 +915,8 @@
                   },
                   "then": {
                     "required": [
-                      "precision",
-                      "scale",
-                      "unit"
+                      "numeric_profile_id",
+                      "quantity_role"
                     ]
                   }
                 },
@@ -291,11 +933,16 @@
                   },
                   "then": {
                     "required": [
-                      "temporal_semantics"
+                      "temporal_semantics",
+                      "temporal_role",
+                      "finite_required"
                     ],
                     "properties": {
                       "temporal_semantics": {
                         "const": "absolute_instant"
+                      },
+                      "finite_required": {
+                        "const": true
                       }
                     }
                   }
@@ -338,6 +985,41 @@
                       "controlled_vocabulary_id"
                     ]
                   }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "semantic_type": {
+                        "const": "scientific_unit"
+                      }
+                    },
+                    "required": [
+                      "semantic_type"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "unit_vocabulary_id",
+                      "unit_role"
+                    ]
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "semantic_type": {
+                        "const": "content_digest"
+                      }
+                    },
+                    "required": [
+                      "semantic_type"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "digest_profile_id"
+                    ]
+                  }
                 }
               ]
             }
@@ -370,7 +1052,10 @@
                   "enum": [
                     "unique",
                     "foreign_key",
-                    "check"
+                    "check",
+                    "row_level_security",
+                    "append_only",
+                    "privilege_boundary"
                   ]
                 },
                 "field_ids": {
@@ -390,6 +1075,14 @@
                   ]
                 },
                 "expression_digest": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "policy_name": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "maxLength": 120
+                },
+                "policy_digest": {
                   "$ref": "common.schema.json#/$defs/digest"
                 },
                 "referenced_entity_id": {
@@ -439,8 +1132,93 @@
                       "expression_digest"
                     ]
                   }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "constraint_type": {
+                        "enum": [
+                          "row_level_security",
+                          "append_only",
+                          "privilege_boundary"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "constraint_type"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "policy_name",
+                      "policy_digest"
+                    ]
+                  }
                 }
               ]
+            }
+          },
+          "quantity_bindings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "quantity_binding_id",
+                "raw_value_field_id",
+                "raw_value_lexeme_field_id",
+                "raw_unit_field_id",
+                "canonical_value_field_id",
+                "canonical_unit_field_id",
+                "assay_field_id",
+                "analyte_field_id",
+                "method_revision_field_id",
+                "conversion_factor_field_id",
+                "rounding_mode_field_id",
+                "mapping_revision_field_id",
+                "provenance_digest_field_id"
+              ],
+              "properties": {
+                "quantity_binding_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "raw_value_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "raw_value_lexeme_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "raw_unit_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "canonical_value_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "canonical_unit_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "assay_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "analyte_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "method_revision_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "conversion_factor_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "rounding_mode_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "mapping_revision_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "provenance_digest_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                }
+              }
             }
           }
         }

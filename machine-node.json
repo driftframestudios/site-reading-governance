@@ -2,9 +2,9 @@
   "machine_node_id": "NODE-SITE-READING-GOVERNANCE-002",
   "canonical_identity": "driftframestudios/site-reading-governance",
   "title": "Site Reading governance control plane",
-  "purpose": "Orient collaborators to governance schema release 2.0.1, Control Plane Profile 0.3.0, the selected-future closure contract, governed dependency automation, and current promotion posture.",
+  "purpose": "Orient collaborators to governance schema release 2.0.2, Control Plane Profile 0.3.0, the selected-future closure contract, governed dependency automation, and current promotion posture.",
   "control_plane_profile": "0.3.0",
-  "schema_release": "2.0.1",
+  "schema_release": "2.0.2",
   "repository_role": "site_reading_governance",
   "authority": {
     "mode": "orientation_only",
@@ -27,22 +27,27 @@
       "contract_id": "CONTRACT-AUTOMATION-BRANCH-POLICY-001",
       "version": "1.0.0",
       "digest": "sha256:b56500700c9d937e4b812d3e23aeae3cb848a7bef5a1f8e05cd58730d36e2adc"
+    },
+    {
+      "contract_id": "CONTRACT-DATA-CONTRACT-CONVERGENCE-001",
+      "version": "2.0.0",
+      "digest": "sha256:dd7932235d9b9d1f5b4b78d4965f497dd0881ffececef35e940466be5c8e1a41"
     }
   ],
   "campaigns": [
     {
       "campaign_id": "LIMS-ELN-OPEN-RECEIPTS",
-      "marking_schema_version": "2.0.1",
+      "marking_schema_version": "2.0.2",
       "status": "settling"
     },
     {
       "campaign_id": "COMPARATIVE-LITERACY-COLLABORATION",
-      "marking_schema_version": "2.0.1",
+      "marking_schema_version": "2.0.2",
       "status": "active"
     },
     {
       "campaign_id": "SITE-READING-SYSTEM",
-      "marking_schema_version": "2.0.1",
+      "marking_schema_version": "2.0.2",
       "status": "active"
     }
   ],
@@ -52,7 +57,7 @@
     "digest": "sha256:0843bd8d9a46475c1f27e3cac68a0d947289e42495befeedc3181912197a182d"
   },
   "current_provenance": {
-    "release": "candidate-governance-v2.0.1",
+    "release": "candidate-governance-v2.0.2",
     "commit": "0000000000000000000000000000000000000000",
     "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
   },
@@ -94,7 +99,7 @@
     }
   ],
   "metadata": {
-    "schema_version": "2.0.1",
+    "schema_version": "2.0.2",
     "created_at": "2026-07-28T17:30:02Z",
     "updated_at": "2026-07-28T17:30:02Z",
     "owner": {

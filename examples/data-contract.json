@@ -1,13 +1,19 @@
 {
+  "representation_id": "REP-GOVERNANCE-DATA-CONTRACT-001",
   "data_contract_id": "CONTRACT-LABORATORY-CORE-001",
-  "version": "1.0.0",
-  "contract_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "title": "Laboratory specimen and result data contract",
-  "purpose": "Preserve identifier, temporal, measurement, vocabulary, lineage, and retention meaning across laboratory database releases.",
+  "version": "2.0.0",
+  "contract_digest": "sha256:dcd2e6026f549fe8b27e1bc51191b17c0f5cda212aaeb08b4ef15ac59692ce22",
+  "contract_digest_scope": "governance_canonical_json_v1_excluding_contract_digest",
+  "title": "Tenant-isolated laboratory specimen and result-event contract",
+  "purpose": "Preserve tenant identity, scientific quantity meaning, temporal lineage, external-system identity, content integrity, and append-only correction history across laboratory releases.",
   "status": "approved",
   "database": {
     "engine_family": "postgresql",
-    "engine_version": "17.5",
+    "engine_version": "17.10",
+    "supported_major_versions": [
+      17,
+      18
+    ],
     "extensions": [
       {
         "name": "pgcrypto",
@@ -16,17 +22,198 @@
     ],
     "collation": "C.UTF-8",
     "database_timezone": "UTC",
+    "canonical_json_profile": "RFC-8785-compatible-strict-v1",
     "settings_digest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
     "migration_history_table": "public.flyway_schema_history"
   },
+  "isolation_policy": {
+    "isolation_policy_id": "ISOLATION-TENANT-RLS-001",
+    "tenant_identity_profile_id": "IDENTITY-INTERNAL-UUID-001",
+    "ownership_model": "tenant_composite_identity",
+    "row_security_mode": "forced_row_level_security",
+    "session_context_binding": "authenticated_tenant_context",
+    "access_posture": "policy_authorized_only",
+    "privileged_operation_boundary": "accountable_migration_and_support_roles",
+    "verification_digest": "sha256:0101010101010101010101010101010101010101010101010101010101010101"
+  },
+  "identity_profiles": [
+    {
+      "identity_profile_id": "IDENTITY-INTERNAL-UUID-001",
+      "identity_kind": "internal_uuid",
+      "physical_type": "uuid",
+      "normalization": "canonical_uuid",
+      "comparison_semantics": "uuid_equality"
+    },
+    {
+      "identity_profile_id": "IDENTITY-EXTERNAL-LAB-001",
+      "identity_kind": "external_constrained",
+      "physical_type": "varchar(96)",
+      "normalization": "unicode_nfc_preserve_case_trim_outer_whitespace",
+      "comparison_semantics": "bytewise_text_equality",
+      "maximum_length": 96,
+      "collation": "C",
+      "value_pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,95}$",
+      "namespace_components": [
+        "tenant_id",
+        "source_system_code"
+      ]
+    },
+    {
+      "identity_profile_id": "IDENTITY-METHOD-REVISION-001",
+      "identity_kind": "external_constrained",
+      "physical_type": "varchar(48)",
+      "normalization": "unicode_nfc_preserve_case_trim_outer_whitespace",
+      "comparison_semantics": "bytewise_text_equality",
+      "maximum_length": 48,
+      "collation": "C",
+      "value_pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,47}$",
+      "namespace_components": [
+        "assay_code",
+        "analyte_code"
+      ]
+    },
+    {
+      "identity_profile_id": "IDENTITY-UNIT-MAPPING-REVISION-001",
+      "identity_kind": "external_constrained",
+      "physical_type": "varchar(48)",
+      "normalization": "unicode_nfc_preserve_case_trim_outer_whitespace",
+      "comparison_semantics": "bytewise_text_equality",
+      "maximum_length": 48,
+      "collation": "C",
+      "value_pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,47}$",
+      "namespace_components": [
+        "unit_vocabulary_id",
+        "assay_code",
+        "analyte_code"
+      ]
+    }
+  ],
+  "numeric_profiles": [
+    {
+      "numeric_profile_id": "NUMERIC-QPCR-SOURCE-001",
+      "version": "1.0.0",
+      "representation_role": "source_quantity",
+      "assay_code": "QPCR-VIRAL-LOAD",
+      "analyte_code": "TARGET-COPIES",
+      "method_revision": "METHOD-4.2",
+      "physical_type": "numeric(20,8)",
+      "precision": 20,
+      "scale": 8,
+      "finite_required": true,
+      "lower_bound": "0",
+      "upper_bound": "999999999999.99999999",
+      "rounding_mode": "exact",
+      "rounding_scale": 8,
+      "source_lexeme_policy": "preserved_for_trace"
+    },
+    {
+      "numeric_profile_id": "NUMERIC-QPCR-CANONICAL-001",
+      "version": "1.0.0",
+      "representation_role": "canonical_quantity",
+      "assay_code": "QPCR-VIRAL-LOAD",
+      "analyte_code": "TARGET-COPIES",
+      "method_revision": "METHOD-4.2",
+      "physical_type": "numeric(38,12)",
+      "precision": 38,
+      "scale": 12,
+      "finite_required": true,
+      "lower_bound": "0",
+      "upper_bound": "99999999999999999999999999.999999999999",
+      "rounding_mode": "half_even",
+      "rounding_scale": 12,
+      "source_lexeme_policy": "canonical_decimal_only"
+    },
+    {
+      "numeric_profile_id": "NUMERIC-QPCR-CONVERSION-001",
+      "version": "1.0.0",
+      "representation_role": "conversion_factor",
+      "assay_code": "QPCR-VIRAL-LOAD",
+      "analyte_code": "TARGET-COPIES",
+      "method_revision": "METHOD-4.2",
+      "physical_type": "numeric(28,16)",
+      "precision": 28,
+      "scale": 16,
+      "finite_required": true,
+      "lower_bound": "0.0000000000000001",
+      "upper_bound": "999999999999.9999999999999999",
+      "rounding_mode": "half_even",
+      "rounding_scale": 16,
+      "source_lexeme_policy": "canonical_decimal_only"
+    }
+  ],
+  "unit_vocabularies": [
+    {
+      "unit_vocabulary_id": "VOCAB-UCUM-LAB-001",
+      "system": "UCUM",
+      "version": "2.2",
+      "canonical_code_pattern": "^[A-Za-z0-9%{}'().*/+^-]+$",
+      "mapping_scope": "assay_analyte_method_revision",
+      "source_unit_policy": "preserve_source_and_canonical",
+      "mapping_revision_required": true,
+      "exception_route": "owned_mapping_review"
+    }
+  ],
+  "digest_profiles": [
+    {
+      "digest_profile_id": "DIGEST-SEMANTIC-EVIDENCE-001",
+      "algorithm": "sha-256",
+      "physical_type": "bytea",
+      "byte_length": 32,
+      "canonicalization_profile": "RFC-8785-compatible-strict-v1",
+      "content_scope": "Canonical semantic result envelope with schema and mapping revisions",
+      "envelope_schema_version": "1.0.0"
+    }
+  ],
+  "write_policies": [
+    {
+      "write_policy_id": "WRITE-SPECIMEN-PROJECTION-001",
+      "mutation_model": "version_guarded_projection",
+      "application_write_path": "service_owned_operation",
+      "table_privilege_posture": "controlled_boundary_only",
+      "original_record_policy": "retained_with_lineage",
+      "correction_model": "versioned_transition",
+      "concurrency_control": "expected_version_guard",
+      "verification_digest": "sha256:0202020202020202020202020202020202020202020202020202020202020202"
+    },
+    {
+      "write_policy_id": "WRITE-RESULT-EVENT-APPEND-001",
+      "mutation_model": "append_only_ledger",
+      "application_write_path": "service_owned_operation",
+      "table_privilege_posture": "controlled_boundary_only",
+      "original_record_policy": "retained_with_lineage",
+      "correction_model": "superseding_record",
+      "concurrency_control": "idempotent_append_guard",
+      "verification_digest": "sha256:0303030303030303030303030303030303030303030303030303030303030303"
+    }
+  ],
   "entities": [
     {
       "entity_id": "ENTITY-SPECIMEN-001",
       "table_name": "specimen",
-      "purpose": "Record the governed identity and collection meaning for one laboratory specimen.",
+      "purpose": "Record one tenant-owned specimen identity, collection occurrence, recording instant, source namespace, and governed lifecycle projection.",
       "data_class": "regulated",
       "retention_class": "laboratory-record",
+      "tenant_scope": {
+        "scope_mode": "tenant_owned",
+        "tenant_field_id": "FIELD-SPECIMEN-TENANT-ID-001",
+        "composite_identity_required": true,
+        "row_security_mode": "forced_row_level_security",
+        "context_binding": "authenticated_tenant_context",
+        "policy_name": "specimen_tenant_scope",
+        "policy_digest": "sha256:0404040404040404040404040404040404040404040404040404040404040404"
+      },
+      "write_policy_id": "WRITE-SPECIMEN-PROJECTION-001",
       "fields": [
+        {
+          "field_id": "FIELD-SPECIMEN-TENANT-ID-001",
+          "column_name": "tenant_id",
+          "semantic_type": "identifier",
+          "physical_type": "uuid",
+          "nullable": false,
+          "source_of_truth": "database",
+          "description": "Internal tenant identity that participates in every specimen key and tenant-preserving reference.",
+          "identity_profile_id": "IDENTITY-INTERNAL-UUID-001"
+        },
         {
           "field_id": "FIELD-SPECIMEN-ID-001",
           "column_name": "specimen_id",
@@ -34,20 +221,65 @@
           "physical_type": "uuid",
           "nullable": false,
           "source_of_truth": "database",
-          "description": "Stable specimen identity used by related laboratory records."
+          "description": "Internal specimen identity whose meaning is scoped by tenant identity.",
+          "identity_profile_id": "IDENTITY-INTERNAL-UUID-001"
         },
         {
-          "field_id": "FIELD-COLLECTED-AT-001",
+          "field_id": "FIELD-SPECIMEN-SOURCE-001",
+          "column_name": "source_system_code",
+          "semantic_type": "controlled_term",
+          "physical_type": "varchar(48)",
+          "nullable": false,
+          "source_of_truth": "upstream_system",
+          "description": "Governed source namespace for the external specimen identity.",
+          "controlled_vocabulary_id": "VOCAB-SOURCE-SYSTEM-001"
+        },
+        {
+          "field_id": "FIELD-SPECIMEN-EXTERNAL-ID-001",
+          "column_name": "external_specimen_id",
+          "semantic_type": "identifier",
+          "physical_type": "varchar(96)",
+          "nullable": false,
+          "source_of_truth": "upstream_system",
+          "description": "Source-assigned specimen identifier interpreted within tenant and source-system namespaces.",
+          "identity_profile_id": "IDENTITY-EXTERNAL-LAB-001"
+        },
+        {
+          "field_id": "FIELD-SPECIMEN-COLLECTED-AT-001",
           "column_name": "collected_at",
           "semantic_type": "instant",
           "physical_type": "timestamptz",
           "nullable": false,
           "source_of_truth": "upstream_system",
-          "description": "Absolute collection instant preserved across timezone presentation contexts.",
-          "temporal_semantics": "absolute_instant"
+          "description": "Finite absolute instant when specimen collection occurred.",
+          "temporal_semantics": "absolute_instant",
+          "temporal_role": "occurrence_time",
+          "finite_required": true,
+          "source_representation_field_id": "FIELD-SPECIMEN-SOURCE-COLLECTED-001"
         },
         {
-          "field_id": "FIELD-RECEIVED-DATE-001",
+          "field_id": "FIELD-SPECIMEN-SOURCE-COLLECTED-001",
+          "column_name": "source_collected_at",
+          "semantic_type": "text",
+          "physical_type": "text",
+          "nullable": false,
+          "source_of_truth": "upstream_system",
+          "description": "Original collection-time representation retained for source-clock traceability."
+        },
+        {
+          "field_id": "FIELD-SPECIMEN-RECORDED-AT-001",
+          "column_name": "recorded_at",
+          "semantic_type": "instant",
+          "physical_type": "timestamptz",
+          "nullable": false,
+          "source_of_truth": "database",
+          "description": "Finite absolute instant when the database accepted the specimen projection.",
+          "temporal_semantics": "absolute_instant",
+          "temporal_role": "recording_time",
+          "finite_required": true
+        },
+        {
+          "field_id": "FIELD-SPECIMEN-RECEIVED-DATE-001",
           "column_name": "received_date",
           "semantic_type": "civil_date",
           "physical_type": "date",
@@ -60,43 +292,98 @@
           "field_id": "FIELD-SPECIMEN-STATUS-001",
           "column_name": "status_code",
           "semantic_type": "controlled_term",
-          "physical_type": "text",
+          "physical_type": "varchar(32)",
           "nullable": false,
           "source_of_truth": "database",
-          "description": "Lifecycle state selected from the governed specimen vocabulary.",
+          "description": "Lifecycle state selected from the governed specimen transition vocabulary.",
           "controlled_vocabulary_id": "VOCAB-SPECIMEN-STATUS-001"
         }
       ],
       "primary_key_field_ids": [
+        "FIELD-SPECIMEN-TENANT-ID-001",
         "FIELD-SPECIMEN-ID-001"
       ],
       "constraints": [
         {
-          "constraint_id": "CONSTRAINT-SPECIMEN-STATUS-001",
+          "constraint_id": "CONSTRAINT-SPECIMEN-EXTERNAL-IDENTITY-001",
+          "constraint_type": "unique",
+          "field_ids": [
+            "FIELD-SPECIMEN-TENANT-ID-001",
+            "FIELD-SPECIMEN-SOURCE-001",
+            "FIELD-SPECIMEN-EXTERNAL-ID-001"
+          ],
+          "validation_state": "validated"
+        },
+        {
+          "constraint_id": "CONSTRAINT-SPECIMEN-INSTANTS-001",
           "constraint_type": "check",
           "field_ids": [
-            "FIELD-SPECIMEN-STATUS-001"
+            "FIELD-SPECIMEN-COLLECTED-AT-001",
+            "FIELD-SPECIMEN-RECORDED-AT-001"
           ],
           "validation_state": "validated",
-          "expression_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+          "expression_digest": "sha256:0505050505050505050505050505050505050505050505050505050505050505"
+        },
+        {
+          "constraint_id": "CONSTRAINT-SPECIMEN-RLS-001",
+          "constraint_type": "row_level_security",
+          "field_ids": [
+            "FIELD-SPECIMEN-TENANT-ID-001"
+          ],
+          "validation_state": "validated",
+          "policy_name": "specimen_tenant_scope",
+          "policy_digest": "sha256:0404040404040404040404040404040404040404040404040404040404040404"
+        },
+        {
+          "constraint_id": "CONSTRAINT-SPECIMEN-PRIVILEGE-001",
+          "constraint_type": "privilege_boundary",
+          "field_ids": [
+            "FIELD-SPECIMEN-TENANT-ID-001",
+            "FIELD-SPECIMEN-ID-001"
+          ],
+          "validation_state": "validated",
+          "policy_name": "specimen_controlled_write",
+          "policy_digest": "sha256:0606060606060606060606060606060606060606060606060606060606060606"
         }
-      ]
+      ],
+      "quantity_bindings": []
     },
     {
-      "entity_id": "ENTITY-ASSAY-RESULT-001",
-      "table_name": "assay_result",
-      "purpose": "Preserve the exact reported value, unit, and specimen relationship for one assay result.",
+      "entity_id": "ENTITY-ASSAY-RESULT-EVENT-001",
+      "table_name": "assay_result_event",
+      "purpose": "Preserve one tenant-owned scientific result event with source and canonical quantities, conversion provenance, content integrity, and supersession lineage.",
       "data_class": "regulated",
-      "retention_class": "laboratory-record",
+      "retention_class": "laboratory-evidence",
+      "tenant_scope": {
+        "scope_mode": "tenant_owned",
+        "tenant_field_id": "FIELD-RESULT-TENANT-ID-001",
+        "composite_identity_required": true,
+        "row_security_mode": "forced_row_level_security",
+        "context_binding": "authenticated_tenant_context",
+        "policy_name": "assay_result_event_tenant_scope",
+        "policy_digest": "sha256:0707070707070707070707070707070707070707070707070707070707070707"
+      },
+      "write_policy_id": "WRITE-RESULT-EVENT-APPEND-001",
       "fields": [
         {
-          "field_id": "FIELD-RESULT-ID-001",
-          "column_name": "result_id",
+          "field_id": "FIELD-RESULT-TENANT-ID-001",
+          "column_name": "tenant_id",
           "semantic_type": "identifier",
           "physical_type": "uuid",
           "nullable": false,
           "source_of_truth": "database",
-          "description": "Stable assay-result identity used by evidence and audit records."
+          "description": "Internal tenant identity carried by every result-event key and reference.",
+          "identity_profile_id": "IDENTITY-INTERNAL-UUID-001"
+        },
+        {
+          "field_id": "FIELD-RESULT-EVENT-ID-001",
+          "column_name": "result_event_id",
+          "semantic_type": "identifier",
+          "physical_type": "uuid",
+          "nullable": false,
+          "source_of_truth": "database",
+          "description": "Internal immutable identity for one accepted scientific result event.",
+          "identity_profile_id": "IDENTITY-INTERNAL-UUID-001"
         },
         {
           "field_id": "FIELD-RESULT-SPECIMEN-ID-001",
@@ -105,46 +392,280 @@
           "physical_type": "uuid",
           "nullable": false,
           "source_of_truth": "database",
-          "description": "Reference to the specimen that supplied the measured material."
+          "description": "Internal specimen identity interpreted with the result tenant identity.",
+          "identity_profile_id": "IDENTITY-INTERNAL-UUID-001"
         },
         {
-          "field_id": "FIELD-RESULT-VALUE-001",
-          "column_name": "reported_value",
-          "semantic_type": "exact_decimal",
-          "physical_type": "numeric(18,6)",
+          "field_id": "FIELD-RESULT-SUPERSEDES-ID-001",
+          "column_name": "supersedes_result_event_id",
+          "semantic_type": "identifier",
+          "physical_type": "uuid",
+          "nullable": true,
+          "source_of_truth": "database",
+          "description": "Earlier event whose scientific meaning is replaced by this correction while its original evidence remains available.",
+          "identity_profile_id": "IDENTITY-INTERNAL-UUID-001"
+        },
+        {
+          "field_id": "FIELD-RESULT-OCCURRED-AT-001",
+          "column_name": "occurred_at",
+          "semantic_type": "instant",
+          "physical_type": "timestamptz",
           "nullable": false,
           "source_of_truth": "upstream_system",
-          "description": "Exact reported quantity retained at the governed precision and scale.",
-          "precision": 18,
-          "scale": 6,
-          "unit": "ng/mL"
+          "description": "Finite absolute instant when the measurement occurred.",
+          "temporal_semantics": "absolute_instant",
+          "temporal_role": "occurrence_time",
+          "finite_required": true,
+          "source_representation_field_id": "FIELD-RESULT-SOURCE-OCCURRED-001"
         },
         {
-          "field_id": "FIELD-RESULT-FINAL-001",
-          "column_name": "is_final",
-          "semantic_type": "boolean",
-          "physical_type": "boolean",
+          "field_id": "FIELD-RESULT-SOURCE-OCCURRED-001",
+          "column_name": "source_occurred_at",
+          "semantic_type": "text",
+          "physical_type": "text",
+          "nullable": false,
+          "source_of_truth": "upstream_system",
+          "description": "Original measurement-time representation retained for source-clock traceability."
+        },
+        {
+          "field_id": "FIELD-RESULT-RECORDED-AT-001",
+          "column_name": "recorded_at",
+          "semantic_type": "instant",
+          "physical_type": "timestamptz",
           "nullable": false,
           "source_of_truth": "database",
-          "description": "Explicit finalization state used by reporting and release checks.",
-          "default_expression_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+          "description": "Finite absolute instant when the event entered the governed ledger.",
+          "temporal_semantics": "absolute_instant",
+          "temporal_role": "recording_time",
+          "finite_required": true
+        },
+        {
+          "field_id": "FIELD-RESULT-ASSAY-CODE-001",
+          "column_name": "assay_code",
+          "semantic_type": "controlled_term",
+          "physical_type": "varchar(64)",
+          "nullable": false,
+          "source_of_truth": "upstream_system",
+          "description": "Governed assay identity that selects the scientific interpretation profile.",
+          "controlled_vocabulary_id": "VOCAB-ASSAY-001"
+        },
+        {
+          "field_id": "FIELD-RESULT-ANALYTE-CODE-001",
+          "column_name": "analyte_code",
+          "semantic_type": "controlled_term",
+          "physical_type": "varchar(64)",
+          "nullable": false,
+          "source_of_truth": "upstream_system",
+          "description": "Governed analyte identity interpreted within the assay profile.",
+          "controlled_vocabulary_id": "VOCAB-ANALYTE-001"
+        },
+        {
+          "field_id": "FIELD-RESULT-METHOD-REVISION-001",
+          "column_name": "method_revision",
+          "semantic_type": "identifier",
+          "physical_type": "varchar(48)",
+          "nullable": false,
+          "source_of_truth": "upstream_system",
+          "description": "Method revision that selects numeric, unit, and interpretation rules.",
+          "identity_profile_id": "IDENTITY-METHOD-REVISION-001"
+        },
+        {
+          "field_id": "FIELD-RESULT-RAW-VALUE-001",
+          "column_name": "raw_value",
+          "semantic_type": "exact_decimal",
+          "physical_type": "numeric(20,8)",
+          "nullable": false,
+          "source_of_truth": "upstream_system",
+          "description": "Finite source quantity retained at the precision supplied by the governed method profile.",
+          "numeric_profile_id": "NUMERIC-QPCR-SOURCE-001",
+          "quantity_role": "source_value"
+        },
+        {
+          "field_id": "FIELD-RESULT-RAW-LEXEME-001",
+          "column_name": "raw_value_lexeme",
+          "semantic_type": "text",
+          "physical_type": "text",
+          "nullable": false,
+          "source_of_truth": "upstream_system",
+          "description": "Original decimal lexeme retained for exact source-message traceability."
+        },
+        {
+          "field_id": "FIELD-RESULT-RAW-UNIT-001",
+          "column_name": "raw_unit_label",
+          "semantic_type": "scientific_unit",
+          "physical_type": "varchar(64)",
+          "nullable": false,
+          "source_of_truth": "upstream_system",
+          "description": "Original source unit label retained beside the canonical UCUM code.",
+          "unit_vocabulary_id": "VOCAB-UCUM-LAB-001",
+          "unit_role": "source_label"
+        },
+        {
+          "field_id": "FIELD-RESULT-CANONICAL-VALUE-001",
+          "column_name": "canonical_value",
+          "semantic_type": "exact_decimal",
+          "physical_type": "numeric(38,12)",
+          "nullable": false,
+          "source_of_truth": "derived",
+          "description": "Finite canonical quantity produced by the versioned assay, method, unit, and rounding profile.",
+          "numeric_profile_id": "NUMERIC-QPCR-CANONICAL-001",
+          "quantity_role": "canonical_value"
+        },
+        {
+          "field_id": "FIELD-RESULT-CANONICAL-UNIT-001",
+          "column_name": "canonical_unit_code",
+          "semantic_type": "scientific_unit",
+          "physical_type": "varchar(64)",
+          "nullable": false,
+          "source_of_truth": "derived",
+          "description": "Canonical UCUM code selected by the versioned mapping profile.",
+          "unit_vocabulary_id": "VOCAB-UCUM-LAB-001",
+          "unit_role": "canonical_code"
+        },
+        {
+          "field_id": "FIELD-RESULT-CONVERSION-FACTOR-001",
+          "column_name": "conversion_factor",
+          "semantic_type": "exact_decimal",
+          "physical_type": "numeric(28,16)",
+          "nullable": false,
+          "source_of_truth": "derived",
+          "description": "Finite factor applied by the selected source-to-canonical unit mapping.",
+          "numeric_profile_id": "NUMERIC-QPCR-CONVERSION-001",
+          "quantity_role": "conversion_factor"
+        },
+        {
+          "field_id": "FIELD-RESULT-ROUNDING-MODE-001",
+          "column_name": "rounding_mode_code",
+          "semantic_type": "controlled_term",
+          "physical_type": "varchar(24)",
+          "nullable": false,
+          "source_of_truth": "derived",
+          "description": "Governed rounding mode applied after unit conversion.",
+          "controlled_vocabulary_id": "VOCAB-ROUNDING-MODE-001"
+        },
+        {
+          "field_id": "FIELD-RESULT-MAPPING-REVISION-001",
+          "column_name": "unit_mapping_revision",
+          "semantic_type": "identifier",
+          "physical_type": "varchar(48)",
+          "nullable": false,
+          "source_of_truth": "derived",
+          "description": "Versioned mapping identity that binds source unit, canonical unit, conversion factor, and rounding behavior.",
+          "identity_profile_id": "IDENTITY-UNIT-MAPPING-REVISION-001"
+        },
+        {
+          "field_id": "FIELD-RESULT-PROVENANCE-DIGEST-001",
+          "column_name": "conversion_provenance_digest",
+          "semantic_type": "content_digest",
+          "physical_type": "bytea",
+          "nullable": false,
+          "source_of_truth": "derived",
+          "description": "Thirty-two-byte digest of the canonical semantic envelope and its versioned interpretation inputs.",
+          "digest_profile_id": "DIGEST-SEMANTIC-EVIDENCE-001"
         }
       ],
       "primary_key_field_ids": [
-        "FIELD-RESULT-ID-001"
+        "FIELD-RESULT-TENANT-ID-001",
+        "FIELD-RESULT-EVENT-ID-001"
       ],
       "constraints": [
         {
           "constraint_id": "CONSTRAINT-RESULT-SPECIMEN-001",
           "constraint_type": "foreign_key",
           "field_ids": [
+            "FIELD-RESULT-TENANT-ID-001",
             "FIELD-RESULT-SPECIMEN-ID-001"
           ],
           "validation_state": "validated",
           "referenced_entity_id": "ENTITY-SPECIMEN-001",
           "referenced_field_ids": [
+            "FIELD-SPECIMEN-TENANT-ID-001",
             "FIELD-SPECIMEN-ID-001"
           ]
+        },
+        {
+          "constraint_id": "CONSTRAINT-RESULT-SUPERSESSION-001",
+          "constraint_type": "foreign_key",
+          "field_ids": [
+            "FIELD-RESULT-TENANT-ID-001",
+            "FIELD-RESULT-SUPERSEDES-ID-001"
+          ],
+          "validation_state": "validated",
+          "referenced_entity_id": "ENTITY-ASSAY-RESULT-EVENT-001",
+          "referenced_field_ids": [
+            "FIELD-RESULT-TENANT-ID-001",
+            "FIELD-RESULT-EVENT-ID-001"
+          ]
+        },
+        {
+          "constraint_id": "CONSTRAINT-RESULT-INSTANTS-001",
+          "constraint_type": "check",
+          "field_ids": [
+            "FIELD-RESULT-OCCURRED-AT-001",
+            "FIELD-RESULT-RECORDED-AT-001"
+          ],
+          "validation_state": "validated",
+          "expression_digest": "sha256:0808080808080808080808080808080808080808080808080808080808080808"
+        },
+        {
+          "constraint_id": "CONSTRAINT-RESULT-QUANTITY-001",
+          "constraint_type": "check",
+          "field_ids": [
+            "FIELD-RESULT-RAW-VALUE-001",
+            "FIELD-RESULT-CANONICAL-VALUE-001",
+            "FIELD-RESULT-CONVERSION-FACTOR-001"
+          ],
+          "validation_state": "validated",
+          "expression_digest": "sha256:0909090909090909090909090909090909090909090909090909090909090909"
+        },
+        {
+          "constraint_id": "CONSTRAINT-RESULT-RLS-001",
+          "constraint_type": "row_level_security",
+          "field_ids": [
+            "FIELD-RESULT-TENANT-ID-001"
+          ],
+          "validation_state": "validated",
+          "policy_name": "assay_result_event_tenant_scope",
+          "policy_digest": "sha256:0707070707070707070707070707070707070707070707070707070707070707"
+        },
+        {
+          "constraint_id": "CONSTRAINT-RESULT-APPEND-001",
+          "constraint_type": "append_only",
+          "field_ids": [
+            "FIELD-RESULT-TENANT-ID-001",
+            "FIELD-RESULT-EVENT-ID-001"
+          ],
+          "validation_state": "validated",
+          "policy_name": "assay_result_event_append_only",
+          "policy_digest": "sha256:1010101010101010101010101010101010101010101010101010101010101010"
+        },
+        {
+          "constraint_id": "CONSTRAINT-RESULT-PRIVILEGE-001",
+          "constraint_type": "privilege_boundary",
+          "field_ids": [
+            "FIELD-RESULT-TENANT-ID-001",
+            "FIELD-RESULT-EVENT-ID-001"
+          ],
+          "validation_state": "validated",
+          "policy_name": "assay_result_event_controlled_write",
+          "policy_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ],
+      "quantity_bindings": [
+        {
+          "quantity_binding_id": "QUANTITY-RESULT-QPCR-001",
+          "raw_value_field_id": "FIELD-RESULT-RAW-VALUE-001",
+          "raw_value_lexeme_field_id": "FIELD-RESULT-RAW-LEXEME-001",
+          "raw_unit_field_id": "FIELD-RESULT-RAW-UNIT-001",
+          "canonical_value_field_id": "FIELD-RESULT-CANONICAL-VALUE-001",
+          "canonical_unit_field_id": "FIELD-RESULT-CANONICAL-UNIT-001",
+          "assay_field_id": "FIELD-RESULT-ASSAY-CODE-001",
+          "analyte_field_id": "FIELD-RESULT-ANALYTE-CODE-001",
+          "method_revision_field_id": "FIELD-RESULT-METHOD-REVISION-001",
+          "conversion_factor_field_id": "FIELD-RESULT-CONVERSION-FACTOR-001",
+          "rounding_mode_field_id": "FIELD-RESULT-ROUNDING-MODE-001",
+          "mapping_revision_field_id": "FIELD-RESULT-MAPPING-REVISION-001",
+          "provenance_digest_field_id": "FIELD-RESULT-PROVENANCE-DIGEST-001"
         }
       ]
     }
@@ -152,23 +673,23 @@
   "compatibility": [
     {
       "application_release": "lims-eln-enterprise-v0.4.0",
-      "minimum_schema_version": "1.0.0",
-      "maximum_schema_version": "1.1.0",
+      "minimum_schema_version": "2.0.0",
+      "maximum_schema_version": "2.1.0",
       "verification_receipt_ids": [
         "RECEIPT-DB-MIGRATION-001"
       ]
     }
   ],
   "invalidation_triggers": [
-    "Database engine or extension version changes",
-    "Physical type or constraint changes",
-    "Scientific unit or vocabulary semantics change",
-    "Retention or data classification changes"
+    "Database engine, extension, or supported-major policy changes",
+    "Identity, isolation, physical type, constraint, or write-policy semantics change",
+    "Assay, analyte, method, numeric, UCUM, conversion, or rounding profile changes",
+    "Canonicalization, digest scope, retention, or data classification changes"
   ],
   "metadata": {
-    "schema_version": "2.0.1",
+    "schema_version": "2.0.2",
     "created_at": "2026-08-04T14:00:00Z",
-    "updated_at": "2026-08-04T14:00:00Z",
+    "updated_at": "2026-08-04T20:00:00Z",
     "owner": {
       "actor_id": "OWNER-DATA-CONTRACT-001",
       "display_name": "Laboratory Data Contract Steward",

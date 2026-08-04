@@ -1,7 +1,7 @@
 # Schema Catalog
 
 All contracts use JSON Schema 2020-12 and stable HTTPS identifiers.
-Release candidate `2.0.1` uses the stable `/v2.0/` identifier coordinate and implements
+Release candidate `2.0.2` uses the stable `/v2.0/` identifier coordinate and implements
 Control Plane Profile v0.3.
 
 | Schema | Record |
@@ -58,8 +58,11 @@ Control Plane Profile v0.3.
   explicit constraint, replacement behavior, and verification.
 - Consequential language controls bind an affirmative target and safe replacement
   to an accountable owner, observable verification, and durable evidence.
-- Data contracts preserve semantic type, physical type, nullability, units,
-  precision, temporal meaning, keys, constraints, retention, and compatibility.
+- Data contracts preserve semantic and physical types, nullability, temporal
+  roles, finite-value rules, tenant-composite identity, forced row-level
+  security, constrained external identity, scientific numeric profiles,
+  versioned unit mappings, conversion provenance, digest scope, controlled
+  writes, retention, and compatibility.
 - Migration plans sequence bounded phases, retain immutable applied checksums,
   and establish approval and recovery before a destructive contract phase.
 - Migration receipts bind the exact plan, tool, script, environment, source

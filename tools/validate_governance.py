@@ -22,7 +22,7 @@ EXAMPLE_DIR = ROOT / "examples"
 RULESET_DIR = ROOT / "rulesets"
 WORKFLOW_DIR = ROOT / ".github" / "workflows"
 DRAFT = "https://json-schema.org/draft/2020-12/schema"
-SCHEMA_RELEASE = "2.0.1"
+SCHEMA_RELEASE = "2.0.2"
 SCHEMA_ID_PREFIX = "https://schemas.driftframe.org/site-reading-governance/v2.0/"
 SCHEMA_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9-]*\.schema\.json$")
 DOCUMENT_PATH_PATTERN = re.compile(
@@ -73,12 +73,16 @@ ROOT_ORIENTATION_SCHEMAS = {
 ROOT_ORIENTATION_CONTRACTS = {
     "CONTRACT-SELECTED-FUTURE-CLOSURE-002": "2.0.0",
     "CONTRACT-AUTOMATION-BRANCH-POLICY-001": "1.0.0",
+    "CONTRACT-DATA-CONTRACT-CONVERGENCE-001": "2.0.0",
 }
 ROOT_ORIENTATION_CONTRACT_FILES = {
     "CONTRACT-SELECTED-FUTURE-CLOSURE-002": (
         SCHEMA_DIR / "simulated-receipt-closure.schema.json"
     ),
     "CONTRACT-AUTOMATION-BRANCH-POLICY-001": ROOT / "tools" / "check_branch_flow.py",
+    "CONTRACT-DATA-CONTRACT-CONVERGENCE-001": (
+        SCHEMA_DIR / "data-contract.schema.json"
+    ),
 }
 ROOT_ORIENTATION_CAMPAIGNS = {
     "LIMS-ELN-OPEN-RECEIPTS",
@@ -818,18 +822,544 @@ def _validate_control_plane_examples(records: dict[str, Any]) -> list[Finding]:
 
 def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
     """Prove the database contract, plan, evidence, and release chain agrees."""
-    if not DATABASE_EXAMPLE_NAMES.issubset(records):
+    if "data-contract.json" not in records:
         return []
 
     findings: list[Finding] = []
     contract = records["data-contract.json"]
+    contract_id = contract.get("data_contract_id")
+    if (
+        contract.get("contract_digest_scope")
+        == "governance_canonical_json_v1_excluding_contract_digest"
+    ):
+        digest_material = dict(contract)
+        digest_material.pop("contract_digest", None)
+        expected_contract_digest = "sha256:" + sha256(
+            json.dumps(
+                digest_material,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode("utf-8")
+        ).hexdigest()
+        if contract.get("contract_digest") != expected_contract_digest:
+            findings.append(
+                Finding(
+                    "examples/data-contract.json.contract_digest",
+                    "contract digest must bind the declared canonical contract material",
+                )
+            )
+
+    profile_specs = (
+        ("identity_profiles", "identity_profile_id"),
+        ("numeric_profiles", "numeric_profile_id"),
+        ("unit_vocabularies", "unit_vocabulary_id"),
+        ("digest_profiles", "digest_profile_id"),
+        ("write_policies", "write_policy_id"),
+    )
+    profile_maps: dict[str, dict[Any, Any]] = {}
+    for collection_name, identifier_name in profile_specs:
+        collection = contract.get(collection_name, [])
+        identifiers = [item.get(identifier_name) for item in collection]
+        if len(identifiers) != len(set(identifiers)):
+            findings.append(
+                Finding(
+                    f"examples/data-contract.json.{collection_name}",
+                    f"{collection_name.replace('_', ' ')} identifiers must be unique",
+                )
+            )
+        profile_maps[collection_name] = {
+            item.get(identifier_name): item for item in collection
+        }
+
+    identity_profiles = profile_maps["identity_profiles"]
+    numeric_profiles = profile_maps["numeric_profiles"]
+    unit_vocabularies = profile_maps["unit_vocabularies"]
+    digest_profiles = profile_maps["digest_profiles"]
+    write_policies = profile_maps["write_policies"]
+
+    tenant_profile_id = contract.get("isolation_policy", {}).get(
+        "tenant_identity_profile_id"
+    )
+    tenant_profile = identity_profiles.get(tenant_profile_id)
+    if tenant_profile is None or tenant_profile.get("identity_kind") != "internal_uuid":
+        findings.append(
+            Finding(
+                "examples/data-contract.json.isolation_policy.tenant_identity_profile_id",
+                "tenant isolation must resolve to an internal UUID identity profile",
+            )
+        )
+
+    for index, profile in enumerate(contract.get("numeric_profiles", [])):
+        match = re.fullmatch(
+            r"(?:numeric|decimal)\(([1-9][0-9]*),([0-9]+)\)",
+            str(profile.get("physical_type", "")).lower(),
+        )
+        if match is None or (
+            int(match.group(1)) != profile.get("precision")
+            or int(match.group(2)) != profile.get("scale")
+        ):
+            findings.append(
+                Finding(
+                    f"examples/data-contract.json.numeric_profiles[{index}]",
+                    "numeric profile precision and scale must match its physical type",
+                )
+            )
+        if profile.get("scale", 0) > profile.get("precision", 0):
+            findings.append(
+                Finding(
+                    f"examples/data-contract.json.numeric_profiles[{index}].scale",
+                    "numeric profile scale must fit within its precision",
+                )
+            )
+        if profile.get("rounding_scale", 0) > profile.get("scale", 0):
+            findings.append(
+                Finding(
+                    f"examples/data-contract.json.numeric_profiles[{index}].rounding_scale",
+                    "rounding scale must fit within the stored numeric scale",
+                )
+            )
+
+    for index, profile in enumerate(contract.get("identity_profiles", [])):
+        if profile.get("identity_kind") != "external_constrained":
+            continue
+        match = re.fullmatch(
+            r"(?:varchar|character varying)\(([1-9][0-9]*)\)",
+            str(profile.get("physical_type", "")).lower(),
+        )
+        if match is None or int(match.group(1)) != profile.get("maximum_length"):
+            findings.append(
+                Finding(
+                    f"examples/data-contract.json.identity_profiles[{index}]",
+                    "external identity length must match its bounded physical type",
+                )
+            )
+
+    for index, profile in enumerate(contract.get("digest_profiles", [])):
+        expected_byte_length = {
+            "sha-256": 32,
+            "sha-384": 48,
+            "sha-512": 64,
+        }.get(profile.get("algorithm"))
+        if expected_byte_length != profile.get("byte_length"):
+            findings.append(
+                Finding(
+                    f"examples/data-contract.json.digest_profiles[{index}].byte_length",
+                    "digest byte length must match its selected algorithm",
+                )
+            )
+
+    entity_ids = [entity.get("entity_id") for entity in contract.get("entities", [])]
+    if len(entity_ids) != len(set(entity_ids)):
+        findings.append(
+            Finding("examples/data-contract.json.entities", "entity identifiers must be unique")
+        )
+    entities = {
+        entity.get("entity_id"): entity for entity in contract.get("entities", [])
+    }
+    database = contract.get("database", {})
+    engine_family = database.get("engine_family")
+    engine_major_match = re.match(r"([1-9][0-9]*)", str(database.get("engine_version", "")))
+    if (
+        engine_major_match is None
+        or int(engine_major_match.group(1))
+        not in set(database.get("supported_major_versions", []))
+    ):
+        findings.append(
+            Finding(
+                "examples/data-contract.json.database.supported_major_versions",
+                "supported majors must include the selected database engine version",
+            )
+        )
+    for entity_index, entity in enumerate(contract.get("entities", [])):
+        entity_path = f"examples/data-contract.json.entities[{entity_index}]"
+        field_ids = [field.get("field_id") for field in entity.get("fields", [])]
+        field_id_set = set(field_ids)
+        fields = {field.get("field_id"): field for field in entity.get("fields", [])}
+        if len(field_ids) != len(field_id_set):
+            findings.append(
+                Finding(
+                    f"examples/data-contract.json.entities[{entity_index}].fields",
+                    "field identifiers must be unique within one entity",
+                )
+            )
+        primary_key_field_ids = entity.get("primary_key_field_ids", [])
+        if not set(primary_key_field_ids).issubset(field_id_set):
+            findings.append(
+                Finding(
+                    f"examples/data-contract.json.entities[{entity_index}].primary_key_field_ids",
+                    "every primary-key field must resolve within its entity",
+                )
+            )
+        write_policy = write_policies.get(entity.get("write_policy_id"))
+        if write_policy is None:
+            findings.append(
+                Finding(
+                    f"{entity_path}.write_policy_id",
+                    "entity write policy must resolve within the contract",
+                )
+            )
+
+        tenant_scope = entity.get("tenant_scope", {})
+        tenant_field_id = tenant_scope.get("tenant_field_id")
+        if tenant_scope.get("scope_mode") == "tenant_owned":
+            tenant_field = fields.get(tenant_field_id)
+            if tenant_field is None:
+                findings.append(
+                    Finding(
+                        f"{entity_path}.tenant_scope.tenant_field_id",
+                        "tenant field must resolve within the tenant-owned entity",
+                    )
+                )
+            elif tenant_field.get("identity_profile_id") != tenant_profile_id:
+                findings.append(
+                    Finding(
+                        f"{entity_path}.tenant_scope.tenant_field_id",
+                        "tenant field must use the contract tenant identity profile",
+                    )
+                )
+            if not primary_key_field_ids or primary_key_field_ids[0] != tenant_field_id:
+                findings.append(
+                    Finding(
+                        f"{entity_path}.primary_key_field_ids",
+                        "tenant-owned primary keys must lead with tenant identity",
+                    )
+                )
+
+        for field_index, field in enumerate(entity.get("fields", [])):
+            physical_type = str(field.get("physical_type", "")).lower()
+            semantic_type = field.get("semantic_type")
+            field_path = f"{entity_path}.fields[{field_index}]"
+            expected_postgresql_type = {
+                "instant": "timestamptz",
+                "civil_date": "date",
+                "boolean": "boolean",
+            }.get(semantic_type)
+            if (
+                engine_family == "postgresql"
+                and expected_postgresql_type is not None
+                and physical_type != expected_postgresql_type
+            ):
+                findings.append(
+                    Finding(
+                        f"{field_path}.physical_type",
+                        f"PostgreSQL {semantic_type} fields use {expected_postgresql_type}",
+                    )
+                )
+            if (
+                engine_family == "postgresql"
+                and semantic_type == "exact_decimal"
+                and re.fullmatch(r"(?:numeric|decimal)\([1-9][0-9]*,[0-9]+\)", physical_type)
+                is None
+            ):
+                findings.append(
+                    Finding(
+                        f"{field_path}.physical_type",
+                        "PostgreSQL exact-decimal fields use declared numeric precision and scale",
+                    )
+                )
+            if semantic_type == "identifier":
+                profile = identity_profiles.get(field.get("identity_profile_id"))
+                if profile is None:
+                    findings.append(
+                        Finding(
+                            f"{field_path}.identity_profile_id",
+                            "identifier field must resolve to one identity profile",
+                        )
+                    )
+                elif physical_type != str(profile.get("physical_type", "")).lower():
+                    findings.append(
+                        Finding(
+                            f"{field_path}.physical_type",
+                            "identifier field physical type must match its identity profile",
+                        )
+                    )
+            if semantic_type == "exact_decimal":
+                profile = numeric_profiles.get(field.get("numeric_profile_id"))
+                expected_role = {
+                    "source_value": "source_quantity",
+                    "canonical_value": "canonical_quantity",
+                    "conversion_factor": "conversion_factor",
+                }.get(field.get("quantity_role"))
+                if profile is None:
+                    findings.append(
+                        Finding(
+                            f"{field_path}.numeric_profile_id",
+                            "quantity field must resolve to one numeric profile",
+                        )
+                    )
+                else:
+                    if physical_type != str(profile.get("physical_type", "")).lower():
+                        findings.append(
+                            Finding(
+                                f"{field_path}.physical_type",
+                                "quantity field physical type must match its numeric profile",
+                            )
+                        )
+                    if profile.get("representation_role") != expected_role:
+                        findings.append(
+                            Finding(
+                                f"{field_path}.quantity_role",
+                                "quantity role must match its numeric-profile representation",
+                            )
+                        )
+            if semantic_type == "scientific_unit" and field.get(
+                "unit_vocabulary_id"
+            ) not in unit_vocabularies:
+                findings.append(
+                    Finding(
+                        f"{field_path}.unit_vocabulary_id",
+                        "scientific unit field must resolve to one versioned vocabulary",
+                    )
+                )
+            if semantic_type == "content_digest":
+                profile = digest_profiles.get(field.get("digest_profile_id"))
+                if profile is None:
+                    findings.append(
+                        Finding(
+                            f"{field_path}.digest_profile_id",
+                            "content digest field must resolve to one digest profile",
+                        )
+                    )
+                elif physical_type != str(profile.get("physical_type", "")).lower():
+                    findings.append(
+                        Finding(
+                            f"{field_path}.physical_type",
+                            "content digest physical type must match its digest profile",
+                        )
+                    )
+            source_field_id = field.get("source_representation_field_id")
+            if source_field_id is not None and source_field_id not in field_id_set:
+                findings.append(
+                    Finding(
+                        f"{field_path}.source_representation_field_id",
+                        "source representation field must resolve within its entity",
+                    )
+                )
+
+        constraint_ids = [
+            constraint.get("constraint_id") for constraint in entity.get("constraints", [])
+        ]
+        if len(constraint_ids) != len(set(constraint_ids)):
+            findings.append(
+                Finding(
+                    f"{entity_path}.constraints",
+                    "constraint identifiers must be unique within one entity",
+                )
+            )
+        for constraint_index, constraint in enumerate(entity.get("constraints", [])):
+            if not set(constraint.get("field_ids", [])).issubset(field_id_set):
+                findings.append(
+                    Finding(
+                        f"{entity_path}.constraints[{constraint_index}].field_ids",
+                        "every constrained field must resolve within its entity",
+                    )
+                )
+            if constraint.get("constraint_type") == "foreign_key":
+                target = entities.get(constraint.get("referenced_entity_id"))
+                if target is None:
+                    findings.append(
+                        Finding(
+                            f"{entity_path}.constraints[{constraint_index}]"
+                            ".referenced_entity_id",
+                            "foreign-key target entity must resolve",
+                        )
+                    )
+                else:
+                    target_field_ids = {
+                        field.get("field_id") for field in target.get("fields", [])
+                    }
+                    if not set(constraint.get("referenced_field_ids", [])).issubset(
+                        target_field_ids
+                    ):
+                        findings.append(
+                            Finding(
+                                f"{entity_path}.constraints[{constraint_index}]"
+                                ".referenced_field_ids",
+                                "every foreign-key target field must resolve",
+                            )
+                        )
+                    source_fields = constraint.get("field_ids", [])
+                    target_fields = constraint.get("referenced_field_ids", [])
+                    if len(source_fields) != len(target_fields):
+                        findings.append(
+                            Finding(
+                                f"{entity_path}.constraints[{constraint_index}]",
+                                "foreign-key source and target field counts must agree",
+                            )
+                        )
+                    target_tenant_field_id = target.get("tenant_scope", {}).get(
+                        "tenant_field_id"
+                    )
+                    if (
+                        tenant_scope.get("scope_mode") == "tenant_owned"
+                        and target.get("tenant_scope", {}).get("scope_mode")
+                        == "tenant_owned"
+                        and (
+                            not source_fields
+                            or not target_fields
+                            or source_fields[0] != tenant_field_id
+                            or target_fields[0] != target_tenant_field_id
+                        )
+                    ):
+                        findings.append(
+                            Finding(
+                                f"{entity_path}.constraints[{constraint_index}]",
+                                "tenant-owned foreign keys must lead with matching tenant identities",
+                            )
+                        )
+
+        constraints_by_type: dict[Any, list[dict[str, Any]]] = {}
+        for constraint in entity.get("constraints", []):
+            constraints_by_type.setdefault(constraint.get("constraint_type"), []).append(
+                constraint
+            )
+        if tenant_scope.get("scope_mode") == "tenant_owned" and not any(
+            constraint.get("validation_state") == "validated"
+            and constraint.get("field_ids") == [tenant_field_id]
+            and constraint.get("policy_name") == tenant_scope.get("policy_name")
+            and constraint.get("policy_digest") == tenant_scope.get("policy_digest")
+            for constraint in constraints_by_type.get("row_level_security", [])
+        ):
+            findings.append(
+                Finding(
+                    f"{entity_path}.constraints",
+                    "tenant-owned entities must carry a validated row-level-security constraint matching their isolation policy",
+                )
+            )
+        if not any(
+            constraint.get("validation_state") == "validated"
+            for constraint in constraints_by_type.get("privilege_boundary", [])
+        ):
+            findings.append(
+                Finding(
+                    f"{entity_path}.constraints",
+                    "each entity must carry a validated privilege-boundary constraint",
+                )
+            )
+        if write_policy and write_policy.get("mutation_model") == "append_only_ledger":
+            if not any(
+                constraint.get("validation_state") == "validated"
+                for constraint in constraints_by_type.get("append_only", [])
+            ):
+                findings.append(
+                    Finding(
+                        f"{entity_path}.constraints",
+                        "append-only ledgers must carry a validated append-only constraint",
+                    )
+                )
+            temporal_roles = {
+                field.get("temporal_role")
+                for field in entity.get("fields", [])
+                if field.get("semantic_type") == "instant"
+            }
+            if not {"occurrence_time", "recording_time"}.issubset(temporal_roles):
+                findings.append(
+                    Finding(
+                        f"{entity_path}.fields",
+                        "append-only ledgers must preserve occurrence and recording instants",
+                    )
+                )
+
+        quantity_binding_ids = [
+            binding.get("quantity_binding_id")
+            for binding in entity.get("quantity_bindings", [])
+        ]
+        if len(quantity_binding_ids) != len(set(quantity_binding_ids)):
+            findings.append(
+                Finding(
+                    f"{entity_path}.quantity_bindings",
+                    "quantity-binding identifiers must be unique within one entity",
+                )
+            )
+        quantity_field_roles = {
+            "raw_value_field_id": ("exact_decimal", "source_value"),
+            "raw_value_lexeme_field_id": ("text", None),
+            "raw_unit_field_id": ("scientific_unit", "source_label"),
+            "canonical_value_field_id": ("exact_decimal", "canonical_value"),
+            "canonical_unit_field_id": ("scientific_unit", "canonical_code"),
+            "conversion_factor_field_id": ("exact_decimal", "conversion_factor"),
+            "provenance_digest_field_id": ("content_digest", None),
+        }
+        for binding_index, binding in enumerate(entity.get("quantity_bindings", [])):
+            binding_path = f"{entity_path}.quantity_bindings[{binding_index}]"
+            for field_name, (expected_semantic_type, expected_role) in (
+                quantity_field_roles.items()
+            ):
+                linked_field = fields.get(binding.get(field_name))
+                if linked_field is None:
+                    findings.append(
+                        Finding(
+                            f"{binding_path}.{field_name}",
+                            "quantity binding field must resolve within its entity",
+                        )
+                    )
+                    continue
+                if linked_field.get("semantic_type") != expected_semantic_type:
+                    findings.append(
+                        Finding(
+                            f"{binding_path}.{field_name}",
+                            "quantity binding field must carry the expected semantic type",
+                        )
+                    )
+                linked_role = linked_field.get("quantity_role") or linked_field.get(
+                    "unit_role"
+                )
+                if expected_role is not None and linked_role != expected_role:
+                    findings.append(
+                        Finding(
+                            f"{binding_path}.{field_name}",
+                            "quantity binding field must carry the expected representation role",
+                        )
+                    )
+            for field_name in (
+                "assay_field_id",
+                "analyte_field_id",
+                "method_revision_field_id",
+                "rounding_mode_field_id",
+                "mapping_revision_field_id",
+            ):
+                if binding.get(field_name) not in field_id_set:
+                    findings.append(
+                        Finding(
+                            f"{binding_path}.{field_name}",
+                            "quantity provenance field must resolve within its entity",
+                        )
+                    )
+            quantity_profiles = []
+            for field_name in (
+                "raw_value_field_id",
+                "canonical_value_field_id",
+                "conversion_factor_field_id",
+            ):
+                linked_field = fields.get(binding.get(field_name), {})
+                profile = numeric_profiles.get(linked_field.get("numeric_profile_id"))
+                if profile is not None:
+                    quantity_profiles.append(profile)
+            interpretation_coordinates = {
+                (
+                    profile.get("assay_code"),
+                    profile.get("analyte_code"),
+                    profile.get("method_revision"),
+                )
+                for profile in quantity_profiles
+            }
+            if len(quantity_profiles) == 3 and len(interpretation_coordinates) != 1:
+                findings.append(
+                    Finding(
+                        binding_path,
+                        "source, canonical, and conversion profiles must share one assay, analyte, and method coordinate",
+                    )
+                )
+
+    if not DATABASE_EXAMPLE_NAMES.issubset(records):
+        return findings
+
     finding = records["database-refactor-finding.json"]
     plan = records["database-migration-plan.json"]
     receipt = records["database-migration-receipt.json"]
     reconciliation = records["data-reconciliation.json"]
     manifest = records["database-release-manifest.json"]
-
-    contract_id = contract.get("data_contract_id")
     plan_id = plan.get("migration_plan_id")
     receipt_id = receipt.get("migration_receipt_id")
     reconciliation_id = reconciliation.get("reconciliation_id")
@@ -844,99 +1374,6 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
             findings.append(
                 Finding(label, "data-contract identifier must resolve to the contract example")
             )
-
-    entity_ids = [entity.get("entity_id") for entity in contract.get("entities", [])]
-    if len(entity_ids) != len(set(entity_ids)):
-        findings.append(
-            Finding("examples/data-contract.json.entities", "entity identifiers must be unique")
-        )
-    entities = {
-        entity.get("entity_id"): entity for entity in contract.get("entities", [])
-    }
-    engine_family = contract.get("database", {}).get("engine_family")
-    for entity_index, entity in enumerate(contract.get("entities", [])):
-        field_ids = [field.get("field_id") for field in entity.get("fields", [])]
-        field_id_set = set(field_ids)
-        if len(field_ids) != len(field_id_set):
-            findings.append(
-                Finding(
-                    f"examples/data-contract.json.entities[{entity_index}].fields",
-                    "field identifiers must be unique within one entity",
-                )
-            )
-        if not set(entity.get("primary_key_field_ids", [])).issubset(field_id_set):
-            findings.append(
-                Finding(
-                    f"examples/data-contract.json.entities[{entity_index}].primary_key_field_ids",
-                    "every primary-key field must resolve within its entity",
-                )
-            )
-        for field_index, field in enumerate(entity.get("fields", [])):
-            physical_type = str(field.get("physical_type", "")).lower()
-            semantic_type = field.get("semantic_type")
-            expected_postgresql_type = {
-                "instant": "timestamptz",
-                "civil_date": "date",
-                "boolean": "boolean",
-            }.get(semantic_type)
-            if (
-                engine_family == "postgresql"
-                and expected_postgresql_type is not None
-                and physical_type != expected_postgresql_type
-            ):
-                findings.append(
-                    Finding(
-                        f"examples/data-contract.json.entities[{entity_index}]"
-                        f".fields[{field_index}].physical_type",
-                        f"PostgreSQL {semantic_type} fields use {expected_postgresql_type}",
-                    )
-                )
-            if (
-                engine_family == "postgresql"
-                and semantic_type == "exact_decimal"
-                and re.fullmatch(r"(?:numeric|decimal)\([1-9][0-9]*,[0-9]+\)", physical_type)
-                is None
-            ):
-                findings.append(
-                    Finding(
-                        f"examples/data-contract.json.entities[{entity_index}]"
-                        f".fields[{field_index}].physical_type",
-                        "PostgreSQL exact-decimal fields use declared numeric precision and scale",
-                    )
-                )
-        for constraint_index, constraint in enumerate(entity.get("constraints", [])):
-            if not set(constraint.get("field_ids", [])).issubset(field_id_set):
-                findings.append(
-                    Finding(
-                        f"examples/data-contract.json.entities[{entity_index}]"
-                        f".constraints[{constraint_index}].field_ids",
-                        "every constrained field must resolve within its entity",
-                    )
-                )
-            if constraint.get("constraint_type") == "foreign_key":
-                target = entities.get(constraint.get("referenced_entity_id"))
-                if target is None:
-                    findings.append(
-                        Finding(
-                            f"examples/data-contract.json.entities[{entity_index}]"
-                            f".constraints[{constraint_index}].referenced_entity_id",
-                            "foreign-key target entity must resolve",
-                        )
-                    )
-                else:
-                    target_field_ids = {
-                        field.get("field_id") for field in target.get("fields", [])
-                    }
-                    if not set(constraint.get("referenced_field_ids", [])).issubset(
-                        target_field_ids
-                    ):
-                        findings.append(
-                            Finding(
-                                f"examples/data-contract.json.entities[{entity_index}]"
-                                f".constraints[{constraint_index}].referenced_field_ids",
-                                "every foreign-key target field must resolve",
-                            )
-                        )
 
     if plan_id not in finding.get("target_migration_ids", []):
         findings.append(
@@ -1355,8 +1792,8 @@ def _validate_repository_orientation_records(
         findings.append(
             Finding(
                 "machine-node.json.contracts",
-                "root contracts must bind the selected-future closure and "
-                "automation branch policy versions",
+                "root contracts must bind selected-future closure, automation "
+                "branch policy, and data-contract convergence versions",
             )
         )
     for index, contract in enumerate(node_contracts):
@@ -1396,11 +1833,11 @@ def _validate_repository_orientation_records(
                 "promotion receipt must use the governed repository receipt identity",
             )
         )
-    if promotion_receipt.get("target_release") != "governance-v2.0.1":
+    if promotion_receipt.get("target_release") != "governance-v2.0.2":
         findings.append(
             Finding(
                 "promotion-receipt.json.target_release",
-                "promotion receipt must bind the canonical governance-v2.0.1 tag",
+                "promotion receipt must bind the canonical governance-v2.0.2 tag",
             )
         )
 
@@ -1847,7 +2284,17 @@ def validate_pair(schema_path: Path, document_path: Path) -> list[Finding]:
     """Validate one downstream document with one governance schema."""
     try:
         document = load_json(document_path)
-        return SchemaValidator(schema_path).validate(document)
+        findings = SchemaValidator(schema_path).validate(document)
+        if schema_path.name == "data-contract.schema.json" and isinstance(document, dict):
+            semantic_findings = _validate_database_examples(
+                {"data-contract.json": document}
+            )
+            for finding in semantic_findings:
+                suffix = finding.path.removeprefix("examples/data-contract.json")
+                findings.append(
+                    Finding(f"{document_path}{suffix}", finding.message)
+                )
+        return findings
     except (
         OSError,
         json.JSONDecodeError,
