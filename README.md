@@ -76,6 +76,15 @@ reconciliation bind observed or simulated results back to that plan. The release
 manifest assembles migration, restore, acceptance, finding, and evidence-bundle
 coordinates into one reviewable promotion surface.
 
+The contracts remain migration-tool neutral. The current synthetic exemplar
+selects Flyway Community 13.0.0 for repository-owned PostgreSQL schema evolution.
+Flyway owns ordering, checksums, schema history, deployment serialization, and
+per-migration transaction handling. Reviewed SQL and acceptance evidence own
+domain constraints, upgrade preconditions, scientific reconciliation, security,
+restore rehearsal, and release disposition. Vendor-owned LIMS and ELN databases
+continue through vendor-supported lifecycle paths, while cross-platform data
+movement produces separate checkpoint and reconciliation receipts.
+
 Native database types preserve instants, civil dates, exact measurements,
 booleans, identifiers, and relational integrity. Interchange documents render
 migration instants as RFC 3339 UTC values while the data contract retains the

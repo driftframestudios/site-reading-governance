@@ -17,7 +17,7 @@
     "collation": "C.UTF-8",
     "database_timezone": "UTC",
     "settings_digest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-    "migration_history_table": "alembic_version"
+    "migration_history_table": "public.flyway_schema_history"
   },
   "entities": [
     {

@@ -8,19 +8,19 @@
   "engine_compatibility": {
     "engine_family": "postgresql",
     "minimum_version": "15.0",
-    "maximum_version": "17.99",
+    "maximum_version": "18.99",
     "required_extensions": [
       "pgcrypto"
     ]
   },
   "tool_binding": {
-    "tool_name": "alembic",
-    "tool_version": "1.16.4",
+    "tool_name": "Flyway Community",
+    "tool_version": "13.0.0",
     "implementation_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
   },
   "script": {
     "artifact_id": "ARTIFACT-MIGRATION-SCRIPT-001",
-    "media_type": "text/x-python",
+    "media_type": "application/sql",
     "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
     "locator": "governed://database-migrations/lab-timestamptz-001",
     "sensitivity": "internal",
@@ -41,7 +41,7 @@
       "checkpoint_strategy": "atomic_completion",
       "preconditions": [
         "Source schema digest matches the reviewed baseline",
-        "Migration advisory lock is held by this runner"
+        "Flyway's PostgreSQL schema-history lock is active for this migration"
       ],
       "success_criteria": [
         "Native instant column exists with the reviewed type",
@@ -137,10 +137,10 @@
   ],
   "execution_policy": {
     "migration_concurrency": "single_migration_writer",
-    "advisory_lock_key": "lims-eln-schema-migration",
+    "advisory_lock_key": "flyway-postgresql-history-lock",
     "migrator_role": "Database migration role",
     "application_role": "LIMS application role",
-    "schema_drift_check": "The runner compares the live schema digest with the reviewed source digest before the first phase.",
+    "schema_drift_check": "The release gate compares the live schema digest with the reviewed source digest before Flyway starts the first phase.",
     "applied_checksum_policy": "immutable_after_application"
   },
   "compatibility_window": {
@@ -164,7 +164,7 @@
     "backup_receipt_required": true,
     "point_in_time_recovery_required": true,
     "owner_role": "Database platform owner",
-    "containment": "The runner pauses at the last durable checkpoint and keeps the verified projection available.",
+    "containment": "The release coordinator pauses before the next migration and keeps the verified projection available at the last durable checkpoint.",
     "replacement_behavior": "The owner resumes the idempotent phase or restores the reviewed recovery point according to the recorded disposition.",
     "verification": "A second operator executes the selected route and confirms schema, record, and application health."
   },

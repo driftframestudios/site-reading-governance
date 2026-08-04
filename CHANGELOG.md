@@ -6,6 +6,12 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+- Aligned the synthetic database-change evidence chain with Flyway Community
+  13.0.0 while keeping the governance contracts tool neutral; schema evolution,
+  vendor lifecycle, cross-platform data movement, and acceptance retain separate
+  ownership and receipt boundaries.
+- Extended data-contract history coordinates to accept a schema-qualified
+  relation such as `public.flyway_schema_history`.
 - Added closed data-contract, database-refactor-finding, migration-plan,
   migration-receipt, reconciliation, and database-release-manifest contracts
   with one coherent synthetic evidence chain and mutation-tested cross-record

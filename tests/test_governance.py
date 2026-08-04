@@ -414,6 +414,26 @@ class GovernancePackageTests(unittest.TestCase):
             )
         self.assertEqual("exact_decimal", field["semantic_type"])
 
+    def test_data_contract_accepts_bounded_migration_history_relations(self) -> None:
+        schema = ROOT / "schemas" / "data-contract.schema.json"
+        document = json.loads((ROOT / "examples" / "data-contract.json").read_text())
+        for relation in ("flyway_schema_history", "public.flyway_schema_history"):
+            with self.subTest(relation=relation):
+                candidate = json.loads(json.dumps(document))
+                candidate["database"]["migration_history_table"] = relation
+                self.assertEqual([], validation.SchemaValidator(schema).validate(candidate))
+
+        for relation in (
+            "catalog.public.flyway_schema_history",
+            "Public.flyway_schema_history",
+            "public.flyway_schema_history;drop",
+        ):
+            with self.subTest(rejected_relation=relation):
+                candidate = json.loads(json.dumps(document))
+                candidate["database"]["migration_history_table"] = relation
+                findings = validation.SchemaValidator(schema).validate(candidate)
+                self.assertTrue(any("pattern" in item.message for item in findings))
+
     def test_database_contracts_reject_unreviewed_properties(self) -> None:
         mapping = {
             "data-contract.json": "data-contract.schema.json",
