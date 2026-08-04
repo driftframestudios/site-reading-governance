@@ -483,6 +483,22 @@ class GovernancePackageTests(unittest.TestCase):
             findings,
         )
 
+    def test_writer_coordination_assigns_mechanics_to_a_governed_owner(
+        self,
+    ) -> None:
+        schema = ROOT / "schemas" / "database-migration-plan.schema.json"
+        document = json.loads(
+            (ROOT / "examples" / "database-migration-plan.json").read_text()
+        )
+        document["execution_policy"]["writer_coordination"]["owner"] = (
+            "caller_owned_advisory_lock"
+        )
+        findings = validation.SchemaValidator(schema).validate(document)
+        self.assertTrue(
+            any("outside the enum" in item.message for item in findings),
+            findings,
+        )
+
     def test_migration_phase_dependencies_are_ordered_and_acyclic(self) -> None:
         records = load_database_examples()
         plan = records["database-migration-plan.json"]

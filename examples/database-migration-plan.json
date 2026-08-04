@@ -41,7 +41,7 @@
       "checkpoint_strategy": "atomic_completion",
       "preconditions": [
         "Source schema digest matches the reviewed baseline",
-        "Flyway's PostgreSQL schema-history lock is active for this migration"
+        "Flyway reports active PostgreSQL schema-history coordination for this migration"
       ],
       "success_criteria": [
         "Native instant column exists with the reviewed type",
@@ -137,7 +137,11 @@
   ],
   "execution_policy": {
     "migration_concurrency": "single_migration_writer",
-    "advisory_lock_key": "flyway-postgresql-history-lock",
+    "writer_coordination": {
+      "owner": "migration_tool",
+      "strategy": "Flyway coordinates one migration writer through its schema-history mechanism.",
+      "evidence": "The governed receipt preserves Flyway validate and migrate outcomes together with the exact public.flyway_schema_history relation inspected after execution."
+    },
     "migrator_role": "Database migration role",
     "application_role": "LIMS application role",
     "schema_drift_check": "The release gate compares the live schema digest with the reviewed source digest before Flyway starts the first phase.",

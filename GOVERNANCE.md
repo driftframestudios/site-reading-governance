@@ -161,8 +161,9 @@ Migration plans bind immutable tool and script coordinates to source and target
 schema digests. Each phase carries transaction posture, online behavior, lock
 and statement budgets, durable checkpoints, preconditions, and observable
 success criteria. Destructive contract phases enter through a measured
-compatibility window and scoped approval. The migration runner uses one reviewed
-writer coordinate and records schema-drift and applied-checksum verification.
+compatibility window and scoped approval. The migration workflow binds one
+reviewed writer coordinate, assigns coordination mechanics to a governed owner,
+and records schema-drift and applied-checksum verification.
 
 Execution receipts preserve phase outcomes, operational measurements,
 reconciliation, backup or recovery-point coordinates, restore evidence, and

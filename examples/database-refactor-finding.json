@@ -42,7 +42,7 @@
   "recovery": {
     "owner_role": "Database platform owner",
     "containment": "The cutover retains the verified legacy projection through the compatibility window.",
-    "replacement_behavior": "Routing returns to the retained projection while the migration runner records a successor plan.",
+    "replacement_behavior": "Routing returns to the retained projection while the governed migration workflow records a successor plan.",
     "verification": "The recovery rehearsal confirms record parity and application health from the retained projection."
   },
   "owner_roles": [

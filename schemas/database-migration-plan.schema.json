@@ -268,7 +268,7 @@
       "additionalProperties": false,
       "required": [
         "migration_concurrency",
-        "advisory_lock_key",
+        "writer_coordination",
         "migrator_role",
         "application_role",
         "schema_drift_check",
@@ -279,10 +279,34 @@
           "type": "string",
           "const": "single_migration_writer"
         },
-        "advisory_lock_key": {
-          "type": "string",
-          "minLength": 3,
-          "maxLength": 160
+        "writer_coordination": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "owner",
+            "strategy",
+            "evidence"
+          ],
+          "properties": {
+            "owner": {
+              "type": "string",
+              "enum": [
+                "migration_tool",
+                "deployment_orchestrator",
+                "database_platform"
+              ]
+            },
+            "strategy": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 500
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 700
+            }
+          }
         },
         "migrator_role": {
           "type": "string",
