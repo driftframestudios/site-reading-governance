@@ -9,7 +9,7 @@ The package is private-repository ready. Its examples use synthetic identifiers,
 its automation uses read-only permissions by default, and its ruleset exports
 can be reviewed before installation through the GitHub Rulesets API.
 
-The current governance schema release is `2.0.0`; stable schema identifiers use
+The current governance schema candidate is `2.0.1`; stable schema identifiers use
 the `/v2.0/` coordinate. It implements **Control Plane Profile v0.3**, the
 Enterprise Human-AI Practitioner Registry-derived capability profile for
 bounded callers, veracity, orientation, coordination, and future-reality
@@ -54,6 +54,42 @@ This posture lets an executable simulation fully close the four substantive
 receipt families through modeled roles and synthetic environments. It makes no
 claim about a separately observed environment or production authorization.
 
+## Database change assurance
+
+Six additive contracts make database evolution inspectable from discovery to
+release:
+
+```text
+data contract
+  -> refactor finding
+  -> migration plan
+  -> migration receipt
+  -> data reconciliation
+  -> database release manifest
+```
+
+The chain preserves logical meaning alongside physical representation. A plan
+records source and target schema digests, immutable script and tool coordinates,
+ordered expand/backfill/validate/cutover/contract phases, lock and statement
+budgets, compatibility, approval, and recovery. Execution receipts and exact
+reconciliation bind observed or simulated results back to that plan. The release
+manifest assembles migration, restore, acceptance, finding, and evidence-bundle
+coordinates into one reviewable promotion surface.
+
+The contracts remain migration-tool neutral. The current synthetic exemplar
+selects Flyway Community 13.0.0 for repository-owned PostgreSQL schema evolution.
+Flyway owns ordering, checksums, schema history, deployment serialization, and
+per-migration transaction handling. Reviewed SQL and acceptance evidence own
+domain constraints, upgrade preconditions, scientific reconciliation, security,
+restore rehearsal, and release disposition. Vendor-owned LIMS and ELN databases
+continue through vendor-supported lifecycle paths, while cross-platform data
+movement produces separate checkpoint and reconciliation receipts.
+
+Native database types preserve instants, civil dates, exact measurements,
+booleans, identifiers, and relational integrity. Interchange documents render
+migration instants as RFC 3339 UTC values while the data contract retains the
+database-native representation.
+
 ## Quick start
 
 Requirements: Python 3.11 or newer. The validation path uses the Python standard
@@ -62,6 +98,7 @@ library and carries zero runtime package dependencies.
 ```bash
 python3 tools/validate_governance.py
 python3 tools/check_language.py
+python3 tools/check_language.py --format sarif
 python3 tools/scan_secret_shapes.py
 python3 -m unittest discover -s tests -v
 ```
@@ -80,17 +117,28 @@ python3 tools/validate_governance.py \
   model
 - [`BRANCHING.md`](BRANCHING.md) — GitFlow-like lifecycle and release protocol
 - [`docs/NEGATION_AWARE_LANGUAGE.md`](docs/NEGATION_AWARE_LANGUAGE.md) —
-  affirmative semantic-field guidance
+  affirmative semantic-field guidance and authoritative language policy
+- [`language-policy/`](language-policy/) — digest-pinned policy manifest,
+  89-case union corpus, and exact reviewed exemption inventory
+- [`docs/AUTHOR_FEEDBACK.md`](docs/AUTHOR_FEEDBACK.md) — advisory,
+  structure-aware Vale scope, rule severity, and checksum-verified tool
+  coordinate
+- [`docs/SEMANTIC_SHADOW_REVIEW.md`](docs/SEMANTIC_SHADOW_REVIEW.md) —
+  inactive, bounded contract for qualifying future semantic author feedback
 - [`docs/CONTROL_PLANE_V0_3.md`](docs/CONTROL_PLANE_V0_3.md) — bounded caller,
   Practitioner Probe, Coordination Horizon, Machine Node, veracity, and
   simulated-closure operating model
 - [`docs/MIGRATION_V1_TO_V2.md`](docs/MIGRATION_V1_TO_V2.md) — downstream
   migration sequence and release validation
+- [`docs/MIGRATION_V2_0_0_TO_V2_0_1.md`](docs/MIGRATION_V2_0_0_TO_V2_0_1.md) —
+  patch migration for promotion receipts, immutable workflow inputs, and policy
+  contexts
 - [`schemas/`](schemas/) — JSON Schema 2020-12 contracts
 - [`examples/`](examples/) — valid synthetic exemplars for every contract
 - [`machine-node.json`](machine-node.json), [`first-receipt.json`](first-receipt.json),
-  and [`coordination-horizon.json`](coordination-horizon.json) — root orientation
-  records for contracts, campaign markings, and immutable-promotion posture
+  [`coordination-horizon.json`](coordination-horizon.json), and
+  [`promotion-receipt.json`](promotion-receipt.json) — root orientation and
+  executable promotion records
 - [`.github/workflows/`](.github/workflows/) — reusable validation workflows
 - [`rulesets/`](rulesets/) — reviewable GitHub repository ruleset exports
 - [`audits/repository-security-review-2026-07-28.md`](audits/repository-security-review-2026-07-28.md)
@@ -98,8 +146,9 @@ python3 tools/validate_governance.py \
   production receipts
 - [`audits/dependency-automation-review-2026-07-28.md`](audits/dependency-automation-review-2026-07-28.md)
   — five-repository bot-identity, branch grammar, workflow, and follow-up review
-- [`tools/`](tools/) and [`tests/`](tests/) — dependency-free contract, language,
-  secret-shape, and regression validation
+- [`tools/`](tools/) and [`tests/`](tests/) — dependency-free contract,
+  repository-independent language core with a bounded governance wrapper,
+  secret-shape checks, and regression validation
 
 ## Versioning
 

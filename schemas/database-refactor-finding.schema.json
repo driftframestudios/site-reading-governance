@@ -1,0 +1,258 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/database-refactor-finding.schema.json",
+  "title": "Database Refactor Finding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "finding_id",
+    "data_contract_id",
+    "repository",
+    "object_coordinate",
+    "category",
+    "severity",
+    "current_primitive",
+    "material_effect",
+    "target_state",
+    "evidence",
+    "disposition",
+    "target_migration_ids",
+    "compatibility",
+    "recovery",
+    "owner_roles",
+    "receipt_ids",
+    "acceptance_ids",
+    "metadata"
+  ],
+  "properties": {
+    "finding_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "data_contract_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "repository": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+/[a-z0-9][a-z0-9-]*$",
+      "minLength": 3,
+      "maxLength": 200
+    },
+    "object_coordinate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository_path",
+        "object_kind",
+        "object_name",
+        "line_start"
+      ],
+      "properties": {
+        "repository_path": {
+          "type": "string",
+          "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*/)*[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "maxLength": 400
+        },
+        "object_kind": {
+          "type": "string",
+          "enum": [
+            "table",
+            "column",
+            "constraint",
+            "index",
+            "migration",
+            "orm_mapping",
+            "fixture",
+            "query"
+          ]
+        },
+        "object_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "line_start": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "temporal_primitive",
+        "numeric_precision",
+        "identifier_strategy",
+        "nullability",
+        "key_integrity",
+        "controlled_vocabulary",
+        "audit_history",
+        "extensibility_boundary",
+        "retention",
+        "migration_history",
+        "security_boundary",
+        "performance_integrity"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "advisory"
+      ]
+    },
+    "current_primitive": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 700
+    },
+    "material_effect": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1200
+    },
+    "target_state": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1200
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "common.schema.json#/$defs/artifact"
+      }
+    },
+    "disposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "rationale",
+        "decided_at"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "planned",
+            "remediated",
+            "accepted_by_design"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 900
+        },
+        "decided_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "target_migration_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "supported_application_releases",
+        "transition_behavior",
+        "verification"
+      ],
+      "properties": {
+        "supported_application_releases": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "transition_behavior": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 700
+        },
+        "verification": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 700
+        }
+      }
+    },
+    "recovery": {
+      "$ref": "common.schema.json#/$defs/recoveryRoute"
+    },
+    "owner_roles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 120
+      }
+    },
+    "receipt_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "acceptance_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "disposition": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "enum": [
+                  "planned",
+                  "remediated"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        },
+        "required": [
+          "disposition"
+        ]
+      },
+      "then": {
+        "properties": {
+          "target_migration_ids": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

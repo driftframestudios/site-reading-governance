@@ -14,11 +14,19 @@
     "practitioner-probe.json": "practitioner-probe.schema.json",
     "machine-node.json": "machine-node.schema.json",
     "first-receipt.json": "first-receipt.schema.json",
+    "promotion-receipt.json": "promotion-receipt.schema.json",
     "simulated-receipt-closure.json": "simulated-receipt-closure.schema.json",
     "simulation-assumption.json": "simulation-assumption.schema.json",
     "receipt.json": "receipt.schema.json",
     "acceptance.json": "acceptance.schema.json",
     "comparison.json": "comparison.schema.json",
-    "invalidation.json": "invalidation.schema.json"
+    "invalidation.json": "invalidation.schema.json",
+    "language-control.json": "language-control.schema.json",
+    "data-contract.json": "data-contract.schema.json",
+    "database-refactor-finding.json": "database-refactor-finding.schema.json",
+    "database-migration-plan.json": "database-migration-plan.schema.json",
+    "database-migration-receipt.json": "database-migration-receipt.schema.json",
+    "data-reconciliation.json": "data-reconciliation.schema.json",
+    "database-release-manifest.json": "database-release-manifest.schema.json"
   }
 }

@@ -1,0 +1,44 @@
+{
+  "control_id": "CONTROL-REGULATED-EVIDENCE-001",
+  "consequence_class": "regulatory",
+  "target_state": "Every regulated evidence item remains in its approved governed store and carries a digest-bound repository reference.",
+  "boundary": {
+    "protected_state": "Regulated evidence remains access-controlled, attributable, and retained under the approved policy.",
+    "explicit_constraint": "Raw regulated evidence must not enter Git history."
+  },
+  "replacement_behavior": {
+    "trigger": "A collaborator needs to reference regulated evidence from repository material.",
+    "safe_action": "Store the evidence in the approved governed system and record a redacted manifest with an opaque locator and digest.",
+    "recovery_route": "Quarantine an exposed artifact, rotate affected access material, and route the incident through the accountable security and Quality review."
+  },
+  "verification": {
+    "method": "Run repository secret-shape and artifact-locator checks, then review the governed evidence receipt.",
+    "success_criteria": "The repository contains only a redacted manifest and digest-bound locator, and the evidence receipt resolves under least-privilege access.",
+    "check_ids": [
+      "CHECK-LANGUAGE-CONTROL-001",
+      "CHECK-SECRET-SHAPES-001"
+    ]
+  },
+  "owner_role": "Quality systems owner",
+  "evidence": [
+    {
+      "artifact_id": "ARTIFACT-LANGUAGE-CONTROL-001",
+      "media_type": "application/json",
+      "digest": "sha256:c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1",
+      "locator": "evidence://governance/language-control/regulated-evidence-001",
+      "sensitivity": "internal",
+      "retention_class": "governance-release"
+    }
+  ],
+  "metadata": {
+    "schema_version": "2.0.1",
+    "created_at": "2026-07-28T20:00:00Z",
+    "updated_at": "2026-07-28T20:00:00Z",
+    "owner": {
+      "actor_id": "OWNER-LANGUAGE-CONTROL-001",
+      "display_name": "Language Assurance Steward",
+      "role": "Quality systems owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}

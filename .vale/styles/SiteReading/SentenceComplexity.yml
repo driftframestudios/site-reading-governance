@@ -1,0 +1,6 @@
+extends: occurrence
+message: "Consider splitting this comma-dense sentence when the decision path becomes difficult to follow."
+level: suggestion
+scope: sentence
+max: 4
+token: ','

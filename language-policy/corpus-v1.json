@@ -1,0 +1,1533 @@
+{
+  "policy_release": "language-policy-v1.0.0",
+  "cases": [
+    {
+      "case_id": "CANON-AUDIT-NOUN-NOT-CHECK-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/audit-noun.md",
+      "content": "Audit records must not contain credentials; instead, store redacted references in the governed ledger.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG003_UNVERIFIABLE_TARGET",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:27e8c95f46b412c4f765729cca1fb026dbf7b5c89426df5bd655fdb63d46646e"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "CANON-FUTURE-REVIEWED-EXEMPTION-001",
+      "expectation": "exemption_invalid",
+      "format": "markdown",
+      "path": "fixtures/future-reviewed.md",
+      "content": "Never publish a future-reviewed result.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:0fae59b918bc18dbe992e76ffc432a738069b92a2701a0ec69f2d668fc6b63da"
+        },
+        {
+          "rule_id": "LANG901_EXEMPTION_INVALID",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:16759ad99230074e5f7ad50ddc931e83ff12d1706507c0789f9d5c6635e6195f"
+        }
+      ],
+      "expected_exemptions_applied": [],
+      "case_exemptions": [
+        {
+          "exemption_id": "LANG-EX-FUTURE-001",
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "path": "fixtures/future-reviewed.md",
+          "fingerprint": "sha256:0fae59b918bc18dbe992e76ffc432a738069b92a2701a0ec69f2d668fc6b63da",
+          "rationale": "The qualification corpus exercises this exact reviewed exception.",
+          "owner_role": "Language assurance steward",
+          "reviewed_at": "2026-08-01T20:00:00Z",
+          "expires_at": "2026-08-15T20:00:00Z"
+        }
+      ]
+    },
+    {
+      "case_id": "CANON-HIGH-CONSEQUENCE-CHECK-001",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/high-consequence-check.md",
+      "content": "SECURITY BOUNDARY: Credentials must not enter build output. Instead, credentials remain in the approved secret manager; the build-log scan verifies redacted references.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "CANON-HIGH-CONSEQUENCE-NO-CHECK-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/high-consequence-no-check.md",
+      "content": "SECURITY BOUNDARY: Credentials must not enter build output. Instead, credentials remain in the approved secret manager.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG003_UNVERIFIABLE_TARGET",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:f6dea1b0f390eb21570866b5685afd0926b0abe35383a905ae63b9168b72108a"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "CANON-HISTORICAL-PLUS-CURRENT-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/historical-plus-current.md",
+      "content": "The 2018 runbook said, “Do not retry.” Current operators must not publish unsigned results.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:9f1a5c5b3217b27a6192b147d64413a801104c4148b6f323a56363e9d54fa2bb"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "CANON-OVERLONG-WINDOW-EXEMPTION-001",
+      "expectation": "exemption_invalid",
+      "format": "markdown",
+      "path": "fixtures/overlong-window.md",
+      "content": "Never publish an overlong-window result.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:e4faae04c496adc230b1c1e13483c44332aaadd9e9f34832599a70ac05efdf07"
+        },
+        {
+          "rule_id": "LANG901_EXEMPTION_INVALID",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:8cf8ec461987eb5593ac0976a5feed160b6208ab94eedef359332d9972e9b10a"
+        }
+      ],
+      "expected_exemptions_applied": [],
+      "case_exemptions": [
+        {
+          "exemption_id": "LANG-EX-WINDOW-001",
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "path": "fixtures/overlong-window.md",
+          "fingerprint": "sha256:e4faae04c496adc230b1c1e13483c44332aaadd9e9f34832599a70ac05efdf07",
+          "rationale": "The qualification corpus exercises this exact reviewed exception.",
+          "owner_role": "Language assurance steward",
+          "reviewed_at": "2026-01-01T00:00:00Z",
+          "expires_at": "2027-01-01T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "case_id": "CANON-RELATED-NOUN-TARGET-001",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/related-noun.md",
+      "content": "Never publish unsigned records. Records remain in candidate state until the signature test verifies their digest.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "CANON-REVERSED-WINDOW-EXEMPTION-001",
+      "expectation": "exemption_invalid",
+      "format": "markdown",
+      "path": "fixtures/reversed-window.md",
+      "content": "Never publish a reversed-window result.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:3fe9ec94e84bc9512e752f7c31283173c1a38d08220fe5139e73ee874a19d5ad"
+        },
+        {
+          "rule_id": "LANG901_EXEMPTION_INVALID",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:c948a3e154e77b2ad47edd2bc9f78f51d39c3699da758c43398e1d360c1a02e7"
+        }
+      ],
+      "expected_exemptions_applied": [],
+      "case_exemptions": [
+        {
+          "exemption_id": "LANG-EX-REVERSED-001",
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "path": "fixtures/reversed-window.md",
+          "fingerprint": "sha256:3fe9ec94e84bc9512e752f7c31283173c1a38d08220fe5139e73ee874a19d5ad",
+          "rationale": "The qualification corpus exercises this exact reviewed exception.",
+          "owner_role": "Language assurance steward",
+          "reviewed_at": "2026-07-28T20:00:00Z",
+          "expires_at": "2026-07-27T20:00:00Z"
+        }
+      ]
+    },
+    {
+      "case_id": "CANON-REVIEW-NOUN-NOT-CHECK-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/review-noun.md",
+      "content": "Review records must not contain patient data; instead, store pseudonymous references in the governed ledger.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG003_UNVERIFIABLE_TARGET",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:ae6417373213c93f0acb27b06af4910cd2fcbc3d28c1ccc6aec9bb323d4cce89"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "CANON-VAGUE-WITH-CHECK-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/vague-with-check.md",
+      "content": "Avoid publishing unsigned results. Instead, handle them appropriately; a review confirms completion.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG003_UNVERIFIABLE_TARGET",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:5a5b5a32a45fbfba4b0bc4c171e4868516ae491f0c50293a511915bb4a61040f"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "CANON-WHOLE-REGISTRY-FAIL-CLOSED-001",
+      "expectation": "exemption_invalid",
+      "format": "json",
+      "path": "fixtures/whole-registry.json",
+      "content": "{\"upstream_field\":\"do_not_enforce_on_create\"}",
+      "expected_findings": [
+        {
+          "rule_id": "LANG002_NEGATIVE_IDENTIFIER",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:e32522be169fe3d4e4e99df46fedb3530b33d1f3e8ca45b0c1d3fba333f86e1f"
+        },
+        {
+          "rule_id": "LANG901_EXEMPTION_INVALID",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:8050ea9b27f24e6695f9ad1510eea587d814041c73ecdfddd6a06e5b6a86bb0c"
+        }
+      ],
+      "expected_exemptions_applied": [],
+      "case_exemptions": [
+        {
+          "exemption_id": "LANG-EX-WHOLE-VALID",
+          "rule_id": "LANG002_NEGATIVE_IDENTIFIER",
+          "path": "fixtures/whole-registry.json",
+          "fingerprint": "sha256:e32522be169fe3d4e4e99df46fedb3530b33d1f3e8ca45b0c1d3fba333f86e1f",
+          "rationale": "The qualification corpus exercises this exact reviewed exception.",
+          "owner_role": "Language assurance steward",
+          "reviewed_at": "2026-07-28T20:00:00Z",
+          "expires_at": "2027-01-20T20:00:00Z"
+        },
+        {
+          "exemption_id": "LANG-EX-WHOLE-UNUSED",
+          "rule_id": "LANG003_UNVERIFIABLE_TARGET",
+          "path": "fixtures/whole-registry.json",
+          "fingerprint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "rationale": "The qualification corpus exercises this exact reviewed exception.",
+          "owner_role": "Language assurance steward",
+          "reviewed_at": "2026-07-28T20:00:00Z",
+          "expires_at": "2027-01-20T20:00:00Z"
+        }
+      ]
+    },
+    {
+      "case_id": "EXEMPTION-EXPIRED-001",
+      "expectation": "exemption_invalid",
+      "format": "json",
+      "path": "fixtures/expired-external.json",
+      "content": "{\"upstream_field\":\"do_not_enforce_on_create\"}",
+      "expected_findings": [
+        {
+          "rule_id": "LANG002_NEGATIVE_IDENTIFIER",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:af2e5c9649a7d2a07e9e1da00f4e3a95a32b175eca015bcf4f6496b907f2edc2"
+        },
+        {
+          "rule_id": "LANG901_EXEMPTION_INVALID",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:0cf0e89fda35760d61a22ac6532442cd3e59f1d0be11f79cd1cbaa72d7715260"
+        }
+      ],
+      "case_exemptions": [
+        {
+          "exemption_id": "LANG-EX-EXPIRED-001",
+          "rule_id": "LANG002_NEGATIVE_IDENTIFIER",
+          "path": "fixtures/expired-external.json",
+          "fingerprint": "sha256:af2e5c9649a7d2a07e9e1da00f4e3a95a32b175eca015bcf4f6496b907f2edc2",
+          "rationale": "The upstream name remains pinned while its replacement is evaluated.",
+          "owner_role": "Platform Architecture",
+          "reviewed_at": "2026-02-01T00:00:00Z",
+          "expires_at": "2026-07-27T00:00:00Z"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "EXEMPTION-OVERBROAD-001",
+      "expectation": "exemption_invalid",
+      "format": "json",
+      "path": "fixtures/overbroad.json",
+      "content": "{\"fields\":[\"do_not_enforce_on_create\",\"do_not_enforce_on_create\"]}",
+      "expected_findings": [
+        {
+          "rule_id": "LANG002_NEGATIVE_IDENTIFIER",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:10266c1b55f5af0419d6ba4caa2fbb9619a55f21aa9f3453f6329384b6c6bdae"
+        },
+        {
+          "rule_id": "LANG002_NEGATIVE_IDENTIFIER",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:10266c1b55f5af0419d6ba4caa2fbb9619a55f21aa9f3453f6329384b6c6bdae"
+        },
+        {
+          "rule_id": "LANG901_EXEMPTION_INVALID",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:d50baedc10640fa44a03e3fa7d97a4dface4039c3ba7ed5f6e6ad5e96cbba1a4"
+        }
+      ],
+      "case_exemptions": [
+        {
+          "exemption_id": "LANG-EX-OVERBROAD-001",
+          "rule_id": "LANG002_NEGATIVE_IDENTIFIER",
+          "path": "fixtures/overbroad.json",
+          "fingerprint": "sha256:10266c1b55f5af0419d6ba4caa2fbb9619a55f21aa9f3453f6329384b6c6bdae",
+          "rationale": "The external contract currently repeats one pinned field value.",
+          "owner_role": "Platform Architecture",
+          "reviewed_at": "2026-07-28T00:00:00Z",
+          "expires_at": "2027-01-20T00:00:00Z"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "EXEMPTION-UNUSED-001",
+      "expectation": "exemption_invalid",
+      "format": "json",
+      "path": "fixtures/unused.json",
+      "content": "{\"state\":\"candidate_pending\"}",
+      "expected_findings": [
+        {
+          "rule_id": "LANG901_EXEMPTION_INVALID",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:d8569c5e98a71cf72b7667acc30ac19855340bfb8c4057a7bba366c7e7f3be58"
+        }
+      ],
+      "case_exemptions": [
+        {
+          "exemption_id": "LANG-EX-UNUSED-001",
+          "rule_id": "LANG002_NEGATIVE_IDENTIFIER",
+          "path": "fixtures/unused.json",
+          "fingerprint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "rationale": "The external field was expected in this pinned fixture.",
+          "owner_role": "Platform Architecture",
+          "reviewed_at": "2026-07-28T00:00:00Z",
+          "expires_at": "2027-01-20T00:00:00Z"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "FINGERPRINT-CASE-LOWER-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/fingerprint-case.md",
+      "content": "Never publish an unsigned result.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:bbf00b9dda97d041a798877bab96ae5e9b33da01aa099486aee3a6465a896edb"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "FINGERPRINT-CASE-UPPER-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/fingerprint-case.md",
+      "content": "Never Publish an unsigned result.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:3b1e4e6562cad6607d2e3679b20e080708fcbd237ddeba40bf6ddb653f0ec596"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "FINGERPRINT-LINE-MOVED-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/fingerprint-line.md",
+      "content": "\n\nNever publish an unsigned result.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 3,
+          "end_line": 3,
+          "fingerprint": "sha256:e817d94b253715b1714a4c71424683d23007027f173ce461123cfa2a2232692b"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "JSON-CONTROL-GROUP-001",
+      "expectation": "should_pass",
+      "format": "json",
+      "path": "fixtures/control-group.json",
+      "content": "{\"instruction\":\"Never publish an unsigned result.\",\"target_state\":\"Replacement behavior: publish only signed results; verification asserts the signature digest.\"}",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "JSON-CONTROL-GROUP-VAGUE-001",
+      "expectation": "should_flag",
+      "format": "json",
+      "path": "fixtures/control-group-vague.json",
+      "content": "{\"directive\":\"Avoid risky publication.\",\"replacement\":\"Instead, handle publication appropriately.\"}",
+      "expected_findings": [
+        {
+          "rule_id": "LANG003_UNVERIFIABLE_TARGET",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:47ca6f04a4af15e2b55e78921179bd43803067ed051c78425b5752076eedb4d2"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "JSON-DUPLICATE-KEY-001",
+      "expectation": "should_flag",
+      "format": "json",
+      "path": "fixtures/duplicate-key.json",
+      "content": "{\"instruction\":\"stable\",\"instruction\":\"ambiguous\"}",
+      "expected_findings": [
+        {
+          "rule_id": "LANG900_PARSE_FAILURE",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:4664f76afe795d8db02043a4da9a19bd784e44eabe6a809806cf082e93fdfb79"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "JSON-EXTERNAL-IDENTIFIER-001",
+      "expectation": "exempt",
+      "format": "json",
+      "path": "fixtures/external-contract.json",
+      "content": "{\"upstream_field\":\"do_not_enforce_on_create\"}",
+      "expected_findings": [],
+      "case_exemptions": [
+        {
+          "exemption_id": "LANG-EX-EXTERNAL-001",
+          "rule_id": "LANG002_NEGATIVE_IDENTIFIER",
+          "path": "fixtures/external-contract.json",
+          "fingerprint": "sha256:bddd469d11ee5139ab3597bfca82d916969f70148e9e3a75d18d80e7cbc28c94",
+          "rationale": "The value is the exact field name in a pinned upstream contract.",
+          "owner_role": "Platform Architecture",
+          "reviewed_at": "2026-07-28T00:00:00Z",
+          "expires_at": "2027-01-20T00:00:00Z"
+        }
+      ],
+      "expected_exemptions_applied": [
+        "LANG-EX-EXTERNAL-001"
+      ]
+    },
+    {
+      "case_id": "JSON-KEY-001",
+      "expectation": "should_pass",
+      "format": "json",
+      "path": "fixtures/key.json",
+      "content": "{\"do_not_publish\":false,\"state\":\"candidate_pending\"}",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "JSON-NONFINITE-001",
+      "expectation": "should_flag",
+      "format": "json",
+      "path": "fixtures/nonfinite.json",
+      "content": "{\"threshold\":NaN}",
+      "expected_findings": [
+        {
+          "rule_id": "LANG900_PARSE_FAILURE",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:c854bad85f46d67a4afac508656acfecc008364038c6dc6ccfab50daa6d36b04"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "JSON-PARSE-001",
+      "expectation": "should_flag",
+      "format": "json",
+      "path": "fixtures/invalid.json",
+      "content": "{\"instruction\":",
+      "expected_findings": [
+        {
+          "rule_id": "LANG900_PARSE_FAILURE",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:bc7c55a65f9d59795d51b0a89fc9816c54e1a825f71b273d54299c4d2ecbda1f"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "JSON-STRUCTURED-001",
+      "expectation": "should_flag",
+      "format": "json",
+      "path": "fixtures/structured.json",
+      "content": "{\"instruction\":\"Do not publish an unsigned result.\"}",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:81bf4e89bc0900b1eb330ff9a0021fe77fef12cdd47ca038a69b21d38587e051"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-BOUNDARY-CONCRETE-001",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/boundary-concrete.md",
+      "content": "PRIVACY BOUNDARY: Never emit direct participant identifiers. Instead, telemetry emits only approved pseudonymous subject references, verified by the privacy contract test.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-BOUNDARY-MISSING-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/boundary-missing.md",
+      "content": "PRIVACY BOUNDARY: Never emit direct participant identifiers.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:c90d9f42c034744cb86958cc3ae369de84c4105184c7b63e99343747d73b0646"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-DESCRIPTIVE-IS-NOT-001",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/descriptive.md",
+      "content": "The selected future is not an observed production environment.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-EXAMPLE-001",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/example.md",
+      "content": "## Examples\n\n```python\n# Never retry this illustrative call.\ndo_not_retry = True\n```",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-EXAMPLE-HEADING-001",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/example-heading.md",
+      "content": "## Counterexamples\n\n- Do not publish the receipt.\n- `avoid_release = True`\n\n## Applied policy\n\nReleased guidance names the target state.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-INLINE-HISTORY-001",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/history.md",
+      "content": "The 2018 runbook said, “Do not retry a failed migration.” The current recovery contract supersedes that instruction.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-MAY-NOT-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/may-not.md",
+      "content": "A bounded caller may not widen its tenant scope.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:93fdc2bcfc34ad5ed02ccae526fa9d8835e7b885552d88409c30ea6bcfd5a343"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-MULTILINE-PAIR-001",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/multiline.md",
+      "content": "SECURITY BOUNDARY: Never copy vendor credentials into fixtures.\nCredentials stay in AWS Secrets Manager, and the secret-shape test verifies that fixtures contain synthetic identities.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-MULTISENTENCE-001",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/multisentence.md",
+      "content": "## Credential boundary\n\nSECURITY BOUNDARY: Credentials must not enter build output. Credentials stay in AWS Secrets Manager; CI verifies that logs contain only approved secret references.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-NEGATIVE-TEST-001",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/negative-test.md",
+      "content": "The negative test asserts that an expired approval is rejected with status `approval_expired`.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-PROHIBITED-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/prohibited.md",
+      "content": "Direct secret retrieval is prohibited.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:bca1fa3aa4fbce55e2363ee83fa76ffdbcbe0649957abb1d7bb903dc4098da1b"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-QUOTE-001",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/quotation.md",
+      "content": "## Historical source\n\n> Never retry a failed migration.\n\nThe quotation is retained as source evidence.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-SHALL-NOT-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/shall-not.md",
+      "content": "Release automation shall not infer accountable acceptance.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:51ade4fe1350b45d2df8ad96ca14b99e7e3dbd5db409b04cf6441a9061cb7199"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-STRAIGHT-INLINE-QUOTE-001",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/inline-quote.md",
+      "content": "The source stated, \"Never retry the failed migration.\" The current recovery route uses an owned restore rehearsal.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-TYPOGRAPHIC-DONT-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/typographic-dont.md",
+      "content": "Don’t publish the candidate before settlement.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:fd726a997b2399fcb61c380dc73a02d2dc00976dc0a8cc5d69967e1ddaf0ec10"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-UNPAIRED-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/unpaired.md",
+      "content": "## Runtime guidance\n\nNever place credentials in build output.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 3,
+          "end_line": 3,
+          "fingerprint": "sha256:df5b03cf12430594d146dfc5c8b4fa472ac78a5b297efb6c9e39c4334558c6cd"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-UNRELATED-AFFIRMATIVE-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/unrelated.md",
+      "content": "Never publish an unsigned result. Records retain migration timestamps for 30 days.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:8240f7356663350ede02355532273cc19033b9f11389426660d696b9884dff10"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "MD-VAGUE-TARGET-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/vague-target.md",
+      "content": "Avoid exposing protected values. Instead, handle them appropriately.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG003_UNVERIFIABLE_TARGET",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:45fc41bffe270b00b874e95305b75c18792d14b5ef9a76800990f154aca33052"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "OUTPUT-JSON-CONTRACT-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/output-json.md",
+      "content": "Never publish an unsigned output-contract result.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:a19400143a26d22b4a3fdb94ca516d53015e156b6e7c516f8bfaf13381a95349"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "OUTPUT-SARIF-CONTRACT-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/output-sarif.md",
+      "content": "Never publish an unsigned SARIF-contract result.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:706ad801d619f2bebd06c845ff76f6f480cc68c8686875455d8ed104a4035aa7"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "OUTPUT-TEXT-EXIT-CONTRACT-001",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/output-text.md",
+      "content": "Never publish an unsigned text-contract result.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:4b39c3b5042feb847bf20b163c0b5da1a0d2f0e194796ffac969b11923208ad8"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "PY-COMMENT-001",
+      "expectation": "should_flag",
+      "format": "python",
+      "path": "fixtures/comment.py",
+      "content": "# Do not reuse an expired approval.\napproval = load_approval()\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "code_comment",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:cc5bec8b00470a886e0f3b2491002f9fb9e16a4df454f76d766d08b1c727ffef"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "PY-DOCSTRING-001",
+      "expectation": "should_flag",
+      "format": "python",
+      "path": "fixtures/docstring.py",
+      "content": "def settle() -> None:\n    \"\"\"Never settle an unverified receipt.\"\"\"\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "docstring",
+          "start_line": 2,
+          "end_line": 2,
+          "fingerprint": "sha256:631289dcd0a3238910d8c08f0d30934cd303e890f8e7d483c8cf7bd89df95ed0"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "PY-DOCSTRING-PAIR-001",
+      "expectation": "should_pass",
+      "format": "python",
+      "path": "fixtures/docstring-pair.py",
+      "content": "def settle() -> None:\n    \"\"\"Never settle an unverified receipt. Instead, settle only a receipt whose evidence digest and accountable approval pass schema validation.\"\"\"\n",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "PY-IDENTIFIER-001",
+      "expectation": "should_flag",
+      "format": "python",
+      "path": "fixtures/identifier.py",
+      "content": "do_not_publish = True\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG002_NEGATIVE_IDENTIFIER",
+          "severity": "error",
+          "surface_kind": "identifier",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:cd9e7d72aeb5784f59d5a732f07afd172a36b923e54d3f3a2eedf3b80c1c8ef8"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "PY-TYPOGRAPHIC-COMMENT-001",
+      "expectation": "should_flag",
+      "format": "python",
+      "path": "fixtures/typographic-comment.py",
+      "content": "# Don’t infer a regulatory decision.\ndecision = load_decision()\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "code_comment",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:119a75eb6eb39f8363ec3329d25878da0fcd3180afae841b73acd06ab4aa7ad6"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "YAML-BLOCK-SCALAR-001",
+      "expectation": "should_flag",
+      "format": "yaml",
+      "path": "fixtures/block.yaml",
+      "content": "upstream_literal: |\n  Do not alter this vendor-supplied example.\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 2,
+          "end_line": 2,
+          "fingerprint": "sha256:16ff20b78f88dca46b4d9e2c5cc9749f9eff0fef821d7d528d2572480dc055ed"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "YAML-FOLDED-SCALAR-001",
+      "expectation": "should_flag",
+      "format": "yaml",
+      "path": "fixtures/folded.yml",
+      "content": "instruction: >\n  Never publish an unsigned\n  scientific result.\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 2,
+          "end_line": 3,
+          "fingerprint": "sha256:a63807fdc30b235a73d04fab7f079b9b6f9619f00cd93e422cfba1170b7b92ba"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "YAML-KEY-COMMENT-001",
+      "expectation": "should_pass",
+      "format": "yaml",
+      "path": "fixtures/key-comment.yaml",
+      "content": "# Never publish this illustrative comment.\ndo_not_publish: true\nstate: candidate_pending\n",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "YAML-QUOTED-SCALAR-001",
+      "expectation": "should_flag",
+      "format": "yaml",
+      "path": "fixtures/quoted.yaml",
+      "content": "instruction: \"Avoid mutable release coordinates.\"\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:53a0dd5249927291fc75c21f9a0963cff794e343bc6f89c6f275ee13cedc777e"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "YAML-STRUCTURED-001",
+      "expectation": "should_flag",
+      "format": "yaml",
+      "path": "fixtures/structured.yaml",
+      "content": "instruction: Never reuse a release coordinate.\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:90e439fffaf5403553ec24a14aa93cff03f986f0ae4dac51b07bc87baeee0526"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "exempt-reviewed-literal",
+      "expectation": "exempt",
+      "format": "markdown",
+      "path": "fixtures/exempted.md",
+      "content": "Operators must not copy diagnostic source wording.",
+      "case_exemptions": [
+        {
+          "exemption_id": "LANG-EX-GOLDEN-001",
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "path": "fixtures/exempted.md",
+          "fingerprint": "sha256:4a8210203e8b5b4d4d49bf56fda4e1b1cf60af4e63789f4e13eb61e07e2639c1",
+          "rationale": "The golden corpus preserves a diagnostic source literal for exemption-path verification.",
+          "owner_role": "Language assurance steward",
+          "reviewed_at": "2026-07-28T20:00:00Z",
+          "expires_at": "2027-01-20T20:00:00Z"
+        }
+      ],
+      "expected_findings": [],
+      "expected_exemptions_applied": [
+        "LANG-EX-GOLDEN-001"
+      ]
+    },
+    {
+      "case_id": "flag-boundary-without-verification",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/boundary.md",
+      "content": "SAFETY BOUNDARY: Credentials must not enter logs; the replacement behavior routes credentials to the approved secret manager.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG003_UNVERIFIABLE_TARGET",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:839d86c84cd5cec923202532b5d97439309433984d05b26d7722c5657f67fced"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-duplicate-json-key",
+      "expectation": "should_flag",
+      "format": "json",
+      "path": "fixtures/duplicate.json",
+      "content": "{\"instruction\": \"first\", \"instruction\": \"second\"}",
+      "expected_findings": [
+        {
+          "rule_id": "LANG900_PARSE_FAILURE",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:c035580f8507ce9380880dff601598b87e4cf6d1f1906fcad5ed4ad854675566"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-external-python-identifier",
+      "expectation": "should_flag",
+      "format": "python",
+      "path": "fixtures/external.py",
+      "content": "do_not_enforce_on_create = True\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG002_NEGATIVE_IDENTIFIER",
+          "severity": "error",
+          "surface_kind": "identifier",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:51489313c64f2c3e90c9a19482ef414708b263be23e8a17d3870e6efadc41405"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-json-parse",
+      "expectation": "should_flag",
+      "format": "json",
+      "path": "fixtures/broken.json",
+      "content": "{\"instruction\": \"stable\"",
+      "expected_findings": [
+        {
+          "rule_id": "LANG900_PARSE_FAILURE",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:5cb1f76c3f4634c9ed2ae6de489383cf2b34510d18c0f352239fe78dfe2c9357"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-json-value",
+      "expectation": "should_flag",
+      "format": "json",
+      "path": "fixtures/unpaired.json",
+      "content": "{\"instruction\": \"Reviewers should not approve incomplete evidence.\"}",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:be42a383230212b783c532c8d49053de38a7e44ba1c5dcaa839a8b2244306d01"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-markdown-unpaired",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/unpaired.md",
+      "content": "Operators must not copy patient records into Git history.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:9789f1cbaf086d012eef0a15f79ac496e07fc43b4f7689265c9a45cca7b8ff7d"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-may-not",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/may.md",
+      "content": "Reviewers may not accept unsigned evidence.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:3d1b68a14d9ab84e20e11ffa5ac7791463265a90164b51b077f71c14129ec553"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-next-paragraph-replacement",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/separated.md",
+      "content": "Credentials must not enter logs.\n\nUse redacted references in log records.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:7fc650d29083fe7e08e68bfec21556ef26f704bd35af737d8311291b8a0c180b"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-nonfinite-json",
+      "expectation": "should_flag",
+      "format": "json",
+      "path": "fixtures/nonfinite.json",
+      "content": "{\"confidence\": NaN}",
+      "expected_findings": [
+        {
+          "rule_id": "LANG900_PARSE_FAILURE",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:c854bad85f46d67a4afac508656acfecc008364038c6dc6ccfab50daa6d36b04"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-open-markdown-fence",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/open-fence.md",
+      "content": "```text\nOperators must not publish.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG900_PARSE_FAILURE",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:0d872d54b60f57ecefe9cb03b2f8c8cea3b4a076cb2169d13666727dde3ad142"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-open-yaml-quote",
+      "expectation": "should_flag",
+      "format": "yaml",
+      "path": "fixtures/open-quote.yml",
+      "content": "instruction: \"Operators must not publish",
+      "expected_findings": [
+        {
+          "rule_id": "LANG900_PARSE_FAILURE",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:b468a15278ce808fb6a3cfa588cf3bc23cf7a02692572d914af4fc5b955ad2a7"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-prohibited",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/prohibited.md",
+      "content": "Raw credentials are prohibited from repository history.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:f06e7f2f6cf357a76380039c0bf5c2c1a4ff0e9aa8c38eb260983809f5829a82"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-python-comment",
+      "expectation": "should_flag",
+      "format": "python",
+      "path": "fixtures/comment.py",
+      "content": "# Do not publish unredacted evidence.\nresult = 1\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "code_comment",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:8081bcf9ef2a74c650e27032400b8a95f8ee024d2a6a7c7216bfbac2fbb20ce3"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-python-docstring",
+      "expectation": "should_flag",
+      "format": "python",
+      "path": "fixtures/docstring.py",
+      "content": "def route():\n    \"\"\"PRIVACY BOUNDARY: Records must not enter Git; the replacement behavior stores them in the evidence system.\"\"\"\n    return True\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG003_UNVERIFIABLE_TARGET",
+          "severity": "error",
+          "surface_kind": "docstring",
+          "start_line": 2,
+          "end_line": 2,
+          "fingerprint": "sha256:68251b4372a9ff0b3bdede7b51071f9cb7686b2c96dc897a2583b9d378667400"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-python-identifier",
+      "expectation": "should_flag",
+      "format": "python",
+      "path": "fixtures/id.py",
+      "content": "def avoid_audit():\n    return True\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG002_NEGATIVE_IDENTIFIER",
+          "severity": "error",
+          "surface_kind": "identifier",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:130dd13e1c35711e6f9e0db37a1aeee338878c257fab59f5174f257902136bb5"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-python-syntax",
+      "expectation": "should_flag",
+      "format": "python",
+      "path": "fixtures/broken.py",
+      "content": "def incomplete(:\n    pass\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG900_PARSE_FAILURE",
+          "severity": "error",
+          "surface_kind": "docstring",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:a4d0a88c0f028b5a3087f38a361a062962d70e82702532e0d8ed71b84fa4b995"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-shall-not",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/shall.md",
+      "content": "Automation shall not authorize production changes.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:000bea152c6bcecbd895091f9a6b97aefade328f593c4df270812022556e0e44"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-typographic-apostrophe",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/typographic.md",
+      "content": "Operators don’t publish raw study records.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:b6a32ac0dd2adc9fdc61ded272adbc7ae6ac8cbd983bfe78a40a7bc070f18200"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-unicode-composed",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/unicode.md",
+      "content": "Operators must not publish José records.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:47e0c9d19a28055127cfb0118e5de1ab3eb82d98e21f7f7a66eaf40043d24907"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-unicode-decomposed",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/unicode.md",
+      "content": "Operators must not publish José records.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:47e0c9d19a28055127cfb0118e5de1ab3eb82d98e21f7f7a66eaf40043d24907"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-unrelated-affirmative-verb",
+      "expectation": "should_flag",
+      "format": "markdown",
+      "path": "fixtures/unrelated.md",
+      "content": "Operators must not publish raw study records; reviewers record the meeting outcome.",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "authored_prose",
+          "start_line": 1,
+          "end_line": 1,
+          "fingerprint": "sha256:38162857c1156aca61697e69b88ef7e532e0788f68444a92c5c8e71078fd56d5"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "flag-yaml-block",
+      "expectation": "should_flag",
+      "format": "yaml",
+      "path": "fixtures/unpaired.yml",
+      "content": "instruction: |\n  Operators must not publish raw patient data.\n",
+      "expected_findings": [
+        {
+          "rule_id": "LANG001_UNPAIRED_PROHIBITION",
+          "severity": "error",
+          "surface_kind": "structured_value",
+          "start_line": 2,
+          "end_line": 2,
+          "fingerprint": "sha256:71da6f855367ec6db40198d10e585c8b72adf58fd650ff02273ff752edfe2a0e"
+        }
+      ],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "pass-complete-boundary",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/complete.md",
+      "content": "Credentials remain in the approved secret manager. SAFETY BOUNDARY: credentials must not enter logs; the replacement behavior uses redacted references. The log scan verifies that every emitted record is redacted.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "pass-descriptive-is-not",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/descriptive.md",
+      "content": "The simulated receipt is not an observed production authorization.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "pass-example-heading-title",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/example-title.md",
+      "content": "## Diagnostic example: Do not copy this literal\n\nThe sample remains verbatim for reviewer calibration.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "pass-fenced-diagnostic",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/fence.md",
+      "content": "## Diagnostic example\n\n```text\nOperators must not copy the source wording.\n```\n",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "pass-json-key",
+      "expectation": "should_pass",
+      "format": "json",
+      "path": "fixtures/key.json",
+      "content": "{\"do_not_enforce_on_create\": true, \"outcome\": \"Automation branches enter validation through the bounded policy path.\"}",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "pass-json-typed-control-group",
+      "expectation": "should_pass",
+      "format": "json",
+      "path": "fixtures/control.json",
+      "content": "{\"target_state\":\"Records remain in the governed store.\",\"boundary\":\"Raw records must not enter Git.\",\"replacement_behavior\":\"Store a redacted digest reference instead.\",\"verification\":\"A repository scan verifies the boundary.\"}",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "pass-multiline-same-paragraph",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/multiline.md",
+      "content": "Credentials remain in the approved secret manager.\nThey must not enter logs; the replacement behavior uses redacted references, and the log scan verifies every emitted record.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "pass-negative-test-prose",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/negative-test.md",
+      "content": "The negative test confirms that an unsigned acceptance is rejected and records the expected denial reason.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "pass-quoted-source",
+      "expectation": "should_pass",
+      "format": "markdown",
+      "path": "fixtures/quote.md",
+      "content": "> Operators must not copy the source wording.",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    },
+    {
+      "case_id": "pass-yaml-comment-and-key",
+      "expectation": "should_pass",
+      "format": "yaml",
+      "path": "fixtures/keys.yml",
+      "content": "# Operators must not copy this diagnostic comment.\nmust_not_publish: true\noutcome: Records remain in the governed store.\n",
+      "expected_findings": [],
+      "expected_exemptions_applied": []
+    }
+  ]
+}

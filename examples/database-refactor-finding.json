@@ -1,0 +1,66 @@
+{
+  "finding_id": "FINDING-TEMPORAL-PRIMITIVE-001",
+  "data_contract_id": "CONTRACT-LABORATORY-CORE-001",
+  "repository": "driftframestudios/lims-eln-enterprise-implementation",
+  "object_coordinate": {
+    "repository_path": "database/001_laboratory_core.sql",
+    "object_kind": "column",
+    "object_name": "specimen.updated_at_utc",
+    "line_start": 42
+  },
+  "category": "temporal_primitive",
+  "severity": "high",
+  "current_primitive": "A text column carries an update timestamp whose temporal validity depends on each writer.",
+  "material_effect": "Lexical timestamps can admit invalid values, weaken temporal comparison, and move timezone interpretation into every application path.",
+  "target_state": "The database preserves update instants with a native timezone-aware temporal type and emits canonical UTC values at interchange boundaries.",
+  "evidence": [
+    {
+      "artifact_id": "ARTIFACT-FINDING-TEMPORAL-001",
+      "media_type": "application/json",
+      "digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+      "locator": "governed://database-audit/findings/temporal-001",
+      "sensitivity": "internal",
+      "retention_class": "architecture-decision-evidence"
+    }
+  ],
+  "disposition": {
+    "status": "planned",
+    "rationale": "An expand-and-contract migration preserves compatibility while the native temporal column becomes authoritative.",
+    "decided_at": "2026-08-04T14:15:00Z"
+  },
+  "target_migration_ids": [
+    "MIGRATION-LAB-TIMESTAMPTZ-001"
+  ],
+  "compatibility": {
+    "supported_application_releases": [
+      "lims-eln-enterprise-v0.3.1",
+      "lims-eln-enterprise-v0.4.0"
+    ],
+    "transition_behavior": "The expand phase adds the native column, dual-write verification establishes parity, and a later contract phase retires the legacy projection.",
+    "verification": "Representative instants round-trip through both application releases and converge on one canonical UTC serialization."
+  },
+  "recovery": {
+    "owner_role": "Database platform owner",
+    "containment": "The cutover retains the verified legacy projection through the compatibility window.",
+    "replacement_behavior": "Routing returns to the retained projection while the governed migration workflow records a successor plan.",
+    "verification": "The recovery rehearsal confirms record parity and application health from the retained projection."
+  },
+  "owner_roles": [
+    "Database platform owner",
+    "Laboratory data steward",
+    "Quality evidence owner"
+  ],
+  "receipt_ids": [],
+  "acceptance_ids": [],
+  "metadata": {
+    "schema_version": "2.0.1",
+    "created_at": "2026-08-04T14:20:00Z",
+    "updated_at": "2026-08-04T14:20:00Z",
+    "owner": {
+      "actor_id": "OWNER-DATABASE-AUDIT-001",
+      "display_name": "Database Architecture Reviewer",
+      "role": "Database refactor ledger owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}

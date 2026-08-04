@@ -1,0 +1,477 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/database-migration-plan.schema.json",
+  "title": "Database Migration Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "migration_plan_id",
+    "version",
+    "data_contract_id",
+    "purpose",
+    "source_schema_digest",
+    "target_schema_digest",
+    "engine_compatibility",
+    "tool_binding",
+    "script",
+    "dependency_migration_ids",
+    "phase_sequence",
+    "execution_policy",
+    "compatibility_window",
+    "destructive_change",
+    "approval_ids",
+    "recovery",
+    "verification_criteria",
+    "evidence_mode",
+    "assurance_stage",
+    "metadata"
+  ],
+  "properties": {
+    "migration_plan_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "version": {
+      "$ref": "common.schema.json#/$defs/semver"
+    },
+    "data_contract_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1200
+    },
+    "source_schema_digest": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "target_schema_digest": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "engine_compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine_family",
+        "minimum_version",
+        "maximum_version",
+        "required_extensions"
+      ],
+      "properties": {
+        "engine_family": {
+          "type": "string",
+          "enum": [
+            "postgresql",
+            "mysql",
+            "mariadb",
+            "oracle",
+            "sqlserver",
+            "sqlite",
+            "other"
+          ]
+        },
+        "minimum_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "maximum_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "required_extensions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+            "maxLength": 120
+          }
+        }
+      }
+    },
+    "tool_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool_name",
+        "tool_version",
+        "implementation_digest"
+      ],
+      "properties": {
+        "tool_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "tool_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "implementation_digest": {
+          "$ref": "common.schema.json#/$defs/digest"
+        }
+      }
+    },
+    "script": {
+      "$ref": "common.schema.json#/$defs/artifact"
+    },
+    "dependency_migration_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "phase_sequence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "phase_id",
+          "phase_type",
+          "sequence",
+          "purpose",
+          "dependency_phase_ids",
+          "transaction_mode",
+          "online_mode",
+          "lock_budget_milliseconds",
+          "statement_budget_milliseconds",
+          "checkpoint_strategy",
+          "preconditions",
+          "success_criteria"
+        ],
+        "properties": {
+          "phase_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "phase_type": {
+            "type": "string",
+            "enum": [
+              "expand",
+              "backfill",
+              "validate",
+              "cutover",
+              "contract"
+            ]
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 700
+          },
+          "dependency_phase_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "common.schema.json#/$defs/identifier"
+            }
+          },
+          "transaction_mode": {
+            "type": "string",
+            "enum": [
+              "single_transaction",
+              "transaction_per_batch",
+              "autocommit_required"
+            ]
+          },
+          "online_mode": {
+            "type": "string",
+            "enum": [
+              "fully_online",
+              "bounded_write_pause",
+              "maintenance_window"
+            ]
+          },
+          "lock_budget_milliseconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3600000
+          },
+          "statement_budget_milliseconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 86400000
+          },
+          "checkpoint_strategy": {
+            "type": "string",
+            "enum": [
+              "atomic_completion",
+              "durable_batch_checkpoint",
+              "concurrent_build_status",
+              "constraint_validation_status",
+              "routing_marker"
+            ]
+          },
+          "batch_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "preconditions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 5,
+              "maxLength": 500
+            }
+          },
+          "success_criteria": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 5,
+              "maxLength": 500
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "phase_type": {
+                  "const": "backfill"
+                }
+              },
+              "required": [
+                "phase_type"
+              ]
+            },
+            "then": {
+              "required": [
+                "batch_size"
+              ],
+              "properties": {
+                "transaction_mode": {
+                  "const": "transaction_per_batch"
+                },
+                "checkpoint_strategy": {
+                  "const": "durable_batch_checkpoint"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "execution_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "migration_concurrency",
+        "writer_coordination",
+        "migrator_role",
+        "application_role",
+        "schema_drift_check",
+        "applied_checksum_policy"
+      ],
+      "properties": {
+        "migration_concurrency": {
+          "type": "string",
+          "const": "single_migration_writer"
+        },
+        "writer_coordination": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "owner",
+            "strategy",
+            "evidence"
+          ],
+          "properties": {
+            "owner": {
+              "type": "string",
+              "enum": [
+                "migration_tool",
+                "deployment_orchestrator",
+                "database_platform"
+              ]
+            },
+            "strategy": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 500
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 700
+            }
+          }
+        },
+        "migrator_role": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "application_role": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "schema_drift_check": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 700
+        },
+        "applied_checksum_policy": {
+          "type": "string",
+          "const": "immutable_after_application"
+        }
+      }
+    },
+    "compatibility_window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "supported_application_releases",
+        "minimum_observation_seconds",
+        "contract_phase_entry_criteria"
+      ],
+      "properties": {
+        "supported_application_releases": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "minimum_observation_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 31536000
+        },
+        "contract_phase_entry_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 700
+          }
+        }
+      }
+    },
+    "destructive_change": {
+      "type": "boolean"
+    },
+    "approval_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategy",
+        "rollback_boundary_phase_id",
+        "backup_receipt_required",
+        "point_in_time_recovery_required",
+        "owner_role",
+        "containment",
+        "replacement_behavior",
+        "verification"
+      ],
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": [
+            "roll_forward_preferred",
+            "rollback_supported",
+            "restore_checkpoint"
+          ]
+        },
+        "rollback_boundary_phase_id": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "backup_receipt_required": {
+          "type": "boolean"
+        },
+        "point_in_time_recovery_required": {
+          "type": "boolean"
+        },
+        "owner_role": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "containment": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 700
+        },
+        "replacement_behavior": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 700
+        },
+        "verification": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 700
+        }
+      }
+    },
+    "verification_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "evidence_mode": {
+      "$ref": "common.schema.json#/$defs/evidenceMode"
+    },
+    "assurance_stage": {
+      "$ref": "common.schema.json#/$defs/assuranceStage"
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "destructive_change": {
+            "const": true
+          }
+        },
+        "required": [
+          "destructive_change"
+        ]
+      },
+      "then": {
+        "properties": {
+          "approval_ids": {
+            "minItems": 1
+          },
+          "compatibility_window": {
+            "type": "object",
+            "properties": {
+              "minimum_observation_seconds": {
+                "minimum": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -5,10 +5,10 @@
 1. Create the private repository with `main` as its initial branch.
 2. Land this package through an administratively reviewed bootstrap change.
 3. Create `develop` from the protected `main` baseline.
-4. Confirm the `governance-stewards` CODEOWNER team and repository access.
+4. Confirm every configured CODEOWNER resolves to an eligible repository reviewer.
 5. Run `Governance` once and record the emitted status-check context.
 6. Review and install the versioned ruleset exports.
-7. Create and sign release `v2.0.0`.
+7. Create and sign canonical release `governance-v2.0.1`.
 
 ## Downstream contract workflow
 
@@ -37,7 +37,7 @@ Each consumer records:
 
 ```json
 {
-  "release": "v2.0.0",
+  "release": "governance-v2.0.1",
   "commit": "0123456789abcdef0123456789abcdef01234567",
   "digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 }
@@ -53,7 +53,7 @@ evidence storage holds raw vendor payloads, regulated records, security findings
 and signed organizational decisions according to access, retention, and audit
 policy.
 
-**PRIVACY BOUNDARY:** regulated or identifying evidence must not enter Git history; the replacement behavior is a redacted manifest in Git and a digest-bound locator to the approved evidence store.
+**PRIVACY BOUNDARY:** regulated or identifying evidence must not enter Git history; the replacement behavior is a redacted manifest in Git and a digest-bound locator to the approved evidence store, and manifest validation verifies the locator and digest.
 
 ## Ruleset activation receipt
 
@@ -64,6 +64,6 @@ Capture:
 - installation actor and timestamp;
 - active aggregate-rule screenshot or API response;
 - emitted status-check context;
-- CODEOWNER team resolution;
+- CODEOWNER resolution and eligible-reviewer evidence;
 - signed release tag;
 - reviewer and accountable governance steward.

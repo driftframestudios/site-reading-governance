@@ -1,0 +1,112 @@
+{
+  "release_manifest_id": "MANIFEST-DATABASE-RELEASE-001",
+  "release": "lims-eln-enterprise-v0.4.0",
+  "release_state": "candidate",
+  "evidence_mode": "simulated",
+  "assurance_stage": "qualified",
+  "actual_acceptance_required": true,
+  "production_authorization_effect": "none",
+  "data_contract": {
+    "data_contract_id": "CONTRACT-LABORATORY-CORE-001",
+    "version": "1.0.0",
+    "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "current_schema_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "supported_upgrade_baselines": [
+    {
+      "baseline_id": "BASELINE-SCHEMA-V031-001",
+      "schema_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "supported_application_releases": [
+        "lims-eln-enterprise-v0.3.1",
+        "lims-eln-enterprise-v0.4.0"
+      ],
+      "convergence_receipt_ids": [
+        "RECEIPT-DB-MIGRATION-001"
+      ]
+    }
+  ],
+  "ordered_migrations": [
+    {
+      "migration_plan_id": "MIGRATION-LAB-TIMESTAMPTZ-001",
+      "migration_version": "1.0.0",
+      "sequence": 1,
+      "script_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "source_schema_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "applied_schema_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "migration_receipt_id": "RECEIPT-DB-MIGRATION-001",
+      "reconciliation_ids": [
+        "RECONCILIATION-DB-MIGRATION-001"
+      ],
+      "contract_phase_status": "pending_compatibility_window"
+    }
+  ],
+  "required_receipt_ids": [
+    "RECEIPT-DB-MIGRATION-001",
+    "RECEIPT-DB-RESTORE-001"
+  ],
+  "acceptance_bindings": [
+    {
+      "acceptance_id": "ACCEPTANCE-SCIENTIFIC-DB-001",
+      "acceptance_type": "scientific",
+      "status": "projected",
+      "evidence_mode": "simulated",
+      "decision_digest": "sha256:1818181818181818181818181818181818181818181818181818181818181818"
+    },
+    {
+      "acceptance_id": "ACCEPTANCE-QUALITY-DB-001",
+      "acceptance_type": "quality",
+      "status": "projected",
+      "evidence_mode": "simulated",
+      "decision_digest": "sha256:1919191919191919191919191919191919191919191919191919191919191919"
+    },
+    {
+      "acceptance_id": "ACCEPTANCE-REGULATORY-DB-001",
+      "acceptance_type": "regulatory",
+      "status": "projected",
+      "evidence_mode": "simulated",
+      "decision_digest": "sha256:2020202020202020202020202020202020202020202020202020202020202020"
+    },
+    {
+      "acceptance_id": "ACCEPTANCE-SECURITY-DB-001",
+      "acceptance_type": "security_privacy",
+      "status": "projected",
+      "evidence_mode": "simulated",
+      "decision_digest": "sha256:2121212121212121212121212121212121212121212121212121212121212121"
+    },
+    {
+      "acceptance_id": "ACCEPTANCE-OPERATIONS-DB-001",
+      "acceptance_type": "operations",
+      "status": "projected",
+      "evidence_mode": "simulated",
+      "decision_digest": "sha256:2323232323232323232323232323232323232323232323232323232323232323"
+    }
+  ],
+  "evidence_bundle": {
+    "artifact_id": "ARTIFACT-DATABASE-RELEASE-BUNDLE-001",
+    "media_type": "application/json",
+    "digest": "sha256:2424242424242424242424242424242424242424242424242424242424242424",
+    "locator": "evidence://database-releases/lims-eln-enterprise-v0-4-0",
+    "sensitivity": "internal",
+    "retention_class": "database-release-evidence"
+  },
+  "unresolved_finding_ids": [
+    "FINDING-TEMPORAL-PRIMITIVE-001"
+  ],
+  "invalidation_triggers": [
+    "Data contract, migration plan, or script digest changes",
+    "Supported application or database engine range changes",
+    "Reconciliation, recovery, or acceptance evidence changes",
+    "A critical or high database finding enters the ledger"
+  ],
+  "metadata": {
+    "schema_version": "2.0.1",
+    "created_at": "2026-08-04T15:15:00Z",
+    "updated_at": "2026-08-04T15:15:00Z",
+    "owner": {
+      "actor_id": "OWNER-DATABASE-RELEASE-001",
+      "display_name": "Database Release Steward",
+      "role": "Database release manifest owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}

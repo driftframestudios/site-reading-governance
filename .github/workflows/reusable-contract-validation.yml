@@ -38,6 +38,24 @@ jobs:
         with:
           path: source
           persist-credentials: false
+      - name: Validate immutable governance coordinate
+        shell: bash
+        env:
+          GOVERNANCE_REPOSITORY: ${{ inputs.governance_repository }}
+          GOVERNANCE_REF: ${{ inputs.governance_ref }}
+        run: |
+          case "$GOVERNANCE_REPOSITORY" in
+            driftframestudios/site-reading-governance) ;;
+            *)
+              echo "Governance repository is outside the approved allowlist."
+              exit 2
+              ;;
+          esac
+          if [[ ! "$GOVERNANCE_REF" =~ ^[0-9a-f]{40}$ || \
+                "$GOVERNANCE_REF" == "0000000000000000000000000000000000000000" ]]; then
+            echo "Governance ref requires one nonzero immutable 40-hex commit."
+            exit 2
+          fi
       - name: Check out pinned governance source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:

@@ -6,6 +6,37 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+- Aligned the synthetic database-change evidence chain with Flyway Community
+  13.0.0 while keeping the governance contracts tool neutral; schema evolution,
+  vendor lifecycle, cross-platform data movement, and acceptance retain separate
+  ownership and receipt boundaries.
+- Extended data-contract history coordinates to accept a schema-qualified
+  relation such as `public.flyway_schema_history`.
+- Added closed data-contract, database-refactor-finding, migration-plan,
+  migration-receipt, reconciliation, and database-release-manifest contracts
+  with one coherent synthetic evidence chain and mutation-tested cross-record
+  validation.
+- Replaced line-local language matching with deterministic, structure-aware
+  policy `language-policy-v1.0.0`, a repository-independent standard-library
+  core, NFC case-preserving fingerprints, rich text/JSON/SARIF output, exact
+  fail-closed exemptions, a digest-pinned projection manifest, and an 89-case
+  executable union corpus.
+- Added a typed high-consequence language-control contract with target,
+  boundary, replacement, verification, ownership, and evidence fields.
+- Added a repository-owned Vale author-feedback layer for Markdown prose and
+  Python comments, with a checksum-verified immutable Vale release asset and
+  explicit separation from the deterministic governance gate.
+- Documented an inactive semantic shadow-review contract with bounded inputs,
+  advisory-only authority, privacy controls, reproducible coordinates,
+  measurable qualification thresholds, and accountable recovery.
+- Prepared candidate `2.0.1` with a schema-valid repository-promotion receipt
+  and an executable candidate-to-released lifecycle.
+- Required both `branch-policy` and `governance-validation` in versioned branch
+  rulesets and extended signature protection to release, hotfix, and support
+  branches.
+- Bound reusable contract validation to the approved governance repository and
+  a full immutable commit coordinate.
+- Standardized the governance release tag family as `governance-v<semver>`.
 - Bound Dependabot and Renovate branch exceptions to anchored grammars, exact
   bot authors, and governed targets; added spoof and malformed-coordinate
   regressions.

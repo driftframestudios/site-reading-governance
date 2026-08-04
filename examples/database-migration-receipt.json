@@ -1,0 +1,148 @@
+{
+  "migration_receipt_id": "RECEIPT-DB-MIGRATION-001",
+  "migration_plan_id": "MIGRATION-LAB-TIMESTAMPTZ-001",
+  "data_contract_id": "CONTRACT-LABORATORY-CORE-001",
+  "claim": "The selected future-reality rehearsal executes every migration phase, converges on the target schema, and preserves the representative temporal cohort.",
+  "evidence_mode": "simulated",
+  "assurance_stage": "qualified",
+  "authority": "simulation_only",
+  "actual_acceptance_required": true,
+  "outcome": "passed",
+  "environment": {
+    "environment_id": "ENV-DB-REHEARSAL-001",
+    "class": "continuous_integration",
+    "region": "synthetic-local",
+    "configuration_digest": "sha256:1212121212121212121212121212121212121212121212121212121212121212",
+    "engine_family": "postgresql",
+    "engine_version": "17.5",
+    "extension_versions": [
+      "pgcrypto@1.3"
+    ],
+    "collation": "C.UTF-8",
+    "database_timezone": "UTC",
+    "settings_digest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  },
+  "tool_binding": {
+    "tool_name": "Flyway Community",
+    "tool_version": "13.0.0",
+    "implementation_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  },
+  "script_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "source_schema_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "target_schema_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "phase_results": [
+    {
+      "phase_id": "PHASE-EXPAND-001",
+      "sequence": 1,
+      "outcome": "passed",
+      "started_at": "2026-08-04T15:00:00Z",
+      "completed_at": "2026-08-04T15:00:01Z",
+      "checkpoint_digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "phase_id": "PHASE-BACKFILL-001",
+      "sequence": 2,
+      "outcome": "passed",
+      "started_at": "2026-08-04T15:00:01Z",
+      "completed_at": "2026-08-04T15:00:08Z",
+      "checkpoint_digest": "sha256:5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    {
+      "phase_id": "PHASE-VALIDATE-001",
+      "sequence": 3,
+      "outcome": "passed",
+      "started_at": "2026-08-04T15:00:08Z",
+      "completed_at": "2026-08-04T15:00:10Z",
+      "checkpoint_digest": "sha256:6666666666666666666666666666666666666666666666666666666666666666"
+    },
+    {
+      "phase_id": "PHASE-CUTOVER-001",
+      "sequence": 4,
+      "outcome": "passed",
+      "started_at": "2026-08-04T15:00:10Z",
+      "completed_at": "2026-08-04T15:00:11Z",
+      "checkpoint_digest": "sha256:7777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "phase_id": "PHASE-CONTRACT-001",
+      "sequence": 5,
+      "outcome": "passed",
+      "started_at": "2026-08-04T15:00:11Z",
+      "completed_at": "2026-08-04T15:00:12Z",
+      "checkpoint_digest": "sha256:8888888888888888888888888888888888888888888888888888888888888888"
+    }
+  ],
+  "reconciliation_ids": [
+    "RECONCILIATION-DB-MIGRATION-001"
+  ],
+  "execution_metrics": {
+    "lock_wait_milliseconds": 4,
+    "maximum_lock_held_milliseconds": 86,
+    "write_pause_milliseconds": 92,
+    "elapsed_milliseconds": 12000,
+    "backfill_rows": 2400,
+    "retry_count": 1
+  },
+  "recovery_evidence": {
+    "backup_coordinate": {
+      "artifact_id": "ARTIFACT-DB-BACKUP-001",
+      "media_type": "application/octet-stream",
+      "digest": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+      "locator": "evidence://database-recovery/backups/rehearsal-001",
+      "sensitivity": "regulated",
+      "retention_class": "database-recovery-evidence"
+    },
+    "recovery_point_at": "2026-08-04T14:59:59Z",
+    "disposition": "roll_forward_verified",
+    "restore_receipt_ids": [
+      "RECEIPT-DB-RESTORE-001"
+    ],
+    "rto_seconds": 54,
+    "rpo_seconds": 0
+  },
+  "exceptions": [],
+  "artifacts": [
+    {
+      "artifact_id": "ARTIFACT-DB-MIGRATION-RECEIPT-001",
+      "media_type": "application/json",
+      "digest": "sha256:abababababababababababababababababababababababababababababababab",
+      "locator": "evidence://database-migrations/receipts/migration-001",
+      "sensitivity": "internal",
+      "retention_class": "database-migration-evidence"
+    }
+  ],
+  "performed_at": "2026-08-04T15:00:12Z",
+  "performer": {
+    "actor_id": "ACTOR-MIGRATION-RUNNER-001",
+    "display_name": "Migration Rehearsal Runner",
+    "role": "Automated migration performer",
+    "organization": "Example Laboratory"
+  },
+  "reviewer": {
+    "actor_id": "ACTOR-MIGRATION-REVIEWER-001",
+    "display_name": "Migration Evidence Reviewer",
+    "role": "Database migration reviewer",
+    "organization": "Example Laboratory"
+  },
+  "limitations": [
+    "The selected future reality uses a representative synthetic cohort and simulation authority.",
+    "Configured production volume, topology, and workload behavior remain an environment-observed qualification gate."
+  ],
+  "retest_triggers": [
+    "Migration script or tool version changes",
+    "Database engine, extension, collation, timezone, or settings change",
+    "Supported application release set changes",
+    "Representative cohort or scientific invariants change"
+  ],
+  "metadata": {
+    "schema_version": "2.0.1",
+    "created_at": "2026-08-04T15:05:00Z",
+    "updated_at": "2026-08-04T15:05:00Z",
+    "owner": {
+      "actor_id": "OWNER-MIGRATION-EVIDENCE-001",
+      "display_name": "Migration Evidence Steward",
+      "role": "Database migration evidence owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}

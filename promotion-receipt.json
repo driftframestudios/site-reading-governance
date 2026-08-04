@@ -1,0 +1,31 @@
+{
+  "promotion_receipt_id": "RCP-GOVERNANCE-PROMOTION-002",
+  "repository": "driftframestudios/site-reading-governance",
+  "target_release": "governance-v2.0.1",
+  "promotion_state": "candidate_pending",
+  "evidence_mode": "planned",
+  "assurance_stage": "specified",
+  "candidate_coordinate": {
+    "release": "candidate-governance-v2.0.1",
+    "commit": "0000000000000000000000000000000000000000",
+    "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "release_coordinate": null,
+  "required_evidence": [
+    "The release branch reaches main through required branch-policy and governance-validation checks.",
+    "The canonical governance tag resolves to the promoted commit and signed tag evidence.",
+    "The installed aggregate ruleset and resolvable CODEOWNER evidence match the versioned policy.",
+    "Downstream consumers bind the promoted commit and digest before applying the contracts."
+  ],
+  "accountable_role": "Constellation release steward",
+  "metadata": {
+    "schema_version": "2.0.1",
+    "created_at": "2026-07-28T21:00:00Z",
+    "updated_at": "2026-07-28T21:00:00Z",
+    "owner": {
+      "actor_id": "OWNER-GOVERNANCE-PROMOTION-002",
+      "display_name": "Site Reading governance release stewardship role",
+      "role": "Promotion receipt owner"
+    }
+  }
+}

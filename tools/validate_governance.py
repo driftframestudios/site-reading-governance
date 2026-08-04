@@ -22,7 +22,7 @@ EXAMPLE_DIR = ROOT / "examples"
 RULESET_DIR = ROOT / "rulesets"
 WORKFLOW_DIR = ROOT / ".github" / "workflows"
 DRAFT = "https://json-schema.org/draft/2020-12/schema"
-SCHEMA_RELEASE = "2.0.0"
+SCHEMA_RELEASE = "2.0.1"
 SCHEMA_ID_PREFIX = "https://schemas.driftframe.org/site-reading-governance/v2.0/"
 SCHEMA_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9-]*\.schema\.json$")
 DOCUMENT_PATH_PATTERN = re.compile(
@@ -49,10 +49,26 @@ SUBSTANTIVE_SIMULATED_RECEIPT_FAMILIES = {
     "production_security_observability",
     "accountable_scientific_quality_regulatory_acceptance",
 }
+DATABASE_EXAMPLE_NAMES = {
+    "data-contract.json",
+    "database-refactor-finding.json",
+    "database-migration-plan.json",
+    "database-migration-receipt.json",
+    "data-reconciliation.json",
+    "database-release-manifest.json",
+}
+DATABASE_ACCEPTANCE_TYPES = {
+    "scientific",
+    "quality",
+    "regulatory",
+    "security_privacy",
+    "operations",
+}
 ROOT_ORIENTATION_SCHEMAS = {
     "machine-node.json": "machine-node.schema.json",
     "first-receipt.json": "first-receipt.schema.json",
     "coordination-horizon.json": "coordination-horizon.schema.json",
+    "promotion-receipt.json": "promotion-receipt.schema.json",
 }
 ROOT_ORIENTATION_CONTRACTS = {
     "CONTRACT-SELECTED-FUTURE-CLOSURE-002": "2.0.0",
@@ -81,6 +97,41 @@ LEGACY_COORDINATOR = re.compile(
     r"\bnow\s*/\s*next\s*/\s*later\s+coordinator\b",
     re.IGNORECASE,
 )
+SUPPORTED_SCHEMA_KEYWORDS = {
+    "$defs",
+    "$id",
+    "$ref",
+    "$schema",
+    "additionalProperties",
+    "allOf",
+    "anyOf",
+    "const",
+    "description",
+    "else",
+    "enum",
+    "exclusiveMaximum",
+    "exclusiveMinimum",
+    "format",
+    "if",
+    "items",
+    "maxItems",
+    "maxLength",
+    "maximum",
+    "minItems",
+    "minLength",
+    "minimum",
+    "oneOf",
+    "pattern",
+    "properties",
+    "required",
+    "then",
+    "title",
+    "type",
+    "uniqueItems",
+}
+SCHEMA_MAP_KEYWORDS = {"$defs", "properties"}
+SCHEMA_ARRAY_KEYWORDS = {"allOf", "anyOf", "oneOf"}
+SCHEMA_VALUE_KEYWORDS = {"additionalProperties", "else", "if", "items", "then"}
 
 
 @dataclass(frozen=True)
@@ -418,7 +469,50 @@ def validate_schema_catalog() -> list[Finding]:
             ids.add(schema_id)
         if path.name != "common.schema.json" and schema.get("type") != "object":
             findings.append(Finding(relative, "governance record root must be an object"))
+        findings.extend(_validate_schema_keywords(schema, relative))
         findings.extend(_walk_references(schema, path, relative))
+    return findings
+
+
+def _validate_schema_keywords(
+    schema: Any,
+    location: str,
+) -> list[Finding]:
+    """Reject schema vocabulary that the dependency-free evaluator cannot enforce."""
+    if isinstance(schema, bool):
+        return []
+    if not isinstance(schema, dict):
+        return [Finding(location, "schema position must contain an object or boolean")]
+
+    findings: list[Finding] = []
+    unsupported = set(schema) - SUPPORTED_SCHEMA_KEYWORDS
+    for keyword in sorted(unsupported):
+        findings.append(
+            Finding(
+                location,
+                f"schema keyword {keyword!r} is outside the supported evaluator vocabulary",
+            )
+        )
+    for keyword in SCHEMA_MAP_KEYWORDS:
+        value = schema.get(keyword, {})
+        if isinstance(value, dict):
+            for name, child in value.items():
+                findings.extend(
+                    _validate_schema_keywords(child, f"{location}/{keyword}/{name}")
+                )
+    for keyword in SCHEMA_ARRAY_KEYWORDS:
+        value = schema.get(keyword, [])
+        if isinstance(value, list):
+            for index, child in enumerate(value):
+                findings.extend(
+                    _validate_schema_keywords(child, f"{location}/{keyword}/{index}")
+                )
+    for keyword in SCHEMA_VALUE_KEYWORDS:
+        value = schema.get(keyword)
+        if isinstance(value, (dict, bool)):
+            findings.extend(
+                _validate_schema_keywords(value, f"{location}/{keyword}")
+            )
     return findings
 
 
@@ -514,6 +608,7 @@ def validate_examples() -> list[Finding]:
             )
         )
     findings.extend(_validate_control_plane_examples(records))
+    findings.extend(_validate_database_examples(records))
     return findings
 
 
@@ -721,6 +816,465 @@ def _validate_control_plane_examples(records: dict[str, Any]) -> list[Finding]:
     return findings
 
 
+def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
+    """Prove the database contract, plan, evidence, and release chain agrees."""
+    if not DATABASE_EXAMPLE_NAMES.issubset(records):
+        return []
+
+    findings: list[Finding] = []
+    contract = records["data-contract.json"]
+    finding = records["database-refactor-finding.json"]
+    plan = records["database-migration-plan.json"]
+    receipt = records["database-migration-receipt.json"]
+    reconciliation = records["data-reconciliation.json"]
+    manifest = records["database-release-manifest.json"]
+
+    contract_id = contract.get("data_contract_id")
+    plan_id = plan.get("migration_plan_id")
+    receipt_id = receipt.get("migration_receipt_id")
+    reconciliation_id = reconciliation.get("reconciliation_id")
+
+    for label, record in (
+        ("examples/database-refactor-finding.json", finding),
+        ("examples/database-migration-plan.json", plan),
+        ("examples/database-migration-receipt.json", receipt),
+        ("examples/data-reconciliation.json", reconciliation),
+    ):
+        if record.get("data_contract_id") != contract_id:
+            findings.append(
+                Finding(label, "data-contract identifier must resolve to the contract example")
+            )
+
+    entity_ids = [entity.get("entity_id") for entity in contract.get("entities", [])]
+    if len(entity_ids) != len(set(entity_ids)):
+        findings.append(
+            Finding("examples/data-contract.json.entities", "entity identifiers must be unique")
+        )
+    entities = {
+        entity.get("entity_id"): entity for entity in contract.get("entities", [])
+    }
+    engine_family = contract.get("database", {}).get("engine_family")
+    for entity_index, entity in enumerate(contract.get("entities", [])):
+        field_ids = [field.get("field_id") for field in entity.get("fields", [])]
+        field_id_set = set(field_ids)
+        if len(field_ids) != len(field_id_set):
+            findings.append(
+                Finding(
+                    f"examples/data-contract.json.entities[{entity_index}].fields",
+                    "field identifiers must be unique within one entity",
+                )
+            )
+        if not set(entity.get("primary_key_field_ids", [])).issubset(field_id_set):
+            findings.append(
+                Finding(
+                    f"examples/data-contract.json.entities[{entity_index}].primary_key_field_ids",
+                    "every primary-key field must resolve within its entity",
+                )
+            )
+        for field_index, field in enumerate(entity.get("fields", [])):
+            physical_type = str(field.get("physical_type", "")).lower()
+            semantic_type = field.get("semantic_type")
+            expected_postgresql_type = {
+                "instant": "timestamptz",
+                "civil_date": "date",
+                "boolean": "boolean",
+            }.get(semantic_type)
+            if (
+                engine_family == "postgresql"
+                and expected_postgresql_type is not None
+                and physical_type != expected_postgresql_type
+            ):
+                findings.append(
+                    Finding(
+                        f"examples/data-contract.json.entities[{entity_index}]"
+                        f".fields[{field_index}].physical_type",
+                        f"PostgreSQL {semantic_type} fields use {expected_postgresql_type}",
+                    )
+                )
+            if (
+                engine_family == "postgresql"
+                and semantic_type == "exact_decimal"
+                and re.fullmatch(r"(?:numeric|decimal)\([1-9][0-9]*,[0-9]+\)", physical_type)
+                is None
+            ):
+                findings.append(
+                    Finding(
+                        f"examples/data-contract.json.entities[{entity_index}]"
+                        f".fields[{field_index}].physical_type",
+                        "PostgreSQL exact-decimal fields use declared numeric precision and scale",
+                    )
+                )
+        for constraint_index, constraint in enumerate(entity.get("constraints", [])):
+            if not set(constraint.get("field_ids", [])).issubset(field_id_set):
+                findings.append(
+                    Finding(
+                        f"examples/data-contract.json.entities[{entity_index}]"
+                        f".constraints[{constraint_index}].field_ids",
+                        "every constrained field must resolve within its entity",
+                    )
+                )
+            if constraint.get("constraint_type") == "foreign_key":
+                target = entities.get(constraint.get("referenced_entity_id"))
+                if target is None:
+                    findings.append(
+                        Finding(
+                            f"examples/data-contract.json.entities[{entity_index}]"
+                            f".constraints[{constraint_index}].referenced_entity_id",
+                            "foreign-key target entity must resolve",
+                        )
+                    )
+                else:
+                    target_field_ids = {
+                        field.get("field_id") for field in target.get("fields", [])
+                    }
+                    if not set(constraint.get("referenced_field_ids", [])).issubset(
+                        target_field_ids
+                    ):
+                        findings.append(
+                            Finding(
+                                f"examples/data-contract.json.entities[{entity_index}]"
+                                f".constraints[{constraint_index}].referenced_field_ids",
+                                "every foreign-key target field must resolve",
+                            )
+                        )
+
+    if plan_id not in finding.get("target_migration_ids", []):
+        findings.append(
+            Finding(
+                "examples/database-refactor-finding.json.target_migration_ids",
+                "planned finding must reference the migration-plan example",
+            )
+        )
+
+    phases = plan.get("phase_sequence", [])
+    phase_ids = [phase.get("phase_id") for phase in phases]
+    phase_sequences = [phase.get("sequence") for phase in phases]
+    if len(phase_ids) != len(set(phase_ids)):
+        findings.append(
+            Finding(
+                "examples/database-migration-plan.json.phase_sequence",
+                "migration phase identifiers must be unique",
+            )
+        )
+    if len(phase_sequences) != len(set(phase_sequences)):
+        findings.append(
+            Finding(
+                "examples/database-migration-plan.json.phase_sequence",
+                "migration phase sequence values must be unique",
+            )
+        )
+    phase_sequence_by_id = {
+        phase.get("phase_id"): phase.get("sequence") for phase in phases
+    }
+    for index, phase in enumerate(phases):
+        for dependency_id in phase.get("dependency_phase_ids", []):
+            dependency_sequence = phase_sequence_by_id.get(dependency_id)
+            if dependency_sequence is None:
+                findings.append(
+                    Finding(
+                        f"examples/database-migration-plan.json.phase_sequence[{index}]"
+                        ".dependency_phase_ids",
+                        "every phase dependency must resolve",
+                    )
+                )
+            elif dependency_sequence >= phase.get("sequence", 0):
+                findings.append(
+                    Finding(
+                        f"examples/database-migration-plan.json.phase_sequence[{index}]"
+                        ".dependency_phase_ids",
+                        "each phase dependency must precede its dependent phase",
+                    )
+                )
+    if plan.get("recovery", {}).get("rollback_boundary_phase_id") not in set(phase_ids):
+        findings.append(
+            Finding(
+                "examples/database-migration-plan.json.recovery.rollback_boundary_phase_id",
+                "rollback boundary must resolve to one migration phase",
+            )
+        )
+
+    receipt_matches = {
+        "migration_plan_id": plan_id,
+        "source_schema_digest": plan.get("source_schema_digest"),
+        "target_schema_digest": plan.get("target_schema_digest"),
+        "script_digest": plan.get("script", {}).get("digest"),
+    }
+    for field, expected in receipt_matches.items():
+        if receipt.get(field) != expected:
+            findings.append(
+                Finding(
+                    f"examples/database-migration-receipt.json.{field}",
+                    f"{field.replace('_', ' ')} must match the migration plan",
+                )
+            )
+    if receipt.get("tool_binding") != plan.get("tool_binding"):
+        findings.append(
+            Finding(
+                "examples/database-migration-receipt.json.tool_binding",
+                "execution tool coordinate must match the migration plan",
+            )
+        )
+    phase_results = receipt.get("phase_results", [])
+    receipt_phase_ids = [result.get("phase_id") for result in phase_results]
+    receipt_phase_sequences = [result.get("sequence") for result in phase_results]
+    if set(receipt_phase_ids) != set(phase_ids) or len(receipt_phase_ids) != len(phase_ids):
+        findings.append(
+            Finding(
+                "examples/database-migration-receipt.json.phase_results",
+                "execution receipt must cover every planned phase exactly once",
+            )
+        )
+    if receipt_phase_sequences != phase_sequences:
+        findings.append(
+            Finding(
+                "examples/database-migration-receipt.json.phase_results",
+                "execution receipt phase order must match the migration plan",
+            )
+        )
+    maximum_planned_lock = max(
+        (phase.get("lock_budget_milliseconds", 0) for phase in phases),
+        default=0,
+    )
+    observed_lock = receipt.get("execution_metrics", {}).get(
+        "maximum_lock_held_milliseconds",
+        0,
+    )
+    if observed_lock > maximum_planned_lock:
+        findings.append(
+            Finding(
+                "examples/database-migration-receipt.json.execution_metrics"
+                ".maximum_lock_held_milliseconds",
+                "observed lock duration must remain within the planned phase budget",
+            )
+        )
+    if receipt.get("outcome") == "passed" and any(
+        result.get("outcome") != "passed" for result in phase_results
+    ):
+        findings.append(
+            Finding(
+                "examples/database-migration-receipt.json.outcome",
+                "passing execution requires a passing result for every phase",
+            )
+        )
+
+    reconciliation_links = {
+        "migration_receipt_id": receipt_id,
+        "migration_plan_id": plan_id,
+        "data_contract_id": contract_id,
+    }
+    for field, expected in reconciliation_links.items():
+        if reconciliation.get(field) != expected:
+            findings.append(
+                Finding(
+                    f"examples/data-reconciliation.json.{field}",
+                    f"{field.replace('_', ' ')} must resolve to the evidence chain",
+                )
+            )
+    if reconciliation_id not in receipt.get("reconciliation_ids", []):
+        findings.append(
+            Finding(
+                "examples/database-migration-receipt.json.reconciliation_ids",
+                "migration receipt must reference the reconciliation example",
+            )
+        )
+    criteria = reconciliation.get("criteria", [])
+    criterion_ids = [criterion.get("criterion_id") for criterion in criteria]
+    if len(criterion_ids) != len(set(criterion_ids)):
+        findings.append(
+            Finding(
+                "examples/data-reconciliation.json.criteria",
+                "reconciliation criterion identifiers must be unique",
+            )
+        )
+    if set(criterion_ids) != set(plan.get("verification_criteria", [])):
+        findings.append(
+            Finding(
+                "examples/data-reconciliation.json.criteria",
+                "reconciliation must implement every planned verification criterion",
+            )
+        )
+    if reconciliation.get("overall_outcome") == "passed" and any(
+        criterion.get("outcome") != "passed" for criterion in criteria
+    ):
+        findings.append(
+            Finding(
+                "examples/data-reconciliation.json.overall_outcome",
+                "passing reconciliation requires a passing result for every criterion",
+            )
+        )
+    for index, exception in enumerate(reconciliation.get("exceptions", [])):
+        if exception.get("criterion_id") not in set(criterion_ids):
+            findings.append(
+                Finding(
+                    f"examples/data-reconciliation.json.exceptions[{index}].criterion_id",
+                    "exception criterion must resolve within the reconciliation",
+                )
+            )
+
+    manifest_contract = manifest.get("data_contract", {})
+    contract_matches = {
+        "data_contract_id": contract_id,
+        "version": contract.get("version"),
+        "digest": contract.get("contract_digest"),
+    }
+    for field, expected in contract_matches.items():
+        if manifest_contract.get(field) != expected:
+            findings.append(
+                Finding(
+                    f"examples/database-release-manifest.json.data_contract.{field}",
+                    "release manifest data-contract coordinate must match the contract example",
+                )
+            )
+    migrations = manifest.get("ordered_migrations", [])
+    migration_sequences = [item.get("sequence") for item in migrations]
+    if len(migration_sequences) != len(set(migration_sequences)):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.ordered_migrations",
+                "release migration sequence values must be unique",
+            )
+        )
+    expected_sequences = list(range(1, len(migrations) + 1))
+    if migration_sequences != expected_sequences:
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.ordered_migrations",
+                "release migrations must form one contiguous ordered chain",
+            )
+        )
+    for previous, current in zip(migrations, migrations[1:]):
+        if current.get("source_schema_digest") != previous.get(
+            "applied_schema_digest"
+        ):
+            findings.append(
+                Finding(
+                    "examples/database-release-manifest.json.ordered_migrations",
+                    "each migration source must equal the preceding applied schema",
+                )
+            )
+    plan_entries = [item for item in migrations if item.get("migration_plan_id") == plan_id]
+    if len(plan_entries) != 1:
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.ordered_migrations",
+                "release manifest must reference the migration plan exactly once",
+            )
+        )
+    else:
+        entry = plan_entries[0]
+        entry_matches = {
+            "migration_version": plan.get("version"),
+            "script_digest": plan.get("script", {}).get("digest"),
+            "source_schema_digest": plan.get("source_schema_digest"),
+            "applied_schema_digest": plan.get("target_schema_digest"),
+            "migration_receipt_id": receipt_id,
+        }
+        for field, expected in entry_matches.items():
+            if entry.get(field) != expected:
+                findings.append(
+                    Finding(
+                        f"examples/database-release-manifest.json.ordered_migrations.{field}",
+                        f"manifest {field.replace('_', ' ')} must match the evidence chain",
+                    )
+                )
+        if reconciliation_id not in entry.get("reconciliation_ids", []):
+            findings.append(
+                Finding(
+                    "examples/database-release-manifest.json.ordered_migrations.reconciliation_ids",
+                    "manifest migration must reference the reconciliation example",
+                )
+            )
+    if manifest.get("current_schema_digest") != plan.get("target_schema_digest"):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.current_schema_digest",
+                "release schema digest must equal the planned target schema digest",
+            )
+        )
+    if migrations and manifest.get("current_schema_digest") != migrations[-1].get(
+        "applied_schema_digest"
+    ):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.current_schema_digest",
+                "release schema digest must equal the final applied migration schema",
+            )
+        )
+    baseline_support = [
+        baseline
+        for baseline in manifest.get("supported_upgrade_baselines", [])
+        if baseline.get("schema_digest") == plan.get("source_schema_digest")
+        and receipt_id in baseline.get("convergence_receipt_ids", [])
+    ]
+    if not baseline_support:
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.supported_upgrade_baselines",
+                "planned source schema must have a convergence receipt in the supported baselines",
+            )
+        )
+    if receipt_id not in manifest.get("required_receipt_ids", []):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.required_receipt_ids",
+                "release manifest must require the migration receipt",
+            )
+        )
+    restore_ids = set(receipt.get("recovery_evidence", {}).get("restore_receipt_ids", []))
+    if not restore_ids.issubset(set(manifest.get("required_receipt_ids", []))):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.required_receipt_ids",
+                "release manifest must require every restore receipt",
+            )
+        )
+    acceptance_bindings = manifest.get("acceptance_bindings", [])
+    acceptance_types = [item.get("acceptance_type") for item in acceptance_bindings]
+    if set(acceptance_types) != DATABASE_ACCEPTANCE_TYPES:
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.acceptance_bindings",
+                "database release must represent Scientific, Quality, Regulatory, Security, and Operations acceptance",
+            )
+        )
+    if len(acceptance_types) != len(set(acceptance_types)):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.acceptance_bindings",
+                "database release acceptance types must be unique",
+            )
+        )
+    if manifest.get("evidence_mode") == "simulated" and any(
+        binding.get("evidence_mode") != "simulated"
+        or binding.get("status") != "projected"
+        for binding in acceptance_bindings
+    ):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.acceptance_bindings",
+                "simulated release acceptance remains projected with simulated evidence",
+            )
+        )
+    unresolved_ids = set(manifest.get("unresolved_finding_ids", []))
+    finding_status = finding.get("disposition", {}).get("status")
+    finding_id = finding.get("finding_id")
+    if finding_status in {"open", "planned"} and finding_id not in unresolved_ids:
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.unresolved_finding_ids",
+                "open and planned database findings must remain visible in the manifest",
+            )
+        )
+    if finding_status in {"remediated", "accepted_by_design"} and finding_id in unresolved_ids:
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.unresolved_finding_ids",
+                "settled database findings move out of the unresolved set",
+            )
+        )
+    return findings
+
+
 def validate_repository_orientation() -> list[Finding]:
     """Validate root orientation records and their cross-record contract."""
     findings: list[Finding] = []
@@ -751,11 +1305,12 @@ def validate_repository_orientation() -> list[Finding]:
 def _validate_repository_orientation_records(
     records: dict[str, Any],
 ) -> list[Finding]:
-    """Check relationships across the three root orientation records."""
+    """Check relationships across the root orientation and promotion records."""
     findings: list[Finding] = []
     node = records["machine-node.json"]
     first_receipt = records["first-receipt.json"]
     horizon = records["coordination-horizon.json"]
+    promotion_receipt = records["promotion-receipt.json"]
 
     if node.get("machine_node_id") != first_receipt.get("machine_node_id"):
         findings.append(
@@ -831,6 +1386,21 @@ def _validate_repository_orientation_records(
             Finding(
                 "first-receipt.json.open_receipts",
                 "open receipts must equal the Machine Node receipt set",
+            )
+        )
+    promotion_receipt_id = promotion_receipt.get("promotion_receipt_id")
+    if promotion_receipt_id != "RCP-GOVERNANCE-PROMOTION-002":
+        findings.append(
+            Finding(
+                "promotion-receipt.json.promotion_receipt_id",
+                "promotion receipt must use the governed repository receipt identity",
+            )
+        )
+    if promotion_receipt.get("target_release") != "governance-v2.0.1":
+        findings.append(
+            Finding(
+                "promotion-receipt.json.target_release",
+                "promotion receipt must bind the canonical governance-v2.0.1 tag",
             )
         )
 
@@ -933,6 +1503,85 @@ def _validate_repository_orientation_records(
                     "candidate provenance placeholders require an open promotion receipt",
                 )
             )
+        if promotion_receipt_id not in node.get("open_receipts", []):
+            findings.append(
+                Finding(
+                    "machine-node.json.open_receipts",
+                    "candidate provenance requires the concrete promotion receipt",
+                )
+            )
+        if (
+            promotion_receipt.get("promotion_state") != "candidate_pending"
+            or promotion_receipt.get("release_coordinate") is not None
+        ):
+            findings.append(
+                Finding(
+                    "promotion-receipt.json",
+                    "candidate provenance requires a pending promotion receipt",
+                )
+            )
+        if promotion_receipt.get("candidate_coordinate") != provenance:
+            findings.append(
+                Finding(
+                    "promotion-receipt.json.candidate_coordinate",
+                    "candidate promotion coordinates must equal Machine Node provenance",
+                )
+            )
+    elif not zero_commit and not zero_digest:
+        release_coordinate = promotion_receipt.get("release_coordinate")
+        if node.get("lifecycle_state") not in {"reference_ready", "active"}:
+            findings.append(
+                Finding(
+                    "machine-node.json.lifecycle_state",
+                    "released provenance requires a reference-ready or active lifecycle",
+                )
+            )
+        if promotion_receipt_id in node.get("open_receipts", []):
+            findings.append(
+                Finding(
+                    "machine-node.json.open_receipts",
+                    "released provenance requires the promotion receipt to be closed",
+                )
+            )
+        if (
+            promotion_receipt.get("promotion_state") != "released"
+            or not isinstance(release_coordinate, dict)
+        ):
+            findings.append(
+                Finding(
+                    "promotion-receipt.json",
+                    "released provenance requires observed promotion evidence",
+                )
+            )
+        elif (
+            release_coordinate.get("commit") != provenance.get("commit")
+            or release_coordinate.get("digest") != provenance.get("digest")
+            or release_coordinate.get("tag") != provenance.get("release")
+        ):
+            findings.append(
+                Finding(
+                    "promotion-receipt.json.release_coordinate",
+                    "release evidence must equal Machine Node provenance",
+                )
+            )
+        promotion_items = [
+            item
+            for item in work_items
+            if "promotion"
+            in " ".join(
+                str(item.get(field, ""))
+                for field in ("item_id", "horizon_label", "desired_state")
+            ).lower()
+        ]
+        if not promotion_items or not all(
+            item.get("state") == "complete" for item in promotion_items
+        ):
+            findings.append(
+                Finding(
+                    "coordination-horizon.json.work_items",
+                    "released provenance requires completed promotion work",
+                )
+            )
     return findings
 
 
@@ -1021,14 +1670,17 @@ def validate_rulesets() -> list[Finding]:
                     "required_status_checks", []
                 )
             }
-            if "governance-validation" not in contexts:
+            required_contexts = {"branch-policy", "governance-validation"}
+            missing_contexts = required_contexts - contexts
+            if missing_contexts:
                 findings.append(
                     Finding(
                         relative,
-                        "branch ruleset requires governance-validation status",
+                        "branch ruleset is missing required status contexts: "
+                        f"{sorted(missing_contexts)}",
                     )
                 )
-        if path.name in {"main.json", "release-tags.json"}:
+        if path.name in {"main.json", "release-hotfix.json", "release-tags.json"}:
             if "required_signatures" not in rule_types:
                 findings.append(
                     Finding(relative, "production coordinates require signatures")
@@ -1153,6 +1805,22 @@ def validate_workflows() -> list[Finding]:
                     "pull_request_target authority belongs only to branch-policy.yml",
                 )
             )
+        if path.name == "reusable-contract-validation.yml":
+            required_contract_fragments = {
+                "driftframestudios/site-reading-governance)":
+                    "governance repository requires an explicit allowlist",
+                r"^[0-9a-f]{40}$":
+                    "governance ref requires an immutable commit grammar",
+                '"$GOVERNANCE_REF" == "0000000000000000000000000000000000000000"':
+                    "governance ref requires explicit zero-placeholder rejection",
+                "GOVERNANCE_REPOSITORY: ${{ inputs.governance_repository }}":
+                    "repository input requires quoted environment projection",
+                "GOVERNANCE_REF: ${{ inputs.governance_ref }}":
+                    "ref input requires quoted environment projection",
+            }
+            for fragment, message in required_contract_fragments.items():
+                if fragment not in content:
+                    findings.append(Finding(relative, message))
         for reference in action_reference.findall(content):
             if reference.startswith("./"):
                 continue

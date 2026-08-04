@@ -1,0 +1,193 @@
+{
+  "migration_plan_id": "MIGRATION-LAB-TIMESTAMPTZ-001",
+  "version": "1.0.0",
+  "data_contract_id": "CONTRACT-LABORATORY-CORE-001",
+  "purpose": "Move the specimen update instant from a lexical representation to a native timezone-aware database primitive through a reversible compatibility window.",
+  "source_schema_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "target_schema_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "engine_compatibility": {
+    "engine_family": "postgresql",
+    "minimum_version": "15.0",
+    "maximum_version": "18.99",
+    "required_extensions": [
+      "pgcrypto"
+    ]
+  },
+  "tool_binding": {
+    "tool_name": "Flyway Community",
+    "tool_version": "13.0.0",
+    "implementation_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  },
+  "script": {
+    "artifact_id": "ARTIFACT-MIGRATION-SCRIPT-001",
+    "media_type": "application/sql",
+    "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "locator": "governed://database-migrations/lab-timestamptz-001",
+    "sensitivity": "internal",
+    "retention_class": "database-migration-history"
+  },
+  "dependency_migration_ids": [],
+  "phase_sequence": [
+    {
+      "phase_id": "PHASE-EXPAND-001",
+      "phase_type": "expand",
+      "sequence": 1,
+      "purpose": "Add the native instant column and compatibility trigger with a bounded metadata lock.",
+      "dependency_phase_ids": [],
+      "transaction_mode": "single_transaction",
+      "online_mode": "fully_online",
+      "lock_budget_milliseconds": 1000,
+      "statement_budget_milliseconds": 30000,
+      "checkpoint_strategy": "atomic_completion",
+      "preconditions": [
+        "Source schema digest matches the reviewed baseline",
+        "Flyway reports active PostgreSQL schema-history coordination for this migration"
+      ],
+      "success_criteria": [
+        "Native instant column exists with the reviewed type",
+        "Application writes remain available within the lock budget"
+      ]
+    },
+    {
+      "phase_id": "PHASE-BACKFILL-001",
+      "phase_type": "backfill",
+      "sequence": 2,
+      "purpose": "Populate native instants in restartable batches and retain a durable high-water mark.",
+      "dependency_phase_ids": [
+        "PHASE-EXPAND-001"
+      ],
+      "transaction_mode": "transaction_per_batch",
+      "online_mode": "fully_online",
+      "lock_budget_milliseconds": 500,
+      "statement_budget_milliseconds": 10000,
+      "checkpoint_strategy": "durable_batch_checkpoint",
+      "batch_size": 1000,
+      "preconditions": [
+        "Expand phase checkpoint matches the reviewed plan"
+      ],
+      "success_criteria": [
+        "Every eligible row carries one parsed native instant",
+        "Batch replay returns the same row values and checkpoint"
+      ]
+    },
+    {
+      "phase_id": "PHASE-VALIDATE-001",
+      "phase_type": "validate",
+      "sequence": 3,
+      "purpose": "Prove lexical and native projections converge for the representative cohort.",
+      "dependency_phase_ids": [
+        "PHASE-BACKFILL-001"
+      ],
+      "transaction_mode": "single_transaction",
+      "online_mode": "fully_online",
+      "lock_budget_milliseconds": 500,
+      "statement_budget_milliseconds": 60000,
+      "checkpoint_strategy": "constraint_validation_status",
+      "preconditions": [
+        "Backfill checkpoint covers the selected cohort"
+      ],
+      "success_criteria": [
+        "Temporal parity and domain checks pass",
+        "Constraint validation completes within the statement budget"
+      ]
+    },
+    {
+      "phase_id": "PHASE-CUTOVER-001",
+      "phase_type": "cutover",
+      "sequence": 4,
+      "purpose": "Route reads to the native instant while retaining the verified legacy projection for recovery.",
+      "dependency_phase_ids": [
+        "PHASE-VALIDATE-001"
+      ],
+      "transaction_mode": "single_transaction",
+      "online_mode": "bounded_write_pause",
+      "lock_budget_milliseconds": 1000,
+      "statement_budget_milliseconds": 30000,
+      "checkpoint_strategy": "routing_marker",
+      "preconditions": [
+        "Validation receipt reports a passing reconciliation"
+      ],
+      "success_criteria": [
+        "Application reads use the native instant",
+        "Compatibility health checks pass for both supported releases"
+      ]
+    },
+    {
+      "phase_id": "PHASE-CONTRACT-001",
+      "phase_type": "contract",
+      "sequence": 5,
+      "purpose": "Retire the legacy projection after the observed compatibility window and accountable approval.",
+      "dependency_phase_ids": [
+        "PHASE-CUTOVER-001"
+      ],
+      "transaction_mode": "single_transaction",
+      "online_mode": "bounded_write_pause",
+      "lock_budget_milliseconds": 1000,
+      "statement_budget_milliseconds": 30000,
+      "checkpoint_strategy": "atomic_completion",
+      "preconditions": [
+        "Compatibility observation reaches the reviewed duration",
+        "Contract-phase approval binds the passing evidence bundle"
+      ],
+      "success_criteria": [
+        "Legacy projection is retired",
+        "Target schema digest matches the release manifest"
+      ]
+    }
+  ],
+  "execution_policy": {
+    "migration_concurrency": "single_migration_writer",
+    "writer_coordination": {
+      "owner": "migration_tool",
+      "strategy": "Flyway coordinates one migration writer through its schema-history mechanism.",
+      "evidence": "The governed receipt preserves Flyway validate and migrate outcomes together with the exact public.flyway_schema_history relation inspected after execution."
+    },
+    "migrator_role": "Database migration role",
+    "application_role": "LIMS application role",
+    "schema_drift_check": "The release gate compares the live schema digest with the reviewed source digest before Flyway starts the first phase.",
+    "applied_checksum_policy": "immutable_after_application"
+  },
+  "compatibility_window": {
+    "supported_application_releases": [
+      "lims-eln-enterprise-v0.3.1",
+      "lims-eln-enterprise-v0.4.0"
+    ],
+    "minimum_observation_seconds": 604800,
+    "contract_phase_entry_criteria": [
+      "Dual-version health and temporal parity receipts pass",
+      "Scientific, Quality, Regulatory, Security, and Operations roles review one evidence bundle"
+    ]
+  },
+  "destructive_change": true,
+  "approval_ids": [
+    "APPROVAL-DB-CONTRACT-001"
+  ],
+  "recovery": {
+    "strategy": "roll_forward_preferred",
+    "rollback_boundary_phase_id": "PHASE-CUTOVER-001",
+    "backup_receipt_required": true,
+    "point_in_time_recovery_required": true,
+    "owner_role": "Database platform owner",
+    "containment": "The release coordinator pauses before the next migration and keeps the verified projection available at the last durable checkpoint.",
+    "replacement_behavior": "The owner resumes the idempotent phase or restores the reviewed recovery point according to the recorded disposition.",
+    "verification": "A second operator executes the selected route and confirms schema, record, and application health."
+  },
+  "verification_criteria": [
+    "CRITERION-ROW-COUNT-001",
+    "CRITERION-TEMPORAL-PARITY-001",
+    "CRITERION-SCHEMA-DIGEST-001"
+  ],
+  "evidence_mode": "simulated",
+  "assurance_stage": "specified",
+  "metadata": {
+    "schema_version": "2.0.1",
+    "created_at": "2026-08-04T14:30:00Z",
+    "updated_at": "2026-08-04T14:30:00Z",
+    "owner": {
+      "actor_id": "OWNER-MIGRATION-PLAN-001",
+      "display_name": "Database Migration Steward",
+      "role": "Database migration plan owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}
