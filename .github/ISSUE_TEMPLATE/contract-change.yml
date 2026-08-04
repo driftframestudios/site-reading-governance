@@ -13,7 +13,7 @@ body:
     attributes:
       label: Desired state
       description: State the capability or invariant directly.
-      placeholder: Every receipt binds the exact environment and configuration digest.
+      placeholder: Every measurement preserves its unit, precision, and method revision.
     validations:
       required: true
   - type: textarea
@@ -51,4 +51,3 @@ body:
       description: Name the observations that demonstrate the desired state.
     validations:
       required: true
-

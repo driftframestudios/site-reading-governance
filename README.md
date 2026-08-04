@@ -1,180 +1,101 @@
 # Site Reading Governance
 
-This repository is the reusable governance plane for comparative Site Reading
-constellations. It gives planning, implementation, simulation, and evidence
-repositories one versioned contract for decisions, scenarios, receipts,
-acceptance, comparison, and change-triggered invalidation.
+This repository is a compact documentation library for the Site Reading
+constellation. Its maintained surface helps collaborators understand data
+contracts, database primitive findings, Practitioner Probes, current work, and
+the location of related repositories.
 
-The package is private-repository ready. Its examples use synthetic identifiers,
-its automation uses read-only permissions by default, and its ruleset exports
-can be reviewed before installation through the GitHub Rulesets API.
+Application permissions live in application identity and policy systems.
+Scientific, Quality, Regulatory, security, operational, and production
+decisions live in their established systems of record. This repository supplies
+documentation and examples for technical collaboration.
 
-The current governance schema candidate is `2.0.2`; stable schema identifiers use
-the `/v2.0/` coordinate. It implements **Control Plane Profile v0.3**, the
-Enterprise Human-AI Practitioner Registry-derived capability profile for
-bounded callers, veracity, orientation, coordination, and future-reality
-simulation.
+## Maintained surface
 
-## Constellation
+| Artifact | Purpose |
+| --- | --- |
+| `schemas/data-contract.schema.json` | Semantic and physical database contract |
+| `examples/data-contract.json` | Synthetic LIMS/ELN contract example |
+| `schemas/database-refactor-finding.schema.json` | Direct primitive-change ledger entry |
+| `examples/database-refactor-finding.json` | Timestamp primitive correction example |
+| `schemas/practitioner-probe.schema.json` | Principal-level probe structure |
+| `machine-node.json` | Durable collaboration orientation |
+| `coordination-horizon.json` | Current work and re-entry context |
 
-| Repository role | Purpose | Authority |
-| --- | --- | --- |
-| Program specification | Intent, examples, risks, forecasts, and acceptance criteria | Desired behavior |
-| Enterprise implementation | Current code, infrastructure, migrations, and runbooks | Running implementation |
-| Simulated final state | Executable counterfactual with explicit assumptions | Forecast behavior |
-| Comparative evidence | Fixtures, normalizers, paired runs, and divergence adjudication | Comparison record |
-| Site Reading governance | Shared schemas, workflows, templates, and policy exports | Governance contract |
+The remaining control-plane, approval, acceptance, receipt, closure, and release
+records are historical design material. They stay available for provenance and
+remain outside the active validator. See
+[`reference/HISTORICAL_MODELS.md`](reference/HISTORICAL_MODELS.md).
 
-Runtime code flows from the program specification into each implementation
-through released, digest-pinned contracts. Learning flows back through reviewed
-decision records. The actual implementation and simulated final state maintain
-independent source histories.
+## Established tools
 
-## Assurance grammar
+The repository delegates common platform concerns to maintained tools:
 
-Every evidence-bearing document records independent mode and assurance
-dimensions:
+| Concern | Tool or pattern |
+| --- | --- |
+| JSON Schema 2020-12 | Python `jsonschema` |
+| Repository branch policy | GitHub Rulesets and protected branches |
+| Dependency updates | Dependabot |
+| Editorial feedback | Vale |
+| PostgreSQL migration execution | Flyway |
+| Transactional event publication | Thin outbox with Debezium or the selected CDC platform |
 
-- `evidence_mode`: `planned`, `simulated`, or `observed`
-- `assurance_stage`: `specified`, `verified`, `qualified`, `validated`, or
-  `accepted`
+Repository code adds only the small amount of mapping required to validate the
+maintained examples. It supplies no migration runner, broker, workflow product,
+policy engine, approval service, or acceptance system.
 
-A standard assurance receipt can model a projected accepted state while
-retaining `evidence_mode: simulated`, `authority: simulation_only`, and
-`actual_acceptance_required: true`.
+## Data-contract focus
 
-The v0.3 simulated-closure contract supplies a second, explicit posture for a
-selected future reality:
+The synthetic contract demonstrates the material target state:
 
-- `closure_status: closed_in_simulation`
-- `environment_observed_closure: separate_unasserted_state`
-- `production_authorization_effect: none`
+- PostgreSQL `timestamptz` for instants and `date` for civil dates;
+- `numeric` profiles for exact scientific quantities;
+- `uuid` for internal identity and bounded text for external identifiers;
+- tenant-leading composite keys and forced row-level security;
+- controlled vocabularies and UCUM unit mappings;
+- result qualifiers, reference intervals, detection and quantitation limits;
+- conversion formula and factor provenance;
+- binary SHA-256 digests for semantic envelopes and source artifacts; and
+- append-only result events with explicit supersession.
 
-This posture lets an executable simulation fully close the four substantive
-receipt families through modeled roles and synthetic environments. It makes no
-claim about a separately observed environment or production authorization.
+Flyway owns migration discovery, ordering, checksums, schema history, locking,
+and execution. The application uses expand-and-contract changes where releases
+need a compatibility window. Vendor-owned LIMS and ELN databases use their
+vendor-supported lifecycle paths.
 
-## Database change assurance
+Cross-service delivery uses a thin transactional outbox. The source transaction
+stores the domain change and minimal event envelope; Debezium or the selected CDC
+platform publishes it; consumers implement idempotency and observable outcomes.
 
-Six additive contracts make database evolution inspectable from discovery to
-release:
+## Local validation
 
-```text
-data contract
-  -> refactor finding
-  -> migration plan
-  -> migration receipt
-  -> data reconciliation
-  -> database release manifest
-```
-
-The chain preserves logical meaning alongside physical representation. A plan
-records source and target schema digests, immutable script and tool coordinates,
-ordered expand/backfill/validate/cutover/contract phases, lock and statement
-budgets, compatibility, approval, and recovery. Execution receipts and exact
-reconciliation bind observed or simulated results back to that plan. The release
-manifest assembles migration, restore, acceptance, finding, and evidence-bundle
-coordinates into one reviewable promotion surface.
-
-The contracts remain migration-tool neutral. The current synthetic exemplar
-selects Flyway Community 13.0.0 for repository-owned PostgreSQL schema evolution.
-Flyway owns ordering, checksums, schema history, deployment serialization, and
-per-migration transaction handling. Reviewed SQL and acceptance evidence own
-domain constraints, upgrade preconditions, scientific reconciliation, security,
-restore rehearsal, and release disposition. Vendor-owned LIMS and ELN databases
-continue through vendor-supported lifecycle paths, while cross-platform data
-movement produces separate checkpoint and reconciliation receipts.
-
-Native database types preserve instants, civil dates, exact measurements,
-booleans, identifiers, and relational integrity. Interchange documents render
-migration instants as RFC 3339 UTC values while the data contract retains the
-database-native representation.
-
-The `2.0.2` data-contract surface makes the enterprise target executable. It
-binds tenant-owned rows through tenant-leading primary and foreign keys plus
-forced row-level-security metadata. Internal UUIDs and constrained external
-identities remain distinct. Scientific results preserve source and canonical
-quantities, versioned assay and method numeric profiles, source and UCUM units,
-conversion and rounding provenance, and a typed content digest. Append-only
-ledgers retain original events and express corrections through supersession;
-controlled service operations and privilege constraints own table writes.
-
-## Quick start
-
-Requirements: Python 3.11 or newer. The validation path uses the Python standard
-library and carries zero runtime package dependencies.
+Requirements: Python 3.11 or newer.
 
 ```bash
+python3 -m pip install --requirement requirements-dev.txt
 python3 tools/validate_governance.py
-python3 tools/check_language.py
-python3 tools/check_language.py --format sarif
-python3 tools/scan_secret_shapes.py
+vale --config=.vale.ini --no-global --minAlertLevel=warning .
 python3 -m unittest discover -s tests -v
 ```
 
-Validate a downstream document against this package:
+Validate one document explicitly:
 
 ```bash
 python3 tools/validate_governance.py \
-  --schema schemas/receipt.schema.json \
-  --document path/to/receipt.json
+  --schema schemas/data-contract.schema.json \
+  --document examples/data-contract.json
 ```
 
-## Contents
+## Repository map
 
-- [`GOVERNANCE.md`](GOVERNANCE.md) — authority, decision, evidence, and review
-  model
-- [`BRANCHING.md`](BRANCHING.md) — GitFlow-like lifecycle and release protocol
+- [`GOVERNANCE.md`](GOVERNANCE.md) — maintained scope and design guardrails
+- [`schemas/`](schemas/) and [`examples/`](examples/) — documentary contracts
 - [`docs/NEGATION_AWARE_LANGUAGE.md`](docs/NEGATION_AWARE_LANGUAGE.md) —
-  affirmative semantic-field guidance and authoritative language policy
-- [`language-policy/`](language-policy/) — digest-pinned policy manifest,
-  89-case union corpus, and exact reviewed exemption inventory
-- [`docs/AUTHOR_FEEDBACK.md`](docs/AUTHOR_FEEDBACK.md) — advisory,
-  structure-aware Vale scope, rule severity, and checksum-verified tool
-  coordinate
-- [`docs/SEMANTIC_SHADOW_REVIEW.md`](docs/SEMANTIC_SHADOW_REVIEW.md) —
-  inactive, bounded contract for qualifying future semantic author feedback
-- [`docs/CONTROL_PLANE_V0_3.md`](docs/CONTROL_PLANE_V0_3.md) — bounded caller,
-  Practitioner Probe, Coordination Horizon, Machine Node, veracity, and
-  simulated-closure operating model
-- [`docs/MIGRATION_V1_TO_V2.md`](docs/MIGRATION_V1_TO_V2.md) — downstream
-  migration sequence and release validation
-- [`docs/MIGRATION_V2_0_0_TO_V2_0_1.md`](docs/MIGRATION_V2_0_0_TO_V2_0_1.md) —
-  patch migration for promotion receipts, immutable workflow inputs, and policy
-  contexts
-- [`docs/MIGRATION_V2_0_1_TO_V2_0_2.md`](docs/MIGRATION_V2_0_1_TO_V2_0_2.md) —
-  data-contract convergence for tenant isolation, scientific quantities,
-  provenance, and controlled append-only behavior
-- [`schemas/`](schemas/) — JSON Schema 2020-12 contracts
-- [`examples/`](examples/) — valid synthetic exemplars for every contract
-- [`machine-node.json`](machine-node.json), [`first-receipt.json`](first-receipt.json),
-  [`coordination-horizon.json`](coordination-horizon.json), and
-  [`promotion-receipt.json`](promotion-receipt.json) — root orientation and
-  executable promotion records
-- [`.github/workflows/`](.github/workflows/) — reusable validation workflows
-- [`rulesets/`](rulesets/) — reviewable GitHub repository ruleset exports
-- [`audits/repository-security-review-2026-07-28.md`](audits/repository-security-review-2026-07-28.md)
-  — five-repository review scope, remediations, evidence boundaries, and open
-  production receipts
-- [`audits/dependency-automation-review-2026-07-28.md`](audits/dependency-automation-review-2026-07-28.md)
-  — five-repository bot-identity, branch grammar, workflow, and follow-up review
-- [`tools/`](tools/) and [`tests/`](tests/) — dependency-free contract,
-  repository-independent language core with a bounded governance wrapper,
-  secret-shape checks, and regression validation
+  affirmative instruction guidance
+- [`machine-node.json`](machine-node.json) — collaboration hydration
+- [`coordination-horizon.json`](coordination-horizon.json) — current work context
+- [`rulesets/`](rulesets/) — reviewable GitHub Ruleset exports
+- [`.github/workflows/`](.github/workflows/) — focused validation automation
 
-## Versioning
-
-Schema releases follow semantic versioning:
-
-- major: downstream documents require an intentional migration;
-- minor: backward-compatible contract capability;
-- patch: clarification, example, or validation repair.
-
-Consumers pin a release tag and digest. Floating branch references support local
-exploration; governed comparisons use immutable release coordinates.
-
-## Source posture
-
-The language policy is derived from the Notion field-guide page
-[Semantic Attractor Design — Negation-Aware Instructions](https://app.notion.com/p/abcb29b960a842ce8f1a409408a29257).
-The local guide records the applied interpretation and the automated checks.
+Schema releases follow semantic versioning. Downstream repositories pin a
+reviewed release when they adopt a maintained contract.

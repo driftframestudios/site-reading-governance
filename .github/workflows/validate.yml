@@ -17,9 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  author-feedback:
-    name: author-feedback (advisory)
-    if: ${{ github.event_name == 'pull_request' }}
+  editorial-validation:
+    name: editorial-validation
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -41,9 +40,8 @@ jobs:
             --directory "$RUNNER_TEMP/vale"
           echo "$RUNNER_TEMP/vale" >> "$GITHUB_PATH"
       - name: Review authored prose and comments
-        continue-on-error: true
         run: >-
-          vale --config=.vale.ini --no-global --no-exit
+          vale --config=.vale.ini --no-global
           --minAlertLevel=warning .
 
   governance-validation:
@@ -59,12 +57,10 @@ jobs:
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.13"
-          cache: ""
+          cache: pip
+      - name: Install the standard JSON Schema validator
+        run: python3 -m pip install --requirement requirements-dev.txt
       - name: Validate contracts and examples
         run: python3 tools/validate_governance.py
-      - name: Check negation-aware language
-        run: python3 tools/check_language.py
-      - name: Scan secret shapes with redacted findings
-        run: python3 tools/scan_secret_shapes.py
       - name: Run regression tests
         run: python3 -m unittest discover -s tests -v

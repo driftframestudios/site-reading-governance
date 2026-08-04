@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v3.0/simulation-assumption.schema.json",
+  "title": "Simulation Assumption",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "assumption_id",
+    "statement",
+    "basis",
+    "confidence",
+    "valid_from",
+    "review_by",
+    "falsifiers",
+    "material_effect_if_false",
+    "owner",
+    "status",
+    "metadata"
+  ],
+  "properties": {
+    "assumption_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "statement": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 800
+    },
+    "basis": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "common.schema.json#/$defs/artifact"
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "valid_from": {
+      "type": "string",
+      "format": "date"
+    },
+    "review_by": {
+      "type": "string",
+      "format": "date"
+    },
+    "falsifiers": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 500
+      }
+    },
+    "material_effect_if_false": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 800
+    },
+    "owner": {
+      "$ref": "common.schema.json#/$defs/actor"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "confirmed",
+        "falsified",
+        "retired"
+      ]
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  }
+}

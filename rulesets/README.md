@@ -7,7 +7,7 @@ Before installation:
 
 1. confirm each CODEOWNER resolves and has eligible repository review access;
 2. run the validation workflow once and confirm the emitted check context;
-3. confirm both `branch-policy` and `governance-validation` resolve to emitted
+3. confirm both `editorial-validation` and `governance-validation` resolve to emitted
    GitHub Actions check contexts;
 4. confirm signed-commit and tag policy with the organization;
 5. install the `develop` ruleset after the branch exists;

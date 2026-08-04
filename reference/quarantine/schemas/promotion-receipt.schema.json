@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v3.0/promotion-receipt.schema.json",
+  "title": "Repository Promotion Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "promotion_receipt_id",
+    "repository",
+    "target_release",
+    "promotion_state",
+    "evidence_mode",
+    "assurance_stage",
+    "candidate_coordinate",
+    "release_coordinate",
+    "required_evidence",
+    "accountable_role",
+    "metadata"
+  ],
+  "properties": {
+    "promotion_receipt_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "repository": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+/[a-z0-9][a-z0-9-]*$",
+      "minLength": 3,
+      "maxLength": 200
+    },
+    "target_release": {
+      "type": "string",
+      "pattern": "^governance-v(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$"
+    },
+    "promotion_state": {
+      "type": "string",
+      "enum": [
+        "candidate_pending",
+        "released"
+      ]
+    },
+    "evidence_mode": {
+      "$ref": "common.schema.json#/$defs/evidenceMode"
+    },
+    "assurance_stage": {
+      "$ref": "common.schema.json#/$defs/assuranceStage"
+    },
+    "candidate_coordinate": {
+      "$ref": "common.schema.json#/$defs/versionedCoordinate"
+    },
+    "release_coordinate": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tag",
+            "commit",
+            "digest",
+            "promoted_at",
+            "check_contexts",
+            "ruleset_receipt",
+            "codeowner_resolution"
+          ],
+          "properties": {
+            "tag": {
+              "type": "string",
+              "pattern": "^governance-v(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$"
+            },
+            "commit": {
+              "type": "string",
+              "pattern": "^(?!0{40}$)[a-f0-9]{40}$"
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^sha256:(?!0{64}$)[a-f0-9]{64}$"
+            },
+            "promoted_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "check_contexts": {
+              "type": "array",
+              "minItems": 2,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "branch-policy",
+                  "governance-validation"
+                ]
+              }
+            },
+            "ruleset_receipt": {
+              "$ref": "common.schema.json#/$defs/governedLocator"
+            },
+            "codeowner_resolution": {
+              "$ref": "common.schema.json#/$defs/governedLocator"
+            }
+          }
+        }
+      ]
+    },
+    "required_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 500
+      }
+    },
+    "accountable_role": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 120
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "promotion_state": {
+            "const": "candidate_pending"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "evidence_mode": {
+            "const": "planned"
+          },
+          "assurance_stage": {
+            "const": "specified"
+          },
+          "candidate_coordinate": {
+            "type": "object",
+            "properties": {
+              "release": {
+                "pattern": "^candidate-governance-v(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$"
+              },
+              "commit": {
+                "const": "0000000000000000000000000000000000000000"
+              },
+              "digest": {
+                "const": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            }
+          },
+          "release_coordinate": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "promotion_state": {
+            "const": "released"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "evidence_mode": {
+            "const": "observed"
+          },
+          "assurance_stage": {
+            "enum": [
+              "verified",
+              "qualified",
+              "validated",
+              "accepted"
+            ]
+          },
+          "release_coordinate": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -6,28 +6,27 @@ Share suspected vulnerabilities through the repository's private security
 advisory channel. Include the affected release, reproduction conditions,
 potential material effect, and a safe contact route.
 
-**SAFETY BOUNDARY:** vulnerability details and working exploit material must not enter public issues or ordinary pull-request discussion; the replacement behavior is a private security advisory with access limited to the response team, and the advisory access review verifies that boundary.
-
-## Supported releases
-
-The current major release and the immediately preceding major release receive
-security review. Release notes identify any narrower support window.
+Vulnerability details and working exploit material stay in the private advisory.
+The response team uses least-privilege access and records the resulting repair
+through the ordinary reviewed change path.
 
 ## Repository data
 
-Examples contain synthetic identifiers and synthetic scientific data. Evidence
-manifests can contain digests and opaque `governed://` or `evidence://`
-locators. Query credentials, user information, fragments, and signed storage
-URLs remain in the approved evidence system.
+Examples contain synthetic identifiers and scientific data. Credentials,
+personal data, regulated records, tenant payloads, and signed storage URLs stay
+in approved stores and enter repository documentation only as redacted
+references.
 
-**PRIVACY BOUNDARY:** credentials, personal data, regulated records, and unredacted tenant payloads must not enter Git history; the replacement behavior is storage in the approved evidence system with redaction, retention, audit, and least-privilege controls, and the repository content scan verifies that committed examples contain synthetic data or redacted locators.
+Repository administrators enable GitHub secret scanning and push protection.
+GitHub remains the source of repository-level secret detection and prevention;
+provider-side credential monitoring and rotation remain active as defense in
+depth.
 
-## Dependency posture
+## Dependencies and workflows
 
-The local validator uses the Python standard library. GitHub Actions references
-are pinned to immutable commit SHAs in production releases. Maintainers review
-action updates through ordinary pull requests with provenance and permission
-analysis.
+GitHub Actions references use immutable commit SHAs. Dependabot proposes
+dependency updates through ordinary pull requests. Workflow permissions remain
+read-only unless a documented operation requires a narrower explicit write.
 
-The dependency-free secret-shape scan reports file, line, rule, and redacted
-length. Protected values remain absent from scanner output.
+The Python validation dependency is pinned in `requirements-dev.txt` and
+reviewed through Dependabot.

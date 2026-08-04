@@ -1,70 +1,27 @@
 # Status
 
-## Current release posture
+## Maintained
 
-| Surface | State | Verification |
-| --- | --- | --- |
-| Governance model | Reference-ready | Document review and tests |
-| Branching model | Reference-ready | Ruleset alignment tests |
-| JSON schemas | Reference-ready | Meta-structure and exemplar validation |
-| Enterprise data contract | Reference-ready | Profile resolution, tenant isolation, quantity lineage, digest, and write-policy mutation tests |
-| Example corpus | Reference-ready | Every example validates against its declared schema |
-| Control Plane Profile v0.3 | Reference-ready | Cross-record semantic validation and failure-twin tests |
-| Simulated substantive closure | Reference-ready | Four-family future-reality manifest and executable-check contracts |
-| Reusable workflows | Reference-ready | Static contract tests |
-| Ruleset exports | Review-ready | Structural and status-context checks |
-| Language guidance | Reference-ready | Repository language check |
+| Surface | Verification |
+| --- | --- |
+| Data-contract schema and example | JSON Schema 2020-12 plus focused semantic tests |
+| Database primitive ledger | JSON Schema 2020-12 plus direct target-state checks |
+| Practitioner Probe structure | JSON Schema 2020-12 |
+| Machine Node and Coordination Horizon | Independent JSON Schema validation |
+| Editorial guidance | Vale with repository-owned styles |
+| Repository hygiene | GitHub secret scanning, push protection, and native repository controls |
 
-## Receipt boundary
+## Historical reference
 
-This repository establishes governance capability. Configured vendor
-environments, representative migration and restore rehearsals, production
-security and observability, and accountable Scientific, Quality, and Regulatory
-acceptance can close together inside a selected, executable future-reality
-simulation.
+Approval, acceptance, bounded-caller, call-receipt, simulated closure, database
+release receipt, and promotion models remain available as design history. The
+active validator excludes these records.
 
-The simulated closure manifest retains `closed_in_simulation`,
-`separate_unasserted_state` for environment-observed closure, and `none` for
-production authorization effect. This lets the collaboration finish a coherent
-simulated reality while keeping later observed evidence as a separate evidence
-class.
+## Current focus
 
-## Promotion path
+The immediate work is deliberately small:
 
-Candidate release `2.0.2` moves through:
-
-1. repository initialization on `main`;
-2. `develop` creation from the baseline;
-3. `feature/constellation-foundation` review into `develop`;
-4. required governance validation on the release coordinate;
-5. `release/2.0.2` review into `main`;
-6. `develop` synchronization to the released commit;
-7. downstream constellation pinning by commit and Git tree digest.
-
-The concrete promotion receipt records ruleset installation, resolvable
-CODEOWNER evidence, required checks, immutable coordinates, and signed-tag
-publication. Candidate placeholders remain visible until that observed receipt
-closes.
-
-## Known extension points
-
-- repository-specific CODEOWNER identities and eligible-reviewer capacity;
-- organization and repository IDs in ruleset installation tooling;
-- organization-specific governed-locator resolver registry;
-- retention schedules and jurisdictional overlays;
-- artifact attestation when the selected GitHub plan supports it;
-- organization-specific scientific, Quality, and Regulatory roles.
-
-## Separate observed-state extension points
-
-- `GOV-RCP-ACCEPT-001` — bind actual accountable acceptance to an immutable
-  external authorization record carrying identity assurance, signed time,
-  payload digest, and approved-system coordinate.
-- `GOV-RCP-DISPOSITION-001` — define the accountable exception disposition for
-  a failed or inconclusive receipt before any accepted assurance stage can
-  advance.
-
-These extension points preserve a route for collaborations that later choose
-environment-observed organizational authorization. The future-reality
-simulation retains its fully closed status across all four substantive receipt
-families.
+1. keep the LIMS/ELN data primitive contract internally coherent;
+2. keep the refactor ledger precise and direct;
+3. keep Machine Nodes useful as hydration material; and
+4. use established tools for migration, repository policy, and schema validation.

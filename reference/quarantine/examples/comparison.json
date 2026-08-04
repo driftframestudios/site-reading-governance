@@ -1,0 +1,68 @@
+{
+  "comparison_id": "COMPARISON-RECONCILE-001",
+  "constellation_version": "0.1.0",
+  "specification": {
+    "release": "spec-v0.1.0",
+    "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "simulation": {
+    "release": "forecast-2026-Q4-r1",
+    "commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "implementation": {
+    "release": "candidate-v0.1.0",
+    "commit": "cccccccccccccccccccccccccccccccccccccccc",
+    "digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "comparator": {
+    "release": "comparator-v0.1.0",
+    "commit": "dddddddddddddddddddddddddddddddddddddddd",
+    "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  },
+  "fixture_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "executed_at": "2026-07-28T16:00:00Z",
+  "results": [
+    {
+      "result_id": "RESULT-RECONCILE-001",
+      "scenario_id": "SCENARIO-AMBIGUOUS-WRITE-001",
+      "semantic_area": "vendor",
+      "classification": "receipt_pending",
+      "materiality": "major",
+      "actual_observation": "The actual adapter passes the deterministic contract-double scenario.",
+      "simulated_prediction": "The final-state simulation reconciles five injected ambiguous outcomes in a configured vendor environment.",
+      "adjudication": "Behavior converges locally while configured-environment evidence remains the material proof gap.",
+      "owner_role": "Vendor qualification lead",
+      "next_action": "Execute the same scenario in the configured vendor tenant and publish an observed receipt.",
+      "receipt_ids": [
+        "RECEIPT-SIM-SAPIO-001"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "converged": 0,
+    "material_divergences": 0,
+    "pending_receipts": 1
+  },
+  "adjudicators": [
+    {
+      "actor_id": "ACTOR-COMPARISON-001",
+      "display_name": "Comparison Steward",
+      "role": "Comparative evidence adjudicator",
+      "organization": "Example Laboratory"
+    }
+  ],
+  "metadata": {
+    "schema_version": "3.0.0",
+    "created_at": "2026-07-28T16:05:00Z",
+    "updated_at": "2026-07-28T16:05:00Z",
+    "owner": {
+      "actor_id": "OWNER-EVIDENCE-001",
+      "display_name": "Evidence Steward",
+      "role": "Comparative evidence owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}

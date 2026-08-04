@@ -1,91 +1,86 @@
 {
-  "probe_id": "PROBE-BOUNDED-CALLER-001",
-  "title": "AI as bounded caller",
-  "domain": "Enterprise automation authority",
-  "question": "How does the service preserve typed scope, least authority, approval, idempotency, audit, and recovery when an AI agent requests an operation?",
-  "why_it_matters": "A fluent caller can act at machine speed; an enterprise boundary keeps every effect attributable, constrained, replay-safe, reviewable, and recoverable.",
+  "probe_id": "PROBE-DATA-PRIMITIVES-001",
+  "title": "Preserving data meaning across system boundaries",
+  "domain": "Enterprise data contracts",
+  "question": "How would you preserve the meaning of identifiers, instants, civil dates, exact scientific quantities, units, and source lineage from ingress DTO through PostgreSQL storage and downstream events?",
+  "why_it_matters": "Primitive choices become durable system behavior. A strong design keeps validation, typing, database constraints, migration behavior, serialization, and scientific interpretation aligned.",
   "population_cartographies": [
     "executive",
     "evaluator",
-    "quality",
-    "security",
+    "scientist",
     "engineer",
     "ai_collaborator"
   ],
   "proficiency_levels": [
     {
       "level": 1,
-      "focus": "Name the caller boundary",
-      "demonstration": "Explain why an AI agent is a distinct caller rather than an implicit service owner.",
-      "evidence": "The explanation names identity, operation, scope, decision, effect, and receipt.",
-      "repair_prompt": "Restate the flow from caller request through service-owned authorization."
+      "focus": "Name semantic roles",
+      "demonstration": "Classify a PAN as an identifier, a measurement as an exact quantity, an occurrence as an instant, and a birthday as a civil date.",
+      "evidence": "The explanation connects each semantic role to the operations the value supports.",
+      "repair_prompt": "Restate the value's meaning and list the valid operations before selecting a physical type."
     },
     {
       "level": 2,
-      "focus": "Trace one typed request",
-      "demonstration": "Validate one request against the released input contract and bounded scope.",
-      "evidence": "The call receipt carries input digest, tenant scope, record limit, and operation version.",
-      "repair_prompt": "Add the missing contract coordinate or scope dimension and repeat validation."
+      "focus": "Trace one value end to end",
+      "demonstration": "Trace an occurrence instant through parsing, timezone-aware application typing, RFC 3339 interchange, and PostgreSQL timestamptz storage.",
+      "evidence": "Round-trip tests preserve the same instant across timezone offsets and serialization boundaries.",
+      "repair_prompt": "Add the missing boundary type or round-trip assertion and repeat the trace."
     },
     {
       "level": 3,
-      "focus": "Handle a realistic write",
-      "demonstration": "Execute an idempotent narrow write and reconcile an ambiguous response by authoritative readback.",
-      "evidence": "Exact replay returns one durable result and zero additional effects.",
-      "repair_prompt": "Move external I/O outside the database transaction and bind replay to a durable fingerprint."
+      "focus": "Preserve scientific interpretation",
+      "demonstration": "Store source and canonical quantities with exact decimals, unit vocabulary, method revision, rounding mode, and conversion provenance.",
+      "evidence": "Fixtures cover reference intervals, below-limit qualifiers, precision edges, and unit conversion replay.",
+      "repair_prompt": "Bind the quantity to its unit, method, numeric profile, and source representation."
     },
     {
       "level": 4,
-      "focus": "Exercise approval and recovery edges",
-      "demonstration": "Route a broad write through scoped approval, expiry, failure containment, and successor recovery.",
-      "evidence": "Approval, effect, call receipt, and recovery identifiers form one attributable lineage.",
-      "repair_prompt": "Tighten the authority ceiling, approval validity, or recovery ownership exposed by the failed edge."
+      "focus": "Evolve a live schema",
+      "demonstration": "Implement an expand-and-contract Flyway migration and validate it against an ephemeral PostgreSQL database before application release.",
+      "evidence": "Upgrade, application compatibility, reconciliation, and restore tests pass from every supported baseline.",
+      "repair_prompt": "Reduce the change to additive expansion, observable transition, and a later compatibility-driven contraction."
     },
     {
       "level": 5,
-      "focus": "Review and repair the system",
-      "demonstration": "Challenge prompt injection, cross-tenant scope, replay collision, egress, recursion, and partial-audit cases.",
-      "evidence": "Adversarial fixtures produce bounded rejection or owned recovery with preserved audit evidence.",
-      "repair_prompt": "Convert each discovered gap into a contract change, failure twin, and falsifiable acceptance check."
+      "focus": "Review the complete contract",
+      "demonstration": "Challenge tenant keys, nullability, precision, vocabulary drift, clock semantics, lineage, indexing, retention, and downstream event compatibility.",
+      "evidence": "The review links each material finding to a concrete schema element, target representation, test, and migration identifier.",
+      "repair_prompt": "Remove speculative controls and keep the findings that change correctness, operability, or scientific meaning."
     }
   ],
   "technical_core": [
-    "The service owns named operations and evaluates authority at the execution boundary.",
-    "Typed input, effect class, tenant scope, resource budget, approval, idempotency, and audit form one contract.",
-    "Retrieved documents, tool descriptions, and vendor payloads enter as untrusted data with recorded provenance."
+    "Semantic types guide DTO, application, database, and event representations.",
+    "Native database constraints preserve meaning close to persisted state.",
+    "Flyway and ephemeral PostgreSQL tests provide established migration mechanics and verification.",
+    "Source values, canonical values, units, method revisions, and conversion provenance travel together."
   ],
   "review_surfaces": [
-    "Caller identity and authority ceiling",
-    "Operation and input contract versions",
-    "Approval scope and expiry",
-    "Effect and call-receipt lineage",
-    "Recovery ownership and verification"
+    "Ingress validation and DTO typing",
+    "PostgreSQL columns and constraints",
+    "Flyway compatibility sequence",
+    "Serialization and event envelopes",
+    "Scientific quantity and lineage tests"
   ],
   "scenario_ids": [
-    "SCENARIO-AMBIGUOUS-WRITE-001"
+    "SCENARIO-DATA-PRIMITIVE-ROUNDTRIP-001"
   ],
   "claim_ids": [
-    "CLAIM-BOUNDED-BROAD-WRITE-001"
+    "CLAIM-NATIVE-PRIMITIVES-PRESERVE-MEANING-001"
   ],
   "instruction_yield": [
-    "Select one released operation and submit typed input within the caller scope and resource budget.",
-    "Record the boundary decision, approvals, effects, result, and recovery path in an attributable call receipt."
+    "Classify each value by meaning and valid operations before selecting a storage primitive.",
+    "Trace materially important fields through validation, typing, storage, migration, serialization, and tests.",
+    "Use Flyway and ephemeral PostgreSQL instances for migration execution and compatibility verification."
   ],
   "code_comment_markers": [
     "TARGET",
     "CONTRAST",
     "GUARD"
   ],
-  "settlement_status": "settled",
+  "settlement_status": "review_ready",
   "metadata": {
-    "schema_version": "2.0.2",
-    "created_at": "2026-07-28T18:30:00Z",
-    "updated_at": "2026-07-28T18:30:00Z",
-    "owner": {
-      "actor_id": "OWNER-PROBES-001",
-      "display_name": "Practitioner Probe Steward",
-      "role": "Probe contract owner",
-      "organization": "Example Laboratory"
-    }
+    "schema_version": "3.0.0",
+    "created_at": "2026-08-04T20:00:00Z",
+    "updated_at": "2026-08-04T20:00:00Z"
   }
 }

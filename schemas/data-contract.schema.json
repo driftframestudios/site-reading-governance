@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/data-contract.schema.json",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v3.0/data-contract.schema.json",
   "title": "Database Data Contract",
   "type": "object",
   "additionalProperties": false,
@@ -17,6 +17,7 @@
     "isolation_policy",
     "identity_profiles",
     "numeric_profiles",
+    "vocabulary_registries",
     "unit_vocabularies",
     "digest_profiles",
     "write_policies",
@@ -359,7 +360,10 @@
             "enum": [
               "source_quantity",
               "canonical_quantity",
-              "conversion_factor"
+              "conversion_factor",
+              "reference_interval_bound",
+              "detection_limit",
+              "quantitation_limit"
             ]
           },
           "assay_code": {
@@ -429,6 +433,58 @@
         }
       }
     },
+    "vocabulary_registries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "vocabulary_registry_id",
+          "system_name",
+          "canonical_uri",
+          "release",
+          "content_digest",
+          "resolution_policy",
+          "unknown_code_policy"
+        ],
+        "properties": {
+          "vocabulary_registry_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "system_name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "canonical_uri": {
+            "type": "string",
+            "pattern": "^https://\\S+$",
+            "maxLength": 500
+          },
+          "release": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "content_digest": {
+            "$ref": "common.schema.json#/$defs/digest"
+          },
+          "resolution_policy": {
+            "type": "string",
+            "enum": [
+              "exact_code_in_pinned_release"
+            ]
+          },
+          "unknown_code_policy": {
+            "type": "string",
+            "enum": [
+              "owned_exception_queue"
+            ]
+          }
+        }
+      }
+    },
     "unit_vocabularies": {
       "type": "array",
       "minItems": 1,
@@ -437,6 +493,7 @@
         "additionalProperties": false,
         "required": [
           "unit_vocabulary_id",
+          "vocabulary_registry_id",
           "system",
           "version",
           "canonical_code_pattern",
@@ -447,6 +504,9 @@
         ],
         "properties": {
           "unit_vocabulary_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "vocabulary_registry_id": {
             "$ref": "common.schema.json#/$defs/identifier"
           },
           "system": {
@@ -841,7 +901,10 @@
                   "enum": [
                     "source_value",
                     "canonical_value",
-                    "conversion_factor"
+                    "conversion_factor",
+                    "reference_interval_bound",
+                    "detection_limit",
+                    "quantitation_limit"
                   ]
                 },
                 "unit_vocabulary_id": {
@@ -1176,6 +1239,16 @@
                 "conversion_factor_field_id",
                 "rounding_mode_field_id",
                 "mapping_revision_field_id",
+                "qualifier_field_id",
+                "reference_interval_lower_field_id",
+                "reference_interval_upper_field_id",
+                "detection_limit_field_id",
+                "quantitation_limit_field_id",
+                "conversion_formula_field_id",
+                "conversion_formula_digest_field_id",
+                "conversion_factor_digest_field_id",
+                "source_artifact_id_field_id",
+                "source_artifact_digest_field_id",
                 "provenance_digest_field_id"
               ],
               "properties": {
@@ -1215,6 +1288,36 @@
                 "mapping_revision_field_id": {
                   "$ref": "common.schema.json#/$defs/identifier"
                 },
+                "qualifier_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "reference_interval_lower_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "reference_interval_upper_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "detection_limit_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "quantitation_limit_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "conversion_formula_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "conversion_formula_digest_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "conversion_factor_digest_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "source_artifact_id_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "source_artifact_digest_field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
                 "provenance_digest_field_id": {
                   "$ref": "common.schema.json#/$defs/identifier"
                 }
@@ -1233,8 +1336,7 @@
         "required": [
           "application_release",
           "minimum_schema_version",
-          "maximum_schema_version",
-          "verification_receipt_ids"
+          "maximum_schema_version"
         ],
         "properties": {
           "application_release": {
@@ -1247,13 +1349,6 @@
           },
           "maximum_schema_version": {
             "$ref": "common.schema.json#/$defs/semver"
-          },
-          "verification_receipt_ids": {
-            "type": "array",
-            "uniqueItems": true,
-            "items": {
-              "$ref": "common.schema.json#/$defs/identifier"
-            }
           }
         }
       }

@@ -1,0 +1,87 @@
+{
+  "receipt_id": "RECEIPT-SIM-SAPIO-001",
+  "receipt_family": "configured_vendor",
+  "claim": "The simulated Sapio adapter converges one canonical specimen projection across exact replay and ambiguous-outcome scenarios.",
+  "scope": "Synthetic research-use specimen, aliquot, and plate projections executed against emulator release sim-v0.1.0.",
+  "evidence_mode": "simulated",
+  "assurance_stage": "verified",
+  "authority": "simulation_only",
+  "actual_acceptance_required": true,
+  "environment": {
+    "environment_id": "ENV-SIM-SAPIO-001",
+    "class": "local",
+    "region": "synthetic-local",
+    "configuration_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "vendor_build": "sim-v0.1.0",
+    "schema_version": "synthetic-2026-07"
+  },
+  "source": {
+    "release": "forecast-2026-Q4-r1",
+    "commit": "1234567890abcdef1234567890abcdef12345678",
+    "digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+  },
+  "fixture_digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+  "scenario_ids": [
+    "SCENARIO-AMBIGUOUS-WRITE-001"
+  ],
+  "test_ids": [
+    "TEST-SAPIO-RECONCILIATION-001"
+  ],
+  "outcome": "passed",
+  "metrics": [
+    {
+      "metric_id": "METRIC-EXACT-REPLAY-001",
+      "unit": "ratio",
+      "numerator": 20,
+      "denominator": 20,
+      "comparison": "exactly",
+      "threshold": 1,
+      "observed": 1,
+      "window": "single deterministic emulator run"
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_id": "ARTIFACT-SIM-RECEIPT-001",
+      "media_type": "application/json",
+      "digest": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+      "locator": "governed://simulation/receipts/sapio-001",
+      "sensitivity": "internal",
+      "retention_class": "simulation-baseline"
+    }
+  ],
+  "limitations": [
+    "The emulator models selected documented behavior and carries simulation authority.",
+    "Configured-tenant schema, permission, rate, and vendor-build behavior remain open for observed qualification."
+  ],
+  "performed_at": "2026-07-28T15:00:00Z",
+  "performer": {
+    "actor_id": "ACTOR-SIM-RUNNER-001",
+    "display_name": "Simulation Runner",
+    "role": "Automated simulation performer",
+    "organization": "Example Laboratory"
+  },
+  "reviewer": {
+    "actor_id": "ACTOR-SIM-REVIEWER-001",
+    "display_name": "Simulation Reviewer",
+    "role": "Simulation evidence reviewer",
+    "organization": "Example Laboratory"
+  },
+  "expires_at": "2026-10-28T15:00:00Z",
+  "retest_triggers": [
+    "Simulation adapter source changes",
+    "Fixture schema changes",
+    "Vendor contract assumptions change"
+  ],
+  "metadata": {
+    "schema_version": "3.0.0",
+    "created_at": "2026-07-28T15:05:00Z",
+    "updated_at": "2026-07-28T15:05:00Z",
+    "owner": {
+      "actor_id": "OWNER-EVIDENCE-001",
+      "display_name": "Evidence Steward",
+      "role": "Comparative evidence owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}

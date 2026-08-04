@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/machine-node.schema.json",
-  "title": "Machine Node Orientation",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v3.0/machine-node.schema.json",
+  "title": "Machine Node Documentation Index",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -9,21 +9,14 @@
     "canonical_identity",
     "title",
     "purpose",
-    "control_plane_profile",
     "schema_release",
     "repository_role",
-    "authority",
-    "lifecycle_state",
-    "coordination_horizon_id",
-    "contracts",
-    "campaigns",
-    "current_provenance",
-    "first_receipt_contract_id",
-    "open_receipts",
-    "invalidation_conditions",
-    "downstream_consumers",
-    "source_boundaries",
-    "metadata"
+    "runtime_effect",
+    "navigation",
+    "current",
+    "next",
+    "later",
+    "invalidation_conditions"
   ],
   "properties": {
     "machine_node_id": {
@@ -45,13 +38,9 @@
       "minLength": 20,
       "maxLength": 1000
     },
-    "control_plane_profile": {
-      "type": "string",
-      "const": "0.3.0"
-    },
     "schema_release": {
       "type": "string",
-      "const": "2.0.2"
+      "const": "3.0.0"
     },
     "repository_role": {
       "type": "string",
@@ -63,161 +52,41 @@
         "site_reading_governance"
       ]
     },
-    "authority": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mode",
-        "statement",
-        "authorization_sources"
-      ],
-      "properties": {
-        "mode": {
-          "type": "string",
-          "const": "orientation_only"
-        },
-        "statement": {
-          "type": "string",
-          "minLength": 20,
-          "maxLength": 700
-        },
-        "authorization_sources": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "minLength": 5,
-            "maxLength": 240
-          }
-        }
-      }
-    },
-    "lifecycle_state": {
+    "runtime_effect": {
       "type": "string",
-      "enum": [
-        "proposed",
-        "reference_ready",
-        "active",
-        "settling",
-        "superseded"
-      ]
+      "const": "none"
     },
-    "coordination_horizon_id": {
-      "$ref": "common.schema.json#/$defs/identifier"
-    },
-    "contracts": {
+    "navigation": {
       "type": "array",
       "minItems": 1,
       "items": {
-        "$ref": "common.schema.json#/$defs/contractReference"
-      }
-    },
-    "campaigns": {
-      "type": "array",
-      "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "campaign_id",
-          "marking_schema_version",
-          "status"
-        ],
+        "required": ["label", "path", "purpose"],
         "properties": {
-          "campaign_id": {
-            "$ref": "common.schema.json#/$defs/identifier"
-          },
-          "marking_schema_version": {
-            "$ref": "common.schema.json#/$defs/semver"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "active",
-              "resting",
-              "settling",
-              "complete"
-            ]
-          }
+          "label": {"type": "string", "minLength": 2, "maxLength": 120},
+          "path": {"type": "string", "minLength": 1, "maxLength": 300},
+          "purpose": {"type": "string", "minLength": 10, "maxLength": 500}
         }
       }
     },
-    "seed_lineage": {
-      "$ref": "common.schema.json#/$defs/versionedCoordinate"
-    },
-    "current_provenance": {
-      "$ref": "common.schema.json#/$defs/versionedCoordinate"
-    },
-    "first_receipt_contract_id": {
-      "$ref": "common.schema.json#/$defs/identifier"
-    },
-    "open_receipts": {
+    "current": {
       "type": "array",
-      "uniqueItems": true,
-      "items": {
-        "$ref": "common.schema.json#/$defs/identifier"
-      }
+      "items": {"type": "string", "minLength": 5, "maxLength": 500}
+    },
+    "next": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 5, "maxLength": 500}
+    },
+    "later": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 5, "maxLength": 500}
     },
     "invalidation_conditions": {
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 10,
-        "maxLength": 700
-      }
-    },
-    "downstream_consumers": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 3,
-        "maxLength": 240
-      }
-    },
-    "source_boundaries": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "source_class",
-          "instruction_authority",
-          "handling"
-        ],
-        "properties": {
-          "source_class": {
-            "type": "string",
-            "enum": [
-              "released_contract",
-              "repository_content",
-              "retrieved_content",
-              "tool_output",
-              "human_direction"
-            ]
-          },
-          "instruction_authority": {
-            "type": "string",
-            "enum": [
-              "governing",
-              "advisory",
-              "data_only"
-            ]
-          },
-          "handling": {
-            "type": "string",
-            "minLength": 10,
-            "maxLength": 700
-          }
-        }
-      }
-    },
-    "metadata": {
-      "$ref": "common.schema.json#/$defs/recordMetadata"
+      "items": {"type": "string", "minLength": 10, "maxLength": 500}
     }
   }
 }

@@ -1,10 +1,9 @@
-# Migration from 2.0.1 to 2.0.2
+# Data-contract migration into 3.0.0
 
-Schema release `2.0.2` retains the stable `/v2.0/` identifier coordinate and
-adds an executable database-contract representation for enterprise laboratory
-data. Existing contract consumers can stage adoption by validating their
-current records, adding the new profile and isolation surfaces, and then
-pinning the promoted `governance-v2.0.2` coordinate.
+Schema release `3.0.0` adds a focused database-contract representation for
+enterprise laboratory data. Consumers can stage adoption by validating current
+records, adding the profile and isolation surfaces, and pinning a reviewed 3.0.0
+release.
 
 ## Adoption sequence
 
@@ -22,9 +21,7 @@ pinning the promoted `governance-v2.0.2` coordinate.
    mapping revision, and provenance digest.
 6. Represent append-only behavior, supersession, and controlled table
    privileges through write policies and enforced constraints.
-7. Run governance validation and retain the resulting receipt with the pinned
-   release coordinate.
+7. Run JSON Schema validation and focused semantic tests with the pinned release.
 
-The governance contract describes the required target state and remains
-migration-tool neutral. Repository-owned migration tooling continues to own
-ordering, checksums, execution serialization, and schema history.
+Flyway owns ordering, checksums, execution serialization, and schema history for
+repository-owned PostgreSQL. Vendor tooling owns vendor database lifecycle.

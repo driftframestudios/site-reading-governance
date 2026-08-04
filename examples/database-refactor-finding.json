@@ -39,28 +39,9 @@
     "transition_behavior": "The expand phase adds the native column, dual-write verification establishes parity, and a later contract phase retires the legacy projection.",
     "verification": "Representative instants round-trip through both application releases and converge on one canonical UTC serialization."
   },
-  "recovery": {
-    "owner_role": "Database platform owner",
-    "containment": "The cutover retains the verified legacy projection through the compatibility window.",
-    "replacement_behavior": "Routing returns to the retained projection while the governed migration workflow records a successor plan.",
-    "verification": "The recovery rehearsal confirms record parity and application health from the retained projection."
-  },
-  "owner_roles": [
-    "Database platform owner",
-    "Laboratory data steward",
-    "Quality evidence owner"
-  ],
-  "receipt_ids": [],
-  "acceptance_ids": [],
   "metadata": {
-    "schema_version": "2.0.2",
+    "schema_version": "3.0.0",
     "created_at": "2026-08-04T14:20:00Z",
-    "updated_at": "2026-08-04T14:20:00Z",
-    "owner": {
-      "actor_id": "OWNER-DATABASE-AUDIT-001",
-      "display_name": "Database Architecture Reviewer",
-      "role": "Database refactor ledger owner",
-      "organization": "Example Laboratory"
-    }
+    "updated_at": "2026-08-04T14:20:00Z"
   }
 }

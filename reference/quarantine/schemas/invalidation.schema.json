@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v3.0/invalidation.schema.json",
+  "title": "Assurance Invalidation and Re-evaluation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "invalidation_id",
+    "triggered_at",
+    "trigger",
+    "affected_records",
+    "earlier_assurance_stage",
+    "target_assurance_stage",
+    "impact",
+    "replacement_evaluation",
+    "owner",
+    "target_date",
+    "status",
+    "metadata"
+  ],
+  "properties": {
+    "invalidation_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "triggered_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trigger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "change_type",
+        "description",
+        "source_reference"
+      ],
+      "properties": {
+        "change_type": {
+          "type": "string",
+          "enum": [
+            "source",
+            "dependency",
+            "schema",
+            "fixture",
+            "configuration",
+            "environment",
+            "intended_use",
+            "authority",
+            "regulatory_context"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 800
+        },
+        "source_reference": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 500
+        }
+      }
+    },
+    "affected_records": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "earlier_assurance_stage": {
+      "$ref": "common.schema.json#/$defs/assuranceStage"
+    },
+    "target_assurance_stage": {
+      "$ref": "common.schema.json#/$defs/assuranceStage"
+    },
+    "impact": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1200
+    },
+    "replacement_evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario_ids",
+        "receipt_families",
+        "success_criteria"
+      ],
+      "properties": {
+        "scenario_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          }
+        },
+        "receipt_families": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "configured_vendor",
+              "migration_restore",
+              "security_observability",
+              "scientific_acceptance_support",
+              "quality_acceptance_support",
+              "regulatory_acceptance_support",
+              "engineering_verification"
+            ]
+          }
+        },
+        "success_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 700
+          }
+        }
+      }
+    },
+    "owner": {
+      "$ref": "common.schema.json#/$defs/actor"
+    },
+    "target_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "in_progress",
+        "resolved"
+      ]
+    },
+    "successor_receipt_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  }
+}

@@ -1,30 +1,16 @@
-# Enforceable GitHub owner: @driftframestudios.
-# The repository is owned by a personal account. Accountable stewardship roles
-# remain recorded in governance artifacts while protected review resolves to
-# this eligible repository owner.
 * @driftframestudios
 
 /schemas/ @driftframestudios
+/examples/ @driftframestudios
+/reference/ @driftframestudios
 /rulesets/ @driftframestudios
 /.github/dependabot.yml @driftframestudios
 /.github/workflows/ @driftframestudios
 /.vale.ini @driftframestudios
 /.vale/ @driftframestudios
-/tools/check_branch_flow.py @driftframestudios
-/tools/check_language.py @driftframestudios
-/tools/language_policy_core.py @driftframestudios
+/requirements-dev.txt @driftframestudios
 /tools/validate_governance.py @driftframestudios
-/language-policy/ @driftframestudios
-/language-policy/manifest.json @driftframestudios
-/schemas/language-control.schema.json @driftframestudios
-/tests/test_check_branch_flow.py @driftframestudios
 /tests/test_governance.py @driftframestudios
-/tests/test_language_assurance.py @driftframestudios
 /machine-node.json @driftframestudios
-/first-receipt.json @driftframestudios
-/promotion-receipt.json @driftframestudios
 /coordination-horizon.json @driftframestudios
-/docs/NEGATION_AWARE_LANGUAGE.md @driftframestudios
-/docs/AUTHOR_FEEDBACK.md @driftframestudios
-/docs/SEMANTIC_SHADOW_REVIEW.md @driftframestudios
 /.github/CODEOWNERS @driftframestudios

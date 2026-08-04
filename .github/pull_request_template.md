@@ -1,49 +1,18 @@
-## Intent and material effect
+## Material change
 
-<!-- Describe the achieved state and who benefits from it. -->
+<!-- Describe the achieved state, the affected artifact, and who benefits. -->
 
-## Contract surface
+## Compatibility
 
-- Schema or governance surfaces:
-- Example and test surfaces:
-- Planned release class: patch / minor / major
+<!-- Name affected consumers and the transition path, when one is required. -->
 
-## Evidence
+## Verification
 
-<!-- List local validation commands and their results. -->
+- [ ] Maintained examples validate
+- [ ] Focused tests pass
+- [ ] Vale warning-tier review passes
+- [ ] Security and privacy effects are described
 
-- [ ] Governance validation passes
-- [ ] Negation-aware language check passes
-- [ ] Unit tests pass
-- [ ] Valid examples cover each changed contract
-- [ ] Failure-twin and recovery behavior are represented where material
+## Review notes
 
-## Compatibility and invalidation
-
-<!-- Name compatible consumers, affected records, and the successor path. -->
-
-- Downstream compatibility:
-- Invalidation records:
-- Migration or replacement path:
-
-## Authority and evidence mode
-
-- Evidence mode represented:
-- Assurance stage represented:
-- Accountable acceptance required:
-
-## Security, privacy, and regulated evidence
-
-<!-- State the protected target and safe replacement behavior for each hard edge. -->
-
-- Protected state:
-- Replacement behavior:
-- Verification:
-
-## Review
-
-- [ ] CODEOWNER review
-- [ ] Domain or scientific review, when relevant
-- [ ] Quality or Regulatory review, when the contract shapes their acceptance
-- [ ] Security/privacy review, when the contract shapes protected data or access
-
+<!-- Record any scientific, database, security, or platform detail a reviewer should examine. -->

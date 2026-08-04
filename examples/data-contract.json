@@ -1,12 +1,12 @@
 {
-  "representation_id": "REP-GOVERNANCE-DATA-CONTRACT-001",
+  "representation_id": "REP-GOVERNANCE-DATA-CONTRACT-002",
   "data_contract_id": "CONTRACT-LABORATORY-CORE-001",
-  "version": "2.0.0",
-  "contract_digest": "sha256:dcd2e6026f549fe8b27e1bc51191b17c0f5cda212aaeb08b4ef15ac59692ce22",
+  "version": "3.0.0",
+  "contract_digest": "sha256:b76dd02dc6902757920aba39da460ad02721b62367a6bb71738a44d68c0bc2af",
   "contract_digest_scope": "governance_canonical_json_v1_excluding_contract_digest",
-  "title": "Tenant-isolated laboratory specimen and result-event contract",
-  "purpose": "Preserve tenant identity, scientific quantity meaning, temporal lineage, external-system identity, content integrity, and append-only correction history across laboratory releases.",
-  "status": "approved",
+  "title": "Synthetic tenant-isolated laboratory specimen and result-event design contract",
+  "purpose": "Provide a synthetic design reference for tenant identity, scientific interpretation, vocabulary resolution, temporal and source-artifact lineage, content integrity, and append-only correction history across laboratory releases.",
+  "status": "draft",
   "database": {
     "engine_family": "postgresql",
     "engine_version": "17.10",
@@ -82,9 +82,25 @@
       "collation": "C",
       "value_pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,47}$",
       "namespace_components": [
-        "unit_vocabulary_id",
         "assay_code",
-        "analyte_code"
+        "analyte_code",
+        "method_revision",
+        "raw_unit_label",
+        "canonical_unit_code"
+      ]
+    },
+    {
+      "identity_profile_id": "IDENTITY-SOURCE-ARTIFACT-001",
+      "identity_kind": "external_constrained",
+      "physical_type": "varchar(128)",
+      "normalization": "unicode_nfc_preserve_case_trim_outer_whitespace",
+      "comparison_semantics": "bytewise_text_equality",
+      "maximum_length": 128,
+      "collation": "C",
+      "value_pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$",
+      "namespace_components": [
+        "tenant_id",
+        "source_system_code"
       ]
     }
   ],
@@ -139,11 +155,128 @@
       "rounding_mode": "half_even",
       "rounding_scale": 16,
       "source_lexeme_policy": "canonical_decimal_only"
+    },
+    {
+      "numeric_profile_id": "NUMERIC-QPCR-REFERENCE-001",
+      "version": "1.0.0",
+      "representation_role": "reference_interval_bound",
+      "assay_code": "QPCR-VIRAL-LOAD",
+      "analyte_code": "TARGET-COPIES",
+      "method_revision": "METHOD-4.2",
+      "physical_type": "numeric(38,12)",
+      "precision": 38,
+      "scale": 12,
+      "finite_required": true,
+      "lower_bound": "0",
+      "upper_bound": "99999999999999999999999999.999999999999",
+      "rounding_mode": "half_even",
+      "rounding_scale": 12,
+      "source_lexeme_policy": "canonical_decimal_only"
+    },
+    {
+      "numeric_profile_id": "NUMERIC-QPCR-DETECTION-LIMIT-001",
+      "version": "1.0.0",
+      "representation_role": "detection_limit",
+      "assay_code": "QPCR-VIRAL-LOAD",
+      "analyte_code": "TARGET-COPIES",
+      "method_revision": "METHOD-4.2",
+      "physical_type": "numeric(38,12)",
+      "precision": 38,
+      "scale": 12,
+      "finite_required": true,
+      "lower_bound": "0",
+      "upper_bound": "99999999999999999999999999.999999999999",
+      "rounding_mode": "half_even",
+      "rounding_scale": 12,
+      "source_lexeme_policy": "canonical_decimal_only"
+    },
+    {
+      "numeric_profile_id": "NUMERIC-QPCR-QUANTITATION-LIMIT-001",
+      "version": "1.0.0",
+      "representation_role": "quantitation_limit",
+      "assay_code": "QPCR-VIRAL-LOAD",
+      "analyte_code": "TARGET-COPIES",
+      "method_revision": "METHOD-4.2",
+      "physical_type": "numeric(38,12)",
+      "precision": 38,
+      "scale": 12,
+      "finite_required": true,
+      "lower_bound": "0",
+      "upper_bound": "99999999999999999999999999.999999999999",
+      "rounding_mode": "half_even",
+      "rounding_scale": 12,
+      "source_lexeme_policy": "canonical_decimal_only"
+    }
+  ],
+  "vocabulary_registries": [
+    {
+      "vocabulary_registry_id": "VOCAB-SOURCE-SYSTEM-001",
+      "system_name": "Example laboratory source systems",
+      "canonical_uri": "https://schemas.driftframe.org/example-vocabularies/source-systems",
+      "release": "2026.08",
+      "content_digest": "sha256:1212121212121212121212121212121212121212121212121212121212121212",
+      "resolution_policy": "exact_code_in_pinned_release",
+      "unknown_code_policy": "owned_exception_queue"
+    },
+    {
+      "vocabulary_registry_id": "VOCAB-SPECIMEN-STATUS-001",
+      "system_name": "Example specimen lifecycle",
+      "canonical_uri": "https://schemas.driftframe.org/example-vocabularies/specimen-status",
+      "release": "2026.08",
+      "content_digest": "sha256:1313131313131313131313131313131313131313131313131313131313131313",
+      "resolution_policy": "exact_code_in_pinned_release",
+      "unknown_code_policy": "owned_exception_queue"
+    },
+    {
+      "vocabulary_registry_id": "VOCAB-ASSAY-001",
+      "system_name": "Example assay catalog",
+      "canonical_uri": "https://schemas.driftframe.org/example-vocabularies/assays",
+      "release": "2026.08",
+      "content_digest": "sha256:1414141414141414141414141414141414141414141414141414141414141414",
+      "resolution_policy": "exact_code_in_pinned_release",
+      "unknown_code_policy": "owned_exception_queue"
+    },
+    {
+      "vocabulary_registry_id": "VOCAB-ANALYTE-001",
+      "system_name": "Example analyte catalog",
+      "canonical_uri": "https://schemas.driftframe.org/example-vocabularies/analytes",
+      "release": "2026.08",
+      "content_digest": "sha256:1515151515151515151515151515151515151515151515151515151515151515",
+      "resolution_policy": "exact_code_in_pinned_release",
+      "unknown_code_policy": "owned_exception_queue"
+    },
+    {
+      "vocabulary_registry_id": "VOCAB-ROUNDING-MODE-001",
+      "system_name": "Example scientific rounding modes",
+      "canonical_uri": "https://schemas.driftframe.org/example-vocabularies/rounding-modes",
+      "release": "2026.08",
+      "content_digest": "sha256:1616161616161616161616161616161616161616161616161616161616161616",
+      "resolution_policy": "exact_code_in_pinned_release",
+      "unknown_code_policy": "owned_exception_queue"
+    },
+    {
+      "vocabulary_registry_id": "VOCAB-RESULT-QUALIFIER-001",
+      "system_name": "Example result qualifiers",
+      "canonical_uri": "https://schemas.driftframe.org/example-vocabularies/result-qualifiers",
+      "release": "2026.08",
+      "content_digest": "sha256:1717171717171717171717171717171717171717171717171717171717171717",
+      "resolution_policy": "exact_code_in_pinned_release",
+      "unknown_code_policy": "owned_exception_queue"
+    },
+    {
+      "vocabulary_registry_id": "VOCAB-REGISTRY-UCUM-001",
+      "system_name": "Unified Code for Units of Measure",
+      "canonical_uri": "https://ucum.org/ucum",
+      "release": "2.2",
+      "content_digest": "sha256:1818181818181818181818181818181818181818181818181818181818181818",
+      "resolution_policy": "exact_code_in_pinned_release",
+      "unknown_code_policy": "owned_exception_queue"
     }
   ],
   "unit_vocabularies": [
     {
       "unit_vocabulary_id": "VOCAB-UCUM-LAB-001",
+      "vocabulary_registry_id": "VOCAB-REGISTRY-UCUM-001",
       "system": "UCUM",
       "version": "2.2",
       "canonical_code_pattern": "^[A-Za-z0-9%{}'().*/+^-]+$",
@@ -161,6 +294,15 @@
       "byte_length": 32,
       "canonicalization_profile": "RFC-8785-compatible-strict-v1",
       "content_scope": "Canonical semantic result envelope with schema and mapping revisions",
+      "envelope_schema_version": "1.0.0"
+    },
+    {
+      "digest_profile_id": "DIGEST-SOURCE-ARTIFACT-001",
+      "algorithm": "sha-256",
+      "physical_type": "bytea",
+      "byte_length": 32,
+      "canonicalization_profile": "raw-bytes-v1",
+      "content_scope": "Immutable source artifact bytes",
       "envelope_schema_version": "1.0.0"
     }
   ],
@@ -534,6 +676,109 @@
           "quantity_role": "conversion_factor"
         },
         {
+          "field_id": "FIELD-RESULT-QUALIFIER-001",
+          "column_name": "result_qualifier_code",
+          "semantic_type": "controlled_term",
+          "physical_type": "varchar(24)",
+          "nullable": false,
+          "source_of_truth": "upstream_system",
+          "description": "Governed qualifier that distinguishes measured, below-limit, above-limit, and indeterminate result semantics.",
+          "controlled_vocabulary_id": "VOCAB-RESULT-QUALIFIER-001"
+        },
+        {
+          "field_id": "FIELD-RESULT-REFERENCE-LOWER-001",
+          "column_name": "reference_interval_lower",
+          "semantic_type": "exact_decimal",
+          "physical_type": "numeric(38,12)",
+          "nullable": true,
+          "source_of_truth": "derived",
+          "description": "Canonical lower bound from the method revision in effect for this result event.",
+          "numeric_profile_id": "NUMERIC-QPCR-CANONICAL-001",
+          "quantity_role": "reference_interval_bound"
+        },
+        {
+          "field_id": "FIELD-RESULT-REFERENCE-UPPER-001",
+          "column_name": "reference_interval_upper",
+          "semantic_type": "exact_decimal",
+          "physical_type": "numeric(38,12)",
+          "nullable": true,
+          "source_of_truth": "derived",
+          "description": "Canonical upper bound from the method revision in effect for this result event.",
+          "numeric_profile_id": "NUMERIC-QPCR-CANONICAL-001",
+          "quantity_role": "reference_interval_bound"
+        },
+        {
+          "field_id": "FIELD-RESULT-DETECTION-LIMIT-001",
+          "column_name": "detection_limit",
+          "semantic_type": "exact_decimal",
+          "physical_type": "numeric(38,12)",
+          "nullable": true,
+          "source_of_truth": "derived",
+          "description": "Canonical detection limit resolved from the versioned method profile.",
+          "numeric_profile_id": "NUMERIC-QPCR-CANONICAL-001",
+          "quantity_role": "detection_limit"
+        },
+        {
+          "field_id": "FIELD-RESULT-QUANTITATION-LIMIT-001",
+          "column_name": "quantitation_limit",
+          "semantic_type": "exact_decimal",
+          "physical_type": "numeric(38,12)",
+          "nullable": true,
+          "source_of_truth": "derived",
+          "description": "Canonical quantitation limit resolved from the versioned method profile.",
+          "numeric_profile_id": "NUMERIC-QPCR-CANONICAL-001",
+          "quantity_role": "quantitation_limit"
+        },
+        {
+          "field_id": "FIELD-RESULT-CONVERSION-FORMULA-001",
+          "column_name": "conversion_formula",
+          "semantic_type": "text",
+          "physical_type": "text",
+          "nullable": false,
+          "source_of_truth": "derived",
+          "description": "Canonical formula expression applied by the pinned unit-mapping revision."
+        },
+        {
+          "field_id": "FIELD-RESULT-CONVERSION-FORMULA-DIGEST-001",
+          "column_name": "conversion_formula_digest",
+          "semantic_type": "content_digest",
+          "physical_type": "bytea",
+          "nullable": false,
+          "source_of_truth": "derived",
+          "description": "Thirty-two-byte digest of the canonical conversion formula representation.",
+          "digest_profile_id": "DIGEST-SEMANTIC-EVIDENCE-001"
+        },
+        {
+          "field_id": "FIELD-RESULT-CONVERSION-FACTOR-DIGEST-001",
+          "column_name": "conversion_factor_digest",
+          "semantic_type": "content_digest",
+          "physical_type": "bytea",
+          "nullable": false,
+          "source_of_truth": "derived",
+          "description": "Thirty-two-byte digest binding the applied factor to its mapping revision.",
+          "digest_profile_id": "DIGEST-SEMANTIC-EVIDENCE-001"
+        },
+        {
+          "field_id": "FIELD-RESULT-SOURCE-ARTIFACT-ID-001",
+          "column_name": "source_artifact_id",
+          "semantic_type": "identifier",
+          "physical_type": "varchar(128)",
+          "nullable": false,
+          "source_of_truth": "upstream_system",
+          "description": "Stable upstream artifact identity scoped by tenant and source system.",
+          "identity_profile_id": "IDENTITY-SOURCE-ARTIFACT-001"
+        },
+        {
+          "field_id": "FIELD-RESULT-SOURCE-ARTIFACT-DIGEST-001",
+          "column_name": "source_artifact_digest",
+          "semantic_type": "content_digest",
+          "physical_type": "bytea",
+          "nullable": false,
+          "source_of_truth": "upstream_system",
+          "description": "Thirty-two-byte digest of the immutable source artifact bytes.",
+          "digest_profile_id": "DIGEST-SOURCE-ARTIFACT-001"
+        },
+        {
           "field_id": "FIELD-RESULT-ROUNDING-MODE-001",
           "column_name": "rounding_mode_code",
           "semantic_type": "controlled_term",
@@ -665,6 +910,16 @@
           "conversion_factor_field_id": "FIELD-RESULT-CONVERSION-FACTOR-001",
           "rounding_mode_field_id": "FIELD-RESULT-ROUNDING-MODE-001",
           "mapping_revision_field_id": "FIELD-RESULT-MAPPING-REVISION-001",
+          "qualifier_field_id": "FIELD-RESULT-QUALIFIER-001",
+          "reference_interval_lower_field_id": "FIELD-RESULT-REFERENCE-LOWER-001",
+          "reference_interval_upper_field_id": "FIELD-RESULT-REFERENCE-UPPER-001",
+          "detection_limit_field_id": "FIELD-RESULT-DETECTION-LIMIT-001",
+          "quantitation_limit_field_id": "FIELD-RESULT-QUANTITATION-LIMIT-001",
+          "conversion_formula_field_id": "FIELD-RESULT-CONVERSION-FORMULA-001",
+          "conversion_formula_digest_field_id": "FIELD-RESULT-CONVERSION-FORMULA-DIGEST-001",
+          "conversion_factor_digest_field_id": "FIELD-RESULT-CONVERSION-FACTOR-DIGEST-001",
+          "source_artifact_id_field_id": "FIELD-RESULT-SOURCE-ARTIFACT-ID-001",
+          "source_artifact_digest_field_id": "FIELD-RESULT-SOURCE-ARTIFACT-DIGEST-001",
           "provenance_digest_field_id": "FIELD-RESULT-PROVENANCE-DIGEST-001"
         }
       ]
@@ -674,10 +929,7 @@
     {
       "application_release": "lims-eln-enterprise-v0.4.0",
       "minimum_schema_version": "2.0.0",
-      "maximum_schema_version": "2.1.0",
-      "verification_receipt_ids": [
-        "RECEIPT-DB-MIGRATION-001"
-      ]
+      "maximum_schema_version": "2.1.0"
     }
   ],
   "invalidation_triggers": [
@@ -687,14 +939,8 @@
     "Canonicalization, digest scope, retention, or data classification changes"
   ],
   "metadata": {
-    "schema_version": "2.0.2",
+    "schema_version": "3.0.0",
     "created_at": "2026-08-04T14:00:00Z",
-    "updated_at": "2026-08-04T20:00:00Z",
-    "owner": {
-      "actor_id": "OWNER-DATA-CONTRACT-001",
-      "display_name": "Laboratory Data Contract Steward",
-      "role": "Data architecture owner",
-      "organization": "Example Laboratory"
-    }
+    "updated_at": "2026-08-04T20:00:00Z"
   }
 }
