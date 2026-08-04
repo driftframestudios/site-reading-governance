@@ -10,6 +10,8 @@ concordance. A schema change travels with:
 - a focused validation test;
 - compatibility and invalidation analysis;
 - clear migration guidance when consumers must act;
+- data-primitive rationale, supported upgrade paths, bounded execution, and
+  recovery evidence when database meaning changes;
 - desired-state language across prose, comments, and identifiers.
 
 ## Local verification
@@ -35,6 +37,12 @@ candidate-eligibility controls.
   record makes an assurance claim.
 - Pair each hard safety or privacy boundary with its replacement behavior and
   observable verification.
+- Express database changes through the data contract, finding ledger, migration
+  plan, execution receipt, reconciliation, and release manifest as applicable.
+- Preserve applied migration files and checksums; reviewed successor migrations
+  carry each later change.
+- Use native database primitives for governed meaning and exact strings for
+  decimal-valued evidence interchange.
 
 ## Review
 
@@ -46,6 +54,8 @@ Reviewers examine:
 4. security, privacy, and retention effects;
 5. affirmative, verifiable language;
 6. tests that exercise success, boundary, failure-twin, and recovery behavior.
+7. database lock, compatibility, reconciliation, restore, and accountable
+   acceptance evidence when the contribution changes persisted meaning.
 
 ## Sensitive reports
 

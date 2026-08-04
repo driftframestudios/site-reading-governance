@@ -6,6 +6,10 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+- Added closed data-contract, database-refactor-finding, migration-plan,
+  migration-receipt, reconciliation, and database-release-manifest contracts
+  with one coherent synthetic evidence chain and mutation-tested cross-record
+  validation.
 - Replaced line-local language matching with deterministic, structure-aware
   policy `language-policy-v1.0.0`, a repository-independent standard-library
   core, NFC case-preserving fingerprints, rich text/JSON/SARIF output, exact

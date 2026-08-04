@@ -138,6 +138,39 @@ The behavioral basis is maintained in GitHub's
 and
 [Dependabot on GitHub Actions](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-on-actions).
 
+## Database change lifecycle
+
+```text
+primitive inventory
+  -> approved data contract
+  -> located refactor findings
+  -> expand and backfill
+  -> reconcile and validate
+  -> cut over through a compatibility window
+  -> accountable contract-phase approval
+  -> release manifest
+```
+
+The data contract defines semantic and physical types, units, precision,
+temporal meaning, keys, constraints, classification, retention, and compatible
+application releases. A refactor finding records the current primitive, its
+material effect, the affirmative target, evidence, ownership, recovery route,
+and migration disposition.
+
+Migration plans bind immutable tool and script coordinates to source and target
+schema digests. Each phase carries transaction posture, online behavior, lock
+and statement budgets, durable checkpoints, preconditions, and observable
+success criteria. Destructive contract phases enter through a measured
+compatibility window and scoped approval. The migration runner uses one reviewed
+writer coordinate and records schema-drift and applied-checksum verification.
+
+Execution receipts preserve phase outcomes, operational measurements,
+reconciliation, backup or recovery-point coordinates, restore evidence, and
+accountable review. Reconciliation binds its exact values and scientific
+invariants to a named cohort and query digest. The database release manifest
+assembles the contract, migration graph, supported baselines, receipts,
+acceptance decisions, findings, and immutable evidence bundle.
+
 ## Change and invalidation
 
 An invalidation record states:

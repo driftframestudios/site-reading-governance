@@ -54,6 +54,33 @@ This posture lets an executable simulation fully close the four substantive
 receipt families through modeled roles and synthetic environments. It makes no
 claim about a separately observed environment or production authorization.
 
+## Database change assurance
+
+Six additive contracts make database evolution inspectable from discovery to
+release:
+
+```text
+data contract
+  -> refactor finding
+  -> migration plan
+  -> migration receipt
+  -> data reconciliation
+  -> database release manifest
+```
+
+The chain preserves logical meaning alongside physical representation. A plan
+records source and target schema digests, immutable script and tool coordinates,
+ordered expand/backfill/validate/cutover/contract phases, lock and statement
+budgets, compatibility, approval, and recovery. Execution receipts and exact
+reconciliation bind observed or simulated results back to that plan. The release
+manifest assembles migration, restore, acceptance, finding, and evidence-bundle
+coordinates into one reviewable promotion surface.
+
+Native database types preserve instants, civil dates, exact measurements,
+booleans, identifiers, and relational integrity. Interchange documents render
+migration instants as RFC 3339 UTC values while the data contract retains the
+database-native representation.
+
 ## Quick start
 
 Requirements: Python 3.11 or newer. The validation path uses the Python standard

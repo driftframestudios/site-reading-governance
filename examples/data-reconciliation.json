@@ -1,0 +1,106 @@
+{
+  "reconciliation_id": "RECONCILIATION-DB-MIGRATION-001",
+  "migration_receipt_id": "RECEIPT-DB-MIGRATION-001",
+  "migration_plan_id": "MIGRATION-LAB-TIMESTAMPTZ-001",
+  "data_contract_id": "CONTRACT-LABORATORY-CORE-001",
+  "scope": "Representative specimen records spanning offset, daylight-saving transition, leap-day, fractional-second, and boundary instants.",
+  "evidence_mode": "simulated",
+  "assurance_stage": "qualified",
+  "cohort": {
+    "cohort_id": "COHORT-TEMPORAL-REHEARSAL-001",
+    "query_digest": "sha256:1313131313131313131313131313131313131313131313131313131313131313",
+    "fixture_digest": "sha256:1414141414141414141414141414141414141414141414141414141414141414",
+    "selection_basis": "Synthetic records cover temporal parsing boundaries and every supported application release.",
+    "record_count": 2400
+  },
+  "criteria": [
+    {
+      "criterion_id": "CRITERION-ROW-COUNT-001",
+      "dimension": "row_count",
+      "comparison": "exactly",
+      "value_type": "integer",
+      "expected_value": "2400",
+      "observed_value": "2400",
+      "tolerance": "0",
+      "unit": "records",
+      "outcome": "passed",
+      "evidence": {
+        "artifact_id": "ARTIFACT-RECONCILIATION-COUNT-001",
+        "media_type": "application/json",
+        "digest": "sha256:1515151515151515151515151515151515151515151515151515151515151515",
+        "locator": "evidence://database-reconciliation/row-count-001",
+        "sensitivity": "internal",
+        "retention_class": "database-migration-evidence"
+      }
+    },
+    {
+      "criterion_id": "CRITERION-TEMPORAL-PARITY-001",
+      "dimension": "temporal_invariant",
+      "comparison": "exactly",
+      "value_type": "integer",
+      "expected_value": "2400",
+      "observed_value": "2400",
+      "tolerance": "0",
+      "unit": "matching-instants",
+      "outcome": "passed",
+      "evidence": {
+        "artifact_id": "ARTIFACT-RECONCILIATION-TEMPORAL-001",
+        "media_type": "application/json",
+        "digest": "sha256:1616161616161616161616161616161616161616161616161616161616161616",
+        "locator": "evidence://database-reconciliation/temporal-parity-001",
+        "sensitivity": "internal",
+        "retention_class": "database-migration-evidence"
+      }
+    },
+    {
+      "criterion_id": "CRITERION-SCHEMA-DIGEST-001",
+      "dimension": "checksum",
+      "comparison": "exactly",
+      "value_type": "digest",
+      "expected_value": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "observed_value": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "tolerance": "0",
+      "unit": "schema-fingerprint",
+      "outcome": "passed",
+      "evidence": {
+        "artifact_id": "ARTIFACT-RECONCILIATION-SCHEMA-001",
+        "media_type": "application/json",
+        "digest": "sha256:1717171717171717171717171717171717171717171717171717171717171717",
+        "locator": "evidence://database-reconciliation/schema-digest-001",
+        "sensitivity": "internal",
+        "retention_class": "database-migration-evidence"
+      }
+    }
+  ],
+  "exceptions": [],
+  "overall_outcome": "passed",
+  "performed_at": "2026-08-04T15:00:11Z",
+  "performer": {
+    "actor_id": "ACTOR-RECONCILIATION-RUNNER-001",
+    "display_name": "Reconciliation Runner",
+    "role": "Automated data reconciliation performer",
+    "organization": "Example Laboratory"
+  },
+  "reviewer": {
+    "actor_id": "ACTOR-RECONCILIATION-REVIEWER-001",
+    "display_name": "Scientific Data Reviewer",
+    "role": "Laboratory data reconciliation reviewer",
+    "organization": "Example Laboratory"
+  },
+  "retest_triggers": [
+    "Cohort query or fixture changes",
+    "Data contract or migration plan changes",
+    "Temporal parsing or serialization behavior changes"
+  ],
+  "metadata": {
+    "schema_version": "2.0.1",
+    "created_at": "2026-08-04T15:06:00Z",
+    "updated_at": "2026-08-04T15:06:00Z",
+    "owner": {
+      "actor_id": "OWNER-RECONCILIATION-001",
+      "display_name": "Data Reconciliation Steward",
+      "role": "Data reconciliation evidence owner",
+      "organization": "Example Laboratory"
+    }
+  }
+}
