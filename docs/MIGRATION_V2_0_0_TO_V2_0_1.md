@@ -12,9 +12,9 @@ their behavior.
 3. Run the governance, language, secret-shape, and regression proofs locally at
    the candidate coordinate.
 4. Install branch rulesets that preserve deletion, non-fast-forward,
-   pull-request, CODEOWNER, last-push, review-thread resolution, and applicable
-   signature protections with an empty hosted required-check set in the **$0**
-   resting state.
+   one approving review, CODEOWNER review, last-push approval, review-thread
+   resolution, and applicable signature protections with an empty hosted
+   required-check set in the **$0** resting state.
 5. Resolve every CODEOWNER to an eligible reviewer in the repository's current
    ownership model.
 

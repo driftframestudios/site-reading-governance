@@ -202,6 +202,25 @@ class GovernancePackageTests(unittest.TestCase):
     def test_ruleset_exports_preserve_governed_flow(self) -> None:
         self.assertEqual([], validation.validate_rulesets())
 
+    def test_branch_rulesets_preserve_one_review_bundle(self) -> None:
+        expected = {
+            "required_approving_review_count": 1,
+            "dismiss_stale_reviews_on_push": True,
+            "require_code_owner_review": True,
+            "require_last_push_approval": True,
+            "required_review_thread_resolution": True,
+            "allowed_merge_methods": ["merge", "squash"],
+        }
+        for name in ("main.json", "develop.json", "release-hotfix.json"):
+            with self.subTest(ruleset=name):
+                ruleset = json.loads(
+                    (ROOT / "rulesets" / name).read_text(encoding="utf-8")
+                )
+                pull_request = next(
+                    rule for rule in ruleset["rules"] if rule["type"] == "pull_request"
+                )
+                self.assertEqual(expected, pull_request["parameters"])
+
     def test_workflows_use_bounded_permissions_and_immutable_actions(self) -> None:
         self.assertEqual([], validation.validate_workflows())
 

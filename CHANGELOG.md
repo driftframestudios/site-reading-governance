@@ -31,7 +31,7 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
   measurable qualification thresholds, and accountable recovery.
 - Prepared candidate `2.0.1` with a schema-valid repository-promotion receipt
   and an executable candidate-to-released lifecycle.
-- Preserved pull-request review, deletion, non-fast-forward, CODEOWNER,
+- Preserved one approving review, deletion, non-fast-forward, CODEOWNER,
   last-push, review-thread resolution, and applicable signature protections in
   versioned rulesets while keeping hosted required-check sets empty for the
   local-first **$0** resting state.

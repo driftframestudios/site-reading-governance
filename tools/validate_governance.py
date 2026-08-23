@@ -1686,6 +1686,34 @@ def validate_rulesets() -> list[Finding]:
                         "branch ruleset resting state keeps hosted status checks empty",
                     )
                 )
+            pull_request_rules = [
+                rule
+                for rule in rules
+                if isinstance(rule, dict) and rule.get("type") == "pull_request"
+            ]
+            if len(pull_request_rules) == 1:
+                parameters = pull_request_rules[0].get("parameters", {})
+                expected_review_parameters = {
+                    "required_approving_review_count": 1,
+                    "dismiss_stale_reviews_on_push": True,
+                    "require_code_owner_review": True,
+                    "require_last_push_approval": True,
+                    "required_review_thread_resolution": True,
+                    "allowed_merge_methods": ["merge", "squash"],
+                }
+                if parameters != expected_review_parameters:
+                    findings.append(
+                        Finding(
+                            relative,
+                            "pull-request protection must preserve one approval, "
+                            "stale-review dismissal, CODEOWNER review, last-push "
+                            "approval, thread resolution, and reviewed merge methods",
+                        )
+                    )
+            elif pull_request_rules:
+                findings.append(
+                    Finding(relative, "branch ruleset requires one pull-request rule")
+                )
         if path.name in {"main.json", "release-hotfix.json", "release-tags.json"}:
             if "required_signatures" not in rule_types:
                 findings.append(

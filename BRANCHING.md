@@ -82,11 +82,12 @@ into `develop` so the next release retains the dependency repair. The
 repository-local branch checker remains available to reviewers, and CODEOWNER
 review continues to cover the activation template and workflow contracts.
 
-The ruleset exports preserve pull-request review, deletion, non-fast-forward,
-and release-signature protections while their hosted required-check sets remain
-empty. A later hosted check becomes part of branch policy only through a
-separate reviewed activation state with a stable context and a funded execution
-path.
+The ruleset exports preserve one approving review, CODEOWNER review,
+stale-review dismissal, last-push approval, review-thread resolution, deletion,
+non-fast-forward, and release-signature protections while their hosted
+required-check sets remain empty. A later hosted check becomes part of branch
+policy only through a separate reviewed activation state with a stable context
+and a funded execution path.
 
 ## Compatibility policy
 

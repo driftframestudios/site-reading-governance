@@ -19,10 +19,12 @@ manual governance proof remains available through repository enablement,
 two reusable workflows remain caller-owned `workflow_call` contracts with zero
 current callers in the five-repository LIMS family.
 
-The branch exports preserve pull-request review, deletion, non-fast-forward,
-and applicable signature protections without depending on a hosted check. A
-future required status context becomes a new reviewed export only after its
-caller, stable context, budget, and recovery route are established.
+The branch exports preserve one approving review, CODEOWNER review, stale-review
+dismissal, last-push approval, review-thread resolution, deletion,
+non-fast-forward, and applicable signature protections with an empty hosted
+required-check set. A future required status context becomes a new reviewed
+export only after its caller, stable context, budget, and recovery route are
+established.
 
 The release-tag export covers `v*`, `spec-v*`, `candidate-v*`,
 `governance-v*`, `comparison-v*`, and `forecast-*` coordinates so every
