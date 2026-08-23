@@ -1652,32 +1652,18 @@ def validate_rulesets() -> list[Finding]:
                     Finding(relative, f"ruleset requires {required_type!r} protection")
                 )
         if ruleset.get("target") == "branch":
-            for required_type in ("pull_request", "required_status_checks"):
-                if required_type not in rule_types:
-                    findings.append(
-                        Finding(
-                            relative,
-                            f"branch ruleset requires {required_type!r} protection",
-                        )
-                    )
-            status_rules = [
-                rule for rule in rules if rule.get("type") == "required_status_checks"
-            ]
-            contexts = {
-                item.get("context")
-                for rule in status_rules
-                for item in rule.get("parameters", {}).get(
-                    "required_status_checks", []
-                )
-            }
-            required_contexts = {"branch-policy", "governance-validation"}
-            missing_contexts = required_contexts - contexts
-            if missing_contexts:
+            if "pull_request" not in rule_types:
                 findings.append(
                     Finding(
                         relative,
-                        "branch ruleset is missing required status contexts: "
-                        f"{sorted(missing_contexts)}",
+                        "branch ruleset requires 'pull_request' protection",
+                    )
+                )
+            if "required_status_checks" in rule_types:
+                findings.append(
+                    Finding(
+                        relative,
+                        "branch ruleset resting state keeps hosted status checks empty",
                     )
                 )
         if path.name in {"main.json", "release-hotfix.json", "release-tags.json"}:
@@ -1703,106 +1689,110 @@ def validate_rulesets() -> list[Finding]:
     return findings
 
 
+def workflow_trigger_keys(workflow: str) -> set[str]:
+    """Read exact top-level workflow triggers without adding a YAML dependency."""
+    lines = workflow.splitlines()
+    if "on:" not in lines:
+        return set()
+    start = lines.index("on:") + 1
+    triggers: set[str] = set()
+    for line in lines[start:]:
+        if line and not line.startswith(" "):
+            break
+        match = re.fullmatch(r"""  ["']?([A-Za-z0-9_-]+)["']?:.*""", line)
+        if match:
+            triggers.add(match.group(1))
+    return triggers
+
+
+def runner_job_blocks(workflow: str) -> dict[str, str]:
+    """Return every workflow job that allocates a hosted runner."""
+    lines = workflow.splitlines()
+    if "jobs:" not in lines:
+        return {}
+    start = lines.index("jobs:") + 1
+    job_starts = [
+        (index, match.group(1))
+        for index in range(start, len(lines))
+        if (match := re.fullmatch(r"  ([A-Za-z0-9_-]+):", lines[index]))
+    ]
+    blocks: dict[str, str] = {}
+    for position, (index, name) in enumerate(job_starts):
+        end = (
+            job_starts[position + 1][0]
+            if position + 1 < len(job_starts)
+            else len(lines)
+        )
+        block = "\n".join(lines[index:end])
+        if re.search(r"(?m)^    runs-on:", block):
+            blocks[name] = block
+    return blocks
+
+
 def validate_workflows() -> list[Finding]:
     """Check workflow permissions and immutable third-party action coordinates."""
     findings: list[Finding] = []
-    expected = {
-        "branch-policy.yml",
-        "validate.yml",
-        "reusable-governance-validation.yml",
-        "reusable-contract-validation.yml",
+    expected_triggers = {
+        "validate.yml": {"workflow_dispatch"},
+        "reusable-governance-validation.yml": {"workflow_call"},
+        "reusable-contract-validation.yml": {"workflow_call"},
     }
-    available = {path.name for path in WORKFLOW_DIR.glob("*.yml")}
-    if available != expected:
+    workflow_paths = sorted(
+        [*WORKFLOW_DIR.glob("*.yml"), *WORKFLOW_DIR.glob("*.yaml")]
+    )
+    available = {path.name for path in workflow_paths}
+    if available != set(expected_triggers):
         findings.append(
             Finding(
                 ".github/workflows",
-                f"workflow catalog differs: expected {sorted(expected)}, "
+                f"workflow catalog differs: expected {sorted(expected_triggers)}, "
                 f"available {sorted(available)}",
             )
         )
+
+    dependency_template = ROOT / ".github" / "dependabot.manual.yml"
+    if not dependency_template.exists():
+        findings.append(
+            Finding(
+                ".github/dependabot.manual.yml",
+                "dependency activation template is required for the resting state",
+            )
+        )
+    else:
+        template_content = dependency_template.read_text(encoding="utf-8")
+        if "Activation template:" not in template_content:
+            findings.append(
+                Finding(
+                    ".github/dependabot.manual.yml",
+                    "dependency activation template requires its activation cue",
+                )
+            )
+    if (ROOT / ".github" / "dependabot.yml").exists():
+        findings.append(
+            Finding(
+                ".github/dependabot.yml",
+                "scheduled dependency updates are active; the resting state uses "
+                "dependabot.manual.yml",
+            )
+        )
+
     action_reference = re.compile(r"^\s*uses:\s*([^#\s]+)", re.MULTILINE)
     immutable_action = re.compile(r"^[^@]+@[a-f0-9]{40}$")
-    for path in sorted(WORKFLOW_DIR.glob("*.yml")):
+    for path in workflow_paths:
         relative = str(path.relative_to(ROOT))
         content = path.read_text(encoding="utf-8")
         if "permissions:\n  contents: read" not in content:
             findings.append(
                 Finding(relative, "workflow should declare read-only contents permission")
             )
-        if path.name == "branch-policy.yml":
-            required_policy_fragments = {
-                "pull_request_target:": "branch policy requires base-context activation",
-                "repository: ${{ github.repository }}": (
-                    "branch policy checkout requires the base repository"
-                ),
-                "ref: ${{ github.event.pull_request.base.sha }}": (
-                    "branch policy checkout requires the immutable pull-request base"
-                ),
-                "path: .branch-policy-base": (
-                    "branch policy checkout requires its bounded static path"
-                ),
-                "sparse-checkout: tools/check_branch_flow.py": (
-                    "branch policy checkout requires only the released checker"
-                ),
-                "sparse-checkout-cone-mode: false": (
-                    "branch policy sparse checkout requires file-level selection"
-                ),
-                "working-directory: .branch-policy-base": (
-                    "branch policy execution requires the bounded base checkout"
-                ),
-                "BASE_REF: ${{ github.event.pull_request.base.ref }}": (
-                    "branch policy requires the event base branch"
-                ),
-                "HEAD_REF: ${{ github.event.pull_request.head.ref }}": (
-                    "branch policy requires the event head branch as quoted data"
-                ),
-                "PR_AUTHOR: ${{ github.event.pull_request.user.login }}": (
-                    "branch policy requires the event pull-request author"
-                ),
-                '--author "$PR_AUTHOR"': (
-                    "branch policy requires quoted author binding"
-                ),
-            }
-            for fragment, message in required_policy_fragments.items():
-                if fragment not in content:
-                    findings.append(Finding(relative, message))
-            if content.count("actions/checkout@") != 1:
-                findings.append(
-                    Finding(
-                        relative,
-                        "branch policy requires exactly one base-controlled checkout",
-                    )
-                )
-            if content.count(
-                "${{ github.event.pull_request.head.ref }}"
-            ) != 1:
-                findings.append(
-                    Finding(
-                        relative,
-                        "head branch data belongs only in the quoted checker argument",
-                    )
-                )
-            for fragment in (
-                "github.event.pull_request.head.sha",
-                "git fetch ",
-                "git checkout ",
-                "gh pr checkout",
-                "curl ",
-                "wget ",
-            ):
-                if fragment in content:
-                    findings.append(
-                        Finding(
-                            relative,
-                            f"branch policy contains head-retrieval surface {fragment!r}",
-                        )
-                    )
-        elif "pull_request_target:" in content:
+        triggers = workflow_trigger_keys(content)
+        expected = expected_triggers.get(path.name, set())
+        if triggers != expected:
             findings.append(
                 Finding(
                     relative,
-                    "pull_request_target authority belongs only to branch-policy.yml",
+                    "workflow trigger allowlist differs: "
+                    f"expected {sorted(expected)}, available {sorted(triggers)}",
                 )
             )
         if path.name == "reusable-contract-validation.yml":
@@ -1821,6 +1811,48 @@ def validate_workflows() -> list[Finding]:
             for fragment, message in required_contract_fragments.items():
                 if fragment not in content:
                     findings.append(Finding(relative, message))
+        if path.name == "validate.yml":
+            required_activation_fragments = {
+                "workflow_dispatch:": (
+                    "manual governance proof requires workflow_dispatch activation"
+                ),
+                "confirm_run:": (
+                    "manual governance proof requires explicit human confirmation"
+                ),
+                "vars.ENABLE_GITHUB_ACTIONS == 'true'": (
+                    "manual governance proof requires the repository-variable gate"
+                ),
+                "inputs.confirm_run": (
+                    "manual governance proof requires the dispatch confirmation gate"
+                ),
+                "timeout-minutes: 10": (
+                    "manual governance proof requires its bounded runner interval"
+                ),
+            }
+            for fragment, message in required_activation_fragments.items():
+                if fragment not in content:
+                    findings.append(Finding(relative, message))
+            runner_jobs = runner_job_blocks(content)
+            if not runner_jobs:
+                findings.append(
+                    Finding(relative, "manual governance proof requires a runner job")
+                )
+            for name, block in runner_jobs.items():
+                gate = re.search(r"(?m)^    if:\s*(.+)$", block)
+                if gate is None or not all(
+                    fragment in gate.group(1)
+                    for fragment in (
+                        "vars.ENABLE_GITHUB_ACTIONS == 'true'",
+                        "inputs.confirm_run",
+                    )
+                ):
+                    findings.append(
+                        Finding(
+                            relative,
+                            f"manual workflow runner job {name!r} requires the "
+                            "variable and confirmation gate",
+                        )
+                    )
         for reference in action_reference.findall(content):
             if reference.startswith("./"):
                 continue

@@ -110,28 +110,32 @@ number of temporal buckets. It records current items, entry and completion
 evidence, dependencies, retained effects, consequential questions, and a
 re-entry capsule. Teams can choose labels and cadence that fit the work.
 
-## Governed dependency automation
+## Governed local proof and optional automation
 
-Dependency automation follows a bounded-caller posture. An exception to the
-human GitFlow branch families requires three facts together: a complete
-Dependabot or Renovate branch grammar, the exact corresponding pull-request
-author, and a `main` or `develop` target. Ordinary tests, immutable action
-references, CODEOWNER review, and release evidence continue to apply.
+Local governance validation is the standing proof path. GitHub Actions rests
+disabled in repository settings at a **$0** budget. The manual `Governance`
+workflow requires repository enablement, `ENABLE_GITHUB_ACTIONS=true`, explicit
+`confirm_run` selection, read-only permission, and a bounded timeout. A named
+human can allocate one run and then set `ENABLE_GITHUB_ACTIONS=false` and
+disable Actions in repository settings to restore the resting state.
 
-The enabled package ecosystem and admitted branch grammar advance in the same
-reviewed change. Dependabot-triggered workflows use read-only repository
-permission and Dependabot-scoped secrets. Security updates may still target the
-default `main` branch, and an accepted repair is reconciled into `develop`.
-The branch-admission gate uses a dedicated, read-only `pull_request_target`
-workflow to read pull-request coordinates while executing the checker from the
-exact base commit in `.branch-policy-base`. Proposed head content enters the
-ordinary `pull_request` validation path and supplies only quoted branch and
-author coordinates to the base-controlled policy.
+The two reusable workflows are caller-owned contracts. They activate only
+through `workflow_call`, inherit the caller's event and budget decision, and
+currently have zero callers across the five-repository LIMS family. A future
+caller pins the governance commit and owns its repository setting, permissions,
+inputs, secrets, and evidence interpretation.
 
-The branch-policy workflow and checker become active after their reviewed
-versions exist on the default branch and each protected target branch. The
-introducing pull request continues under the previously released controls, and
-the accepted policy is merged forward before it governs later proposals.
+Dependency scheduling rests in `.github/dependabot.manual.yml`. A reviewed
+rename to the canonical `.github/dependabot.yml` activates the schedule.
+When active, dependency automation follows a bounded-caller posture: the full
+Dependabot or Renovate branch grammar, exact bot author, and `main` or `develop`
+target agree. Local tests, immutable action references, CODEOWNER review, and
+release evidence remain the substantive proof.
+
+The ruleset exports preserve human pull-request review and release protections
+with empty hosted required-check sets. Adding a hosted context later is an
+explicit replacement state with a stable context, funded execution path, and
+reviewed recovery route.
 
 The behavioral basis is maintained in GitHub's
 [Dependabot options reference](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference)
@@ -207,7 +211,7 @@ tolerances with numerator, denominator, threshold, window, and observed value.
 
 ## Review cadence
 
-- Pull request: schema, language, example, and policy validation.
+- Pull request: local schema, language, example, and policy validation.
 - Weekly: assumption aging and open divergence review.
 - Monthly: substantive receipt ledger review.
 - Release: cross-role governance approval and digest publication.

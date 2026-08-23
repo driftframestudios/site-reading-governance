@@ -157,7 +157,7 @@ class GovernancePackageTests(unittest.TestCase):
     def test_workflows_use_bounded_permissions_and_immutable_actions(self) -> None:
         self.assertEqual([], validation.validate_workflows())
 
-    def test_vale_author_feedback_is_pinned_advisory_and_pr_only(self) -> None:
+    def test_vale_author_feedback_is_pinned_advisory_and_human_cued(self) -> None:
         workflow = (
             ROOT / ".github" / "workflows" / "validate.yml"
         ).read_text(encoding="utf-8")
@@ -167,7 +167,7 @@ class GovernancePackageTests(unittest.TestCase):
         )[0]
         governance_job = workflow.split("\n  governance-validation:", 1)[1]
         self.assertIn(
-            "if: ${{ github.event_name == 'pull_request' }}",
+            "if: ${{ vars.ENABLE_GITHUB_ACTIONS == 'true' && inputs.confirm_run }}",
             author_job,
         )
         self.assertIn("continue-on-error: true", author_job)

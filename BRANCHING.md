@@ -49,9 +49,18 @@ connects each branch to intent.
 4. Tag the patch release.
 5. Reconcile the released commit into `develop` and active release branches.
 
-## Automated maintenance flow
+## Local proof and optional maintenance flow
 
-Automated dependency pull requests use a distinct, bounded coordinate contract.
+The dependency-free validator and regression suite are the standing proof path.
+GitHub Actions rests disabled in repository settings at a **$0** budget. The
+manual `Governance` proof becomes available only when a named human enables
+Actions, sets `ENABLE_GITHUB_ACTIONS=true`, selects `confirm_run`, and dispatches
+it. After the proof is read, set `ENABLE_GITHUB_ACTIONS=false` and disable
+Actions in repository settings to restore the resting state.
+
+Dependency scheduling rests in `.github/dependabot.manual.yml`. A reviewed
+rename to `.github/dependabot.yml` activates its schedule. When automation is
+active, dependency pull requests use a distinct, bounded coordinate contract.
 Admission requires three aligned facts:
 
 - the complete source branch matches the configured Dependabot or Renovate
@@ -59,29 +68,25 @@ Admission requires three aligned facts:
 - the pull-request author is the corresponding GitHub bot identity;
 - the target is `main` or `develop`.
 
-The current Dependabot configuration monitors GitHub Actions, so its admitted
-branch grammar begins with `dependabot/github_actions/`. A future package
-ecosystem extends the grammar and regression fixtures in the same reviewed
-change that enables that ecosystem. Renovate uses its default `renovate/`
-branch prefix and the hosted-app bot identity. A self-hosted Renovate caller
-adds its exact app identity through a reviewed policy change.
+The activation template currently names GitHub Actions, so its admitted branch
+grammar begins with `dependabot/github_actions/`. A future package ecosystem
+extends the template, grammar, and regression fixtures in the same reviewed
+change. Renovate uses its default `renovate/` branch prefix and hosted-app bot
+identity. A self-hosted Renovate caller adds its exact app identity through a
+reviewed policy change.
 
-GitHub security updates target the default branch. An accepted automation
-change on `main` is reconciled into `develop` so that the next release retains
-the dependency repair. Required checks, CODEOWNER review, immutable action
-references, and release evidence continue to apply to automated maintenance.
-Dependabot-triggered validation operates with a read-only GitHub token and
-Dependabot-scoped secrets. A dedicated read-only `pull_request_target` gate
-checks out the exact pull-request base commit into `.branch-policy-base` and
-executes its checker. Head content remains in the ordinary `pull_request`
-validation path, while the policy gate receives the head branch and author only
-as quoted event data. Automated changes continue through the same substantive
-tests and review gates as human-authored changes.
+An activated security update may target the default branch. Its standing proof
+is local validation plus human review, immutable action-reference inspection,
+and the ordinary release evidence. An accepted change on `main` is reconciled
+into `develop` so the next release retains the dependency repair. The
+repository-local branch checker remains available to reviewers, and CODEOWNER
+review continues to cover the activation template and workflow contracts.
 
-The gate begins governing later proposals after its reviewed workflow exists on
-the default branch and its checker exists on each target base. The introducing
-pull request uses the previously released branch controls; accepted changes are
-merged forward so `main` and `develop` expose the same admission contract.
+The ruleset exports preserve pull-request review, deletion, non-fast-forward,
+and release-signature protections while their hosted required-check sets remain
+empty. A later hosted check becomes part of branch policy only through a
+separate reviewed activation state with a stable context and a funded execution
+path.
 
 ## Compatibility policy
 

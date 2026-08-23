@@ -14,6 +14,42 @@ from tools import check_branch_flow
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def workflow_trigger_keys(workflow: str) -> set[str]:
+    """Read the exact top-level event keys from a conventionally formatted workflow."""
+    lines = workflow.splitlines()
+    start = lines.index("on:") + 1
+    triggers: set[str] = set()
+    for line in lines[start:]:
+        if line and not line.startswith(" "):
+            break
+        match = re.fullmatch(r"""  ["']?([A-Za-z0-9_-]+)["']?:.*""", line)
+        if match:
+            triggers.add(match.group(1))
+    return triggers
+
+
+def runner_job_blocks(workflow: str) -> dict[str, str]:
+    """Return each job block that allocates a runner."""
+    lines = workflow.splitlines()
+    start = lines.index("jobs:") + 1
+    job_starts = [
+        (index, match.group(1))
+        for index in range(start, len(lines))
+        if (match := re.fullmatch(r"  ([A-Za-z0-9_-]+):", lines[index]))
+    ]
+    blocks: dict[str, str] = {}
+    for position, (index, name) in enumerate(job_starts):
+        end = (
+            job_starts[position + 1][0]
+            if position + 1 < len(job_starts)
+            else len(lines)
+        )
+        block = "\n".join(lines[index:end])
+        if re.search(r"(?m)^    runs-on:", block):
+            blocks[name] = block
+    return blocks
+
+
 class BranchFlowAutomationTests(unittest.TestCase):
     def invoke(self, *, base: str, head: str, author: str) -> tuple[int, str]:
         output = StringIO()
@@ -107,8 +143,14 @@ class BranchFlowAutomationTests(unittest.TestCase):
         self.assertEqual(1, result)
         self.assertIn("outside the branch naming contract", output)
 
-    def test_dependabot_config_and_branch_grammar_share_ecosystems(self) -> None:
-        config = (ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
+    def test_dependency_activation_template_and_branch_grammar_share_ecosystems(
+        self,
+    ) -> None:
+        config = (ROOT / ".github" / "dependabot.manual.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertFalse((ROOT / ".github" / "dependabot.yml").exists())
+        self.assertIn("Activation template:", config)
         configured = {
             ecosystem.replace("-", "_")
             for ecosystem in re.findall(
@@ -120,38 +162,51 @@ class BranchFlowAutomationTests(unittest.TestCase):
         self.assertEqual(check_branch_flow.DEPENDABOT_BRANCH_ECOSYSTEMS, configured)
         self.assertNotIn("pull-request-branch-name:", config)
 
-    def test_branch_policy_executes_only_the_base_controlled_checker(self) -> None:
-        workflow = (
-            ROOT / ".github" / "workflows" / "branch-policy.yml"
-        ).read_text(encoding="utf-8")
-        self.assertIn("pull_request_target:", workflow)
-        self.assertIn(
-            "ref: ${{ github.event.pull_request.base.sha }}",
-            workflow,
+    def test_workflow_catalog_preserves_human_cued_activation(self) -> None:
+        workflow_directory = ROOT / ".github" / "workflows"
+        workflow_paths = sorted(
+            [*workflow_directory.glob("*.yml"), *workflow_directory.glob("*.yaml")]
         )
-        self.assertIn("path: .branch-policy-base", workflow)
-        self.assertIn("sparse-checkout: tools/check_branch_flow.py", workflow)
-        self.assertIn("sparse-checkout-cone-mode: false", workflow)
-        self.assertIn("working-directory: .branch-policy-base", workflow)
-        self.assertIn(
-            "PR_AUTHOR: ${{ github.event.pull_request.user.login }}",
-            workflow,
-        )
-        self.assertIn('--author "$PR_AUTHOR"', workflow)
-        self.assertEqual(1, workflow.count("actions/checkout@"))
-        self.assertNotIn("github.event.pull_request.head.sha", workflow)
+        expected_triggers = {
+            "validate.yml": {"workflow_dispatch"},
+            "reusable-contract-validation.yml": {"workflow_call"},
+            "reusable-governance-validation.yml": {"workflow_call"},
+        }
+        self.assertEqual(sorted(expected_triggers), [path.name for path in workflow_paths])
+        workflows = {
+            path.name: path.read_text(encoding="utf-8") for path in workflow_paths
+        }
+        for name, expected in expected_triggers.items():
+            with self.subTest(workflow=name):
+                self.assertEqual(expected, workflow_trigger_keys(workflows[name]))
 
-        for name in ("validate.yml", "reusable-governance-validation.yml"):
-            with self.subTest(head_validation_workflow=name):
-                head_validation = (
-                    ROOT / ".github" / "workflows" / name
-                ).read_text(encoding="utf-8")
-                self.assertNotIn("pull_request_target:", head_validation)
-                self.assertNotIn("PR_AUTHOR:", head_validation)
-                self.assertNotIn(
-                    "python3 tools/check_branch_flow.py",
-                    head_validation,
-                )
+        manual_proof = workflows["validate.yml"]
+        self.assertFalse(
+            (ROOT / ".github" / "workflows" / "branch-policy.yml").exists()
+        )
+        self.assertIn("permissions:\n  contents: read", manual_proof)
+        self.assertIn("confirm_run:", manual_proof)
+        self.assertIn("vars.ENABLE_GITHUB_ACTIONS == 'true'", manual_proof)
+        self.assertIn("inputs.confirm_run", manual_proof)
+        self.assertIn("timeout-minutes: 10", manual_proof)
+        jobs = runner_job_blocks(manual_proof)
+        self.assertTrue(jobs)
+        for name, block in jobs.items():
+            with self.subTest(job=name):
+                gate = re.search(r"(?m)^    if:\s*(.+)$", block)
+                self.assertIsNotNone(gate)
+                assert gate is not None
+                self.assertIn("vars.ENABLE_GITHUB_ACTIONS == 'true'", gate.group(1))
+                self.assertIn("inputs.confirm_run", gate.group(1))
+
+        for name in (
+            "reusable-governance-validation.yml",
+            "reusable-contract-validation.yml",
+        ):
+            with self.subTest(reusable_workflow=name):
+                reusable = workflows[name]
+                self.assertIn("permissions:\n  contents: read", reusable)
+                self.assertNotIn("python3 tools/check_branch_flow.py", reusable)
 
     def test_automation_grammar_rejects_noncanonical_segments(self) -> None:
         for head in (
