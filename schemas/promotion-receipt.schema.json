@@ -60,7 +60,8 @@
             "commit",
             "digest",
             "promoted_at",
-            "check_contexts",
+            "local_proof_receipt",
+            "hosted_check_contexts",
             "ruleset_receipt",
             "codeowner_resolution"
           ],
@@ -81,17 +82,20 @@
               "type": "string",
               "format": "date-time"
             },
-            "check_contexts": {
+            "local_proof_receipt": {
+              "$ref": "common.schema.json#/$defs/governedLocator"
+            },
+            "hosted_check_contexts": {
               "type": "array",
-              "minItems": 2,
               "uniqueItems": true,
               "items": {
                 "type": "string",
-                "enum": [
-                  "branch-policy",
-                  "governance-validation"
-                ]
+                "minLength": 1,
+                "maxLength": 200
               }
+            },
+            "hosted_automation_receipt": {
+              "$ref": "common.schema.json#/$defs/governedLocator"
             },
             "ruleset_receipt": {
               "$ref": "common.schema.json#/$defs/governedLocator"
@@ -99,7 +103,23 @@
             "codeowner_resolution": {
               "$ref": "common.schema.json#/$defs/governedLocator"
             }
-          }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "hosted_check_contexts": {
+                    "minItems": 1
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "hosted_automation_receipt"
+                ]
+              }
+            }
+          ]
         }
       ]
     },

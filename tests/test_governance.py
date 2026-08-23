@@ -103,7 +103,8 @@ class GovernancePackageTests(unittest.TestCase):
             "commit": commit,
             "digest": digest,
             "promoted_at": "2026-07-28T22:00:00Z",
-            "check_contexts": ["branch-policy", "governance-validation"],
+            "local_proof_receipt": "governed://local/governance-proof/2.0.1",
+            "hosted_check_contexts": [],
             "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
             "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
         }
@@ -121,6 +122,53 @@ class GovernancePackageTests(unittest.TestCase):
             [],
             validation._validate_repository_orientation_records(records),
         )
+
+        promotion["release_coordinate"]["hosted_check_contexts"] = [
+            "governance-validation"
+        ]
+        findings = validation._validate_repository_orientation_records(records)
+        self.assertTrue(
+            any("reviewed automation receipt" in finding.message for finding in findings),
+            findings,
+        )
+        promotion["release_coordinate"]["hosted_automation_receipt"] = (
+            "governed://github/actions/activation/governance-validation"
+        )
+        self.assertEqual(
+            [],
+            validation._validate_repository_orientation_records(records),
+        )
+
+    def test_hosted_promotion_context_requires_activation_receipt(self) -> None:
+        promotion = json.loads(
+            (ROOT / "promotion-receipt.json").read_text(encoding="utf-8")
+        )
+        promotion["promotion_state"] = "released"
+        promotion["evidence_mode"] = "observed"
+        promotion["assurance_stage"] = "verified"
+        promotion["release_coordinate"] = {
+            "tag": "governance-v2.0.1",
+            "commit": "a" * 40,
+            "digest": "sha256:" + ("b" * 64),
+            "promoted_at": "2026-07-28T22:00:00Z",
+            "local_proof_receipt": "governed://local/governance-proof/2.0.1",
+            "hosted_check_contexts": ["governance-validation"],
+            "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
+            "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
+        }
+        schema = validation.SchemaValidator(
+            ROOT / "schemas" / "promotion-receipt.schema.json"
+        )
+        findings = schema.validate(promotion)
+        self.assertTrue(
+            any("oneOf branches" in finding.message for finding in findings),
+            findings,
+        )
+
+        promotion["release_coordinate"]["hosted_automation_receipt"] = (
+            "governed://github/actions/activation/governance-validation"
+        )
+        self.assertEqual([], schema.validate(promotion))
 
     def test_candidate_promotion_schema_requires_zero_coordinates(self) -> None:
         promotion = json.loads(
@@ -154,10 +202,29 @@ class GovernancePackageTests(unittest.TestCase):
     def test_ruleset_exports_preserve_governed_flow(self) -> None:
         self.assertEqual([], validation.validate_rulesets())
 
+    def test_branch_rulesets_preserve_one_review_bundle(self) -> None:
+        expected = {
+            "required_approving_review_count": 1,
+            "dismiss_stale_reviews_on_push": True,
+            "require_code_owner_review": True,
+            "require_last_push_approval": True,
+            "required_review_thread_resolution": True,
+            "allowed_merge_methods": ["merge", "squash"],
+        }
+        for name in ("main.json", "develop.json", "release-hotfix.json"):
+            with self.subTest(ruleset=name):
+                ruleset = json.loads(
+                    (ROOT / "rulesets" / name).read_text(encoding="utf-8")
+                )
+                pull_request = next(
+                    rule for rule in ruleset["rules"] if rule["type"] == "pull_request"
+                )
+                self.assertEqual(expected, pull_request["parameters"])
+
     def test_workflows_use_bounded_permissions_and_immutable_actions(self) -> None:
         self.assertEqual([], validation.validate_workflows())
 
-    def test_vale_author_feedback_is_pinned_advisory_and_pr_only(self) -> None:
+    def test_vale_author_feedback_is_pinned_advisory_and_human_cued(self) -> None:
         workflow = (
             ROOT / ".github" / "workflows" / "validate.yml"
         ).read_text(encoding="utf-8")
@@ -167,7 +234,7 @@ class GovernancePackageTests(unittest.TestCase):
         )[0]
         governance_job = workflow.split("\n  governance-validation:", 1)[1]
         self.assertIn(
-            "if: ${{ github.event_name == 'pull_request' }}",
+            "if: ${{ vars.ENABLE_GITHUB_ACTIONS == 'true' && inputs.confirm_run }}",
             author_job,
         )
         self.assertIn("continue-on-error: true", author_job)

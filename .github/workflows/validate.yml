@@ -1,13 +1,13 @@
 name: Governance
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
-      - develop
-      - "release/**"
-      - "hotfix/**"
+  workflow_dispatch:
+    inputs:
+      confirm_run:
+        description: Confirm a human has allocated this remote proof
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -19,7 +19,7 @@ concurrency:
 jobs:
   author-feedback:
     name: author-feedback (advisory)
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ vars.ENABLE_GITHUB_ACTIONS == 'true' && inputs.confirm_run }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -48,6 +48,7 @@ jobs:
 
   governance-validation:
     name: governance-validation
+    if: ${{ vars.ENABLE_GITHUB_ACTIONS == 'true' && inputs.confirm_run }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:

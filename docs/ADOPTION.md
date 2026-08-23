@@ -6,13 +6,21 @@
 2. Land this package through an administratively reviewed bootstrap change.
 3. Create `develop` from the protected `main` baseline.
 4. Confirm every configured CODEOWNER resolves to an eligible repository reviewer.
-5. Run `Governance` once and record the emitted status-check context.
-6. Review and install the versioned ruleset exports.
+5. Run the local governance validator and regression suite.
+6. Review and install the versioned ruleset exports with an empty hosted-check
+   resting state.
 7. Create and sign canonical release `governance-v2.0.1`.
+
+GitHub Actions rests disabled in repository settings at a **$0** budget. A named
+human can allocate the manual `Governance` proof by enabling Actions, setting
+`ENABLE_GITHUB_ACTIONS=true`, selecting `confirm_run`, and dispatching it. The
+named human sets `ENABLE_GITHUB_ACTIONS=false` and disables Actions in
+repository settings after the receipt is read.
 
 ## Downstream contract workflow
 
-A constellation repository can call the pinned reusable workflow:
+A constellation repository can call the pinned reusable workflow after it
+chooses to own the remote event and budget:
 
 ```yaml
 jobs:
@@ -29,7 +37,11 @@ jobs:
 
 The fine-grained token carries read access to the governance repository. The
 workflow checks out both sources with credential persistence disabled and
-validates the downstream document using the standard-library validator.
+validates the downstream document using the standard-library validator. Both
+reusable workflows accept `workflow_call` only. At this revision the five LIMS
+repositories contain zero caller workflows, so these remain dormant contract
+surfaces. A future caller pins the governance commit and owns its trigger,
+Actions setting, permissions, secret, inputs, and receipt interpretation.
 
 ## Release coordinate
 
@@ -63,7 +75,13 @@ Capture:
 - exported policy digest;
 - installation actor and timestamp;
 - active aggregate-rule screenshot or API response;
-- emitted status-check context;
+- confirmation that branch rulesets contain no `required_status_checks` rule in
+  the $0 resting state;
 - CODEOWNER resolution and eligible-reviewer evidence;
 - signed release tag;
 - reviewer and accountable governance steward.
+
+A later hosted context enters through its own activation receipt: stable
+context name, caller or manual workflow, funded execution path, branch-policy
+effect, and return procedure. Its promotion record pairs every hosted context
+with that reviewed receipt.

@@ -11,7 +11,7 @@
 | Control Plane Profile v0.3 | Reference-ready | Cross-record semantic validation and failure-twin tests |
 | Simulated substantive closure | Reference-ready | Four-family future-reality manifest and executable-check contracts |
 | Reusable workflows | Reference-ready | Static contract tests |
-| Ruleset exports | Review-ready | Structural and status-context checks |
+| Ruleset exports | Review-ready | Structural and resting-state checks |
 | Language guidance | Reference-ready | Repository language check |
 
 ## Receipt boundary
@@ -35,15 +35,15 @@ Candidate release `2.0.1` moves through:
 1. repository initialization on `main`;
 2. `develop` creation from the baseline;
 3. `feature/constellation-foundation` review into `develop`;
-4. required governance validation on the release coordinate;
+4. complete local governance proof on the release coordinate;
 5. `release/2.0.1` review into `main`;
 6. `develop` synchronization to the released commit;
 7. downstream constellation pinning by commit and Git tree digest.
 
-The concrete promotion receipt records ruleset installation, resolvable
-CODEOWNER evidence, required checks, immutable coordinates, and signed-tag
-publication. Candidate placeholders remain visible until that observed receipt
-closes.
+The concrete promotion receipt records local proof, the explicit hosted-context
+posture, ruleset installation, resolvable CODEOWNER evidence, immutable
+coordinates, and signed-tag publication. Candidate placeholders remain visible
+until that observed receipt closes.
 
 ## Known extension points
 
