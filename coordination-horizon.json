@@ -36,7 +36,7 @@
       ],
       "completion_evidence": [
         "Spoof, malformed-coordinate, wrong-target, partial-coordinate, Dependabot, and Renovate regression tests pass.",
-        "Direct and reusable workflows bind the same pull-request author field.",
+        "The repository-local branch checker binds complete branch grammar, exact bot author, and governed target together.",
         "Dependency configuration and admitted ecosystem grammar advance together."
       ],
       "owner_role": "Repository automation steward",

@@ -103,7 +103,8 @@ class GovernancePackageTests(unittest.TestCase):
             "commit": commit,
             "digest": digest,
             "promoted_at": "2026-07-28T22:00:00Z",
-            "check_contexts": ["branch-policy", "governance-validation"],
+            "local_proof_receipt": "governed://local/governance-proof/2.0.1",
+            "hosted_check_contexts": [],
             "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
             "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
         }
@@ -121,6 +122,53 @@ class GovernancePackageTests(unittest.TestCase):
             [],
             validation._validate_repository_orientation_records(records),
         )
+
+        promotion["release_coordinate"]["hosted_check_contexts"] = [
+            "governance-validation"
+        ]
+        findings = validation._validate_repository_orientation_records(records)
+        self.assertTrue(
+            any("reviewed automation receipt" in finding.message for finding in findings),
+            findings,
+        )
+        promotion["release_coordinate"]["hosted_automation_receipt"] = (
+            "governed://github/actions/activation/governance-validation"
+        )
+        self.assertEqual(
+            [],
+            validation._validate_repository_orientation_records(records),
+        )
+
+    def test_hosted_promotion_context_requires_activation_receipt(self) -> None:
+        promotion = json.loads(
+            (ROOT / "promotion-receipt.json").read_text(encoding="utf-8")
+        )
+        promotion["promotion_state"] = "released"
+        promotion["evidence_mode"] = "observed"
+        promotion["assurance_stage"] = "verified"
+        promotion["release_coordinate"] = {
+            "tag": "governance-v2.0.1",
+            "commit": "a" * 40,
+            "digest": "sha256:" + ("b" * 64),
+            "promoted_at": "2026-07-28T22:00:00Z",
+            "local_proof_receipt": "governed://local/governance-proof/2.0.1",
+            "hosted_check_contexts": ["governance-validation"],
+            "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
+            "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
+        }
+        schema = validation.SchemaValidator(
+            ROOT / "schemas" / "promotion-receipt.schema.json"
+        )
+        findings = schema.validate(promotion)
+        self.assertTrue(
+            any("oneOf branches" in finding.message for finding in findings),
+            findings,
+        )
+
+        promotion["release_coordinate"]["hosted_automation_receipt"] = (
+            "governed://github/actions/activation/governance-validation"
+        )
+        self.assertEqual([], schema.validate(promotion))
 
     def test_candidate_promotion_schema_requires_zero_coordinates(self) -> None:
         promotion = json.loads(

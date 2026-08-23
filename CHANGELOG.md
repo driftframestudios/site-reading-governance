@@ -31,17 +31,22 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
   measurable qualification thresholds, and accountable recovery.
 - Prepared candidate `2.0.1` with a schema-valid repository-promotion receipt
   and an executable candidate-to-released lifecycle.
-- Required both `branch-policy` and `governance-validation` in versioned branch
-  rulesets and extended signature protection to release, hotfix, and support
-  branches.
+- Preserved pull-request review, deletion, non-fast-forward, CODEOWNER,
+  last-push, review-thread resolution, and applicable signature protections in
+  versioned rulesets while keeping hosted required-check sets empty for the
+  local-first **$0** resting state.
+- Recast repository-promotion evidence around a local proof receipt and an
+  explicit hosted-context list. A future non-empty hosted-context list carries
+  its own reviewed automation-activation receipt.
 - Bound reusable contract validation to the approved governance repository and
   a full immutable commit coordinate.
 - Standardized the governance release tag family as `governance-v<semver>`.
 - Bound Dependabot and Renovate branch exceptions to anchored grammars, exact
   bot authors, and governed targets; added spoof and malformed-coordinate
   regressions.
-- Isolated branch admission in a read-only `pull_request_target` workflow that
-  executes the checker from the exact base commit in a static checkout path.
+- Retired the `pull_request_target` branch-policy workflow and retained branch
+  admission as a reviewer-invoked local checker with regression coverage. The
+  manual governance proof remains a separately activated, human-cued route.
 - Grouped GitHub Action minor and patch updates while preserving separate major
   review coordinates.
 - Added root Machine Node, first-receipt, and Coordination Horizon records with

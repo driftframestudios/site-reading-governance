@@ -12,7 +12,8 @@
   },
   "release_coordinate": null,
   "required_evidence": [
-    "The protected release merge completes with every required check and review.",
+    "The local governance proof passes at the promoted source coordinate.",
+    "The protected release merge preserves the versioned history and human-review protections.",
     "The signed governance tag and content digest resolve to the promoted commit."
   ],
   "accountable_role": "Constellation release steward",

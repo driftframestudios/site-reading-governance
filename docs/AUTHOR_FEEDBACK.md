@@ -4,8 +4,9 @@
 
 Vale supplies structure-aware feedback while collaborators write and review
 governance material. It examines authored Markdown prose and Python comments.
-The deterministic language check in `tools/check_language.py` remains the
-blocking candidate-eligibility control in `governance-validation`.
+The deterministic language check in `tools/check_language.py` remains part of
+the standing local candidate proof. The manual `governance-validation` job
+exercises the same check after a separately reviewed activation.
 
 The separate `author-feedback` job is advisory. Its result stays outside the
 stable aggregate gate and outside repository promotion evidence.

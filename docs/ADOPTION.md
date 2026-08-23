@@ -81,6 +81,7 @@ Capture:
 - signed release tag;
 - reviewer and accountable governance steward.
 
-A later required hosted context receives its own activation receipt: stable
+A later hosted context enters through its own activation receipt: stable
 context name, caller or manual workflow, funded execution path, branch-policy
-effect, and return procedure.
+effect, and return procedure. Its promotion record pairs every hosted context
+with that reviewed receipt.

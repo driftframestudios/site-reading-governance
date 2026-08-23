@@ -12,7 +12,8 @@
   },
   "release_coordinate": null,
   "required_evidence": [
-    "The release branch reaches main through required branch-policy and governance-validation checks.",
+    "The local governance, language, secret-shape, and regression proofs pass at the promoted source coordinate.",
+    "The protected release merge preserves deletion and non-fast-forward protection, the configured approval count, CODEOWNER review, last-push approval, and review-thread resolution.",
     "The canonical governance tag resolves to the promoted commit and signed tag evidence.",
     "The installed aggregate ruleset and resolvable CODEOWNER evidence match the versioned policy.",
     "Downstream consumers bind the promoted commit and digest before applying the contracts."

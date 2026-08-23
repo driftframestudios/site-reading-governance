@@ -1564,6 +1564,26 @@ def _validate_repository_orientation_records(
                     "release evidence must equal Machine Node provenance",
                 )
             )
+        if isinstance(release_coordinate, dict):
+            if not release_coordinate.get("local_proof_receipt"):
+                findings.append(
+                    Finding(
+                        "promotion-receipt.json.release_coordinate.local_proof_receipt",
+                        "released provenance requires the local proof receipt",
+                    )
+                )
+            hosted_contexts = release_coordinate.get("hosted_check_contexts")
+            if (
+                isinstance(hosted_contexts, list)
+                and hosted_contexts
+                and not release_coordinate.get("hosted_automation_receipt")
+            ):
+                findings.append(
+                    Finding(
+                        "promotion-receipt.json.release_coordinate.hosted_automation_receipt",
+                        "hosted proof contexts require a reviewed automation receipt",
+                    )
+                )
         promotion_items = [
             item
             for item in work_items
