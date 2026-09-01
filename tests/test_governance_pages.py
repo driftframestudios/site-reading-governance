@@ -168,6 +168,35 @@ class GovernancePagesTests(unittest.TestCase):
                 f"https://github.com/{pages.REPOSITORY}.git",
             )
 
+            run_git(
+                source,
+                "remote",
+                "set-url",
+                "--add",
+                "origin",
+                "https://github.com/example/secondary-wrong.git",
+            )
+            with self.assertRaisesRegex(pages.PagesBuildError, "origin differs"):
+                pages.load_source_proof(proof_path, source)
+            run_git(source, "config", "--unset-all", "remote.origin.url")
+            run_git(
+                source,
+                "config",
+                "--add",
+                "remote.origin.url",
+                f"https://github.com/{pages.REPOSITORY}.git",
+            )
+
+            source_alias = temporary_root / "source-alias"
+            source_alias.symlink_to(source, target_is_directory=True)
+            with self.assertRaisesRegex(pages.PagesBuildError, "symbolic-link"):
+                pages.load_source_proof(proof_path, source_alias)
+
+            proof_alias = temporary_root / "proof-alias.json"
+            proof_alias.symlink_to(proof_path)
+            with self.assertRaisesRegex(pages.PagesBuildError, "symbolic-link"):
+                pages.load_source_proof(proof_alias, source)
+
             with mock.patch.dict(
                 os.environ,
                 {
@@ -224,6 +253,56 @@ class GovernancePagesTests(unittest.TestCase):
                 run_git(source, "status", "--porcelain=v1", "--untracked-files=all"),
             )
             with self.assertRaisesRegex(pages.PagesBuildError, "index flags mask"):
+                pages.load_source_proof(proof_path, source)
+
+    def test_clean_source_proof_ignores_local_replace_refs(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            temporary_root = Path(temporary)
+            source = temporary_root / "source"
+            source.mkdir()
+            shutil.copytree(ROOT / "schemas", source / "schemas")
+            shutil.copy2(ROOT / "GOVERNANCE.md", source / "GOVERNANCE.md")
+            for arguments in (
+                ("init", "--initial-branch=develop"),
+                ("config", "user.name", "Governance Fixture"),
+                ("config", "user.email", "governance@example.invalid"),
+                ("config", "commit.gpgSign", "false"),
+                (
+                    "remote",
+                    "add",
+                    "origin",
+                    f"https://github.com/{pages.REPOSITORY}.git",
+                ),
+                ("add", "--all"),
+                ("commit", "--no-gpg-sign", "-m", "Create accepted source"),
+            ):
+                run_git(source, *arguments)
+            accepted_revision = run_git(source, "rev-parse", "HEAD")
+
+            governance = source / "GOVERNANCE.md"
+            governance.write_text("replacement source\n", encoding="utf-8")
+            run_git(source, "add", "GOVERNANCE.md")
+            run_git(
+                source,
+                "commit",
+                "--no-gpg-sign",
+                "-m",
+                "Create replacement source",
+            )
+            replacement_revision = run_git(source, "rev-parse", "HEAD")
+            run_git(source, "reset", "--soft", accepted_revision)
+            run_git(source, "replace", accepted_revision, replacement_revision)
+
+            self.assertEqual(
+                "",
+                run_git(source, "status", "--porcelain=v1", "--untracked-files=all"),
+            )
+            proof_path = temporary_root / "proof.json"
+            write_json(
+                proof_path,
+                fixture_proof(sourceRevision=accepted_revision, standing="clean"),
+            )
+            with self.assertRaisesRegex(pages.PagesBuildError, "zero changes"):
                 pages.load_source_proof(proof_path, source)
 
     def test_two_isolated_builds_are_byte_identical(self) -> None:
@@ -497,13 +576,37 @@ class GovernancePagesTests(unittest.TestCase):
 
     def test_output_path_must_be_new_and_outside_the_source_worktree(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            output = Path(temporary) / "site"
+            parent = Path(temporary)
+            output = parent / "site"
             output.mkdir()
             with self.assertRaisesRegex(pages.PagesBuildError, "already exists"):
                 pages.build_site(
                     ROOT,
                     FIXTURE_PROOF,
                     output,
+                    allow_fixture_standing=True,
+                )
+
+            valid, _ = self.build_fixture(parent, "valid")
+            validation_alias = parent / "validation-alias"
+            validation_alias.symlink_to(valid, target_is_directory=True)
+            with self.assertRaisesRegex(pages.PagesBuildError, "symbolic-link"):
+                pages.validate_site(
+                    validation_alias,
+                    ROOT,
+                    FIXTURE_PROOF,
+                    allow_fixture_standing=True,
+                )
+
+            build_parent = parent / "build-parent"
+            build_parent.mkdir()
+            build_parent_alias = parent / "build-parent-alias"
+            build_parent_alias.symlink_to(build_parent, target_is_directory=True)
+            with self.assertRaisesRegex(pages.PagesBuildError, "symbolic-link"):
+                pages.build_site(
+                    ROOT,
+                    FIXTURE_PROOF,
+                    build_parent_alias / "site",
                     allow_fixture_standing=True,
                 )
         with self.assertRaisesRegex(pages.PagesBuildError, "outside"):

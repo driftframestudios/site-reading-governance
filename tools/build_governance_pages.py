@@ -197,6 +197,7 @@ def _git_environment() -> dict[str, str]:
         {
             "GIT_CONFIG_GLOBAL": os.devnull,
             "GIT_CONFIG_NOSYSTEM": "1",
+            "GIT_NO_REPLACE_OBJECTS": "1",
             "GIT_OPTIONAL_LOCKS": "0",
             "LC_ALL": "C",
         }
@@ -259,8 +260,22 @@ def _verify_repository_remote(source_root: Path) -> None:
         for line in _run_git(source_root, "remote", "get-url", "--all", "origin").splitlines()
         if line.strip()
     }
-    if not remotes.intersection(expected):
+    if not remotes or not remotes.issubset(expected):
         raise PagesBuildError("source origin differs from the repository named by the proof")
+
+
+def _reject_symlink_components(path: Path, label: str) -> Path:
+    requested = Path(os.path.abspath(path))
+    for candidate in (requested, *requested.parents):
+        if not candidate.is_symlink():
+            continue
+        root_level_system_alias = (
+            candidate.parent == Path(candidate.anchor)
+            and getattr(candidate.lstat(), "st_uid", None) == 0
+        )
+        if not root_level_system_alias:
+            raise PagesBuildError(f"{label} rejects symbolic-link path components")
+    return requested
 
 
 def _head_blob_records(source_root: Path, revision: str) -> list[tuple[str, str, int]]:
@@ -408,6 +423,8 @@ def load_source_proof(
     allow_fixture_standing: bool = False,
 ) -> SourceProof:
     """Validate one structured release proof and its source-worktree standing."""
+    proof_path = _reject_symlink_components(proof_path, "source proof")
+    source_root = _reject_symlink_components(source_root, "source root")
     raw = load_json(proof_path)
     if not isinstance(raw, dict):
         raise PagesBuildError("source proof must be one JSON object")
@@ -1302,8 +1319,9 @@ def validate_site(
     allow_fixture_standing: bool = False,
 ) -> dict[str, Any]:
     """Verify manifest authority, copied bytes, metadata, links, and digests."""
-    output_root = output_root.resolve()
-    source_root = source_root.resolve()
+    output_root = _reject_symlink_components(output_root, "artifact root").resolve()
+    source_root = _reject_symlink_components(source_root, "source root").resolve()
+    proof_path = _reject_symlink_components(proof_path, "source proof")
     proof = load_source_proof(
         proof_path,
         source_root,
@@ -1432,8 +1450,9 @@ def build_site(
     allow_fixture_standing: bool = False,
 ) -> dict[str, Any]:
     """Build one new artifact directory and verify it before handoff."""
-    source_root = source_root.resolve()
-    output_root = output_root.resolve()
+    source_root = _reject_symlink_components(source_root, "source root").resolve()
+    proof_path = _reject_symlink_components(proof_path, "source proof")
+    output_root = _reject_symlink_components(output_root, "artifact output").resolve()
     if output_root.exists():
         raise PagesBuildError("output directory already exists; select a new artifact path")
     if output_root == source_root or output_root.is_relative_to(source_root):
