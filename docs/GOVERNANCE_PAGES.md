@@ -88,15 +88,19 @@ diff -qr /tmp/governance-pages-first /tmp/governance-pages-second
 
 `make check` includes the builder behavior suite. That suite runs both isolated
 builds, material mutation probes, exact schema-byte checks, manifest checks,
-relative-link checks, and the generated-artifact secret-shape path.
+exact public-skill checks, relative-link checks, and the generated-artifact
+secret-shape path.
 
 ## Artifact contract
 
 The generated directory contains:
 
-- `index.html`, `guidance/index.html`, and two progressively deeper schema
-  discovery pages;
+- `index.html`, `guidance/index.html`, two progressively deeper schema
+  discovery pages, and two collaboration-guide pages;
 - `schemas/v2.0/*.schema.json`, copied byte for byte from the accepted source;
+- `skills/governance-schema-release-lineage/SKILL.md`, copied byte for byte
+  from the one repository skill whose front matter declares
+  `source_band: public_ready`;
 - `assets/site.css`, with responsive, keyboard-visible, reduced-motion, and
   forced-color behavior;
 - `.nojekyll`;
@@ -112,9 +116,15 @@ two evaluation-data markers in their required order, a calm data-use
 explanation, and the approved visible attribution footer projected from the
 source-owned constant.
 
-This repository currently contains no public-ready repository skill package,
-so the artifact has no skill catalog. Internal and public-possible working
-instructions remain with their existing controlled owners.
+The skill catalog contains exactly
+`.agents/skills/governance-schema-release-lineage/SKILL.md`. Its checked front
+matter records the public-ready identity, skill version, and operator-blind
+lineage key. The key preserves recoverable identity while the exact gated
+coordinate stays with its authorized resolver. The
+artifact carries the complete Markdown source and an ordinary HTML reading
+surface. Other working instructions retain their existing collaboration
+boundaries and stay outside this public projection until a reviewed source
+change qualifies them.
 
 ## Authority and evidence
 
@@ -135,6 +145,9 @@ The deterministic manifest keeps these jobs distinct:
   roles;
 - `schemas` records each identifier, source path and URL, output path, byte
   length, and SHA-256 digest;
+- `skills` records the one accepted public skill's identity, source and output
+  paths, source URL, bytes, SHA-256 digest, version, adaptation relation, and
+  locator-safe lineage key;
 - `publication` records every HTML page, every canonical page when an HTTPS
   origin is supplied, and the optional matching CNAME; and
 - `inventory` records every generated file's bytes and SHA-256 digest except

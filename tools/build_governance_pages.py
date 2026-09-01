@@ -56,7 +56,28 @@ HTML_PATHS = (
     "index.html",
     "schemas/index.html",
     "schemas/v2.0/index.html",
+    "skills/governance-schema-release-lineage/index.html",
+    "skills/index.html",
 )
+PUBLIC_SKILL_SLUG = "governance-schema-release-lineage"
+PUBLIC_SKILL_SOURCE_PATH = (
+    f".agents/skills/{PUBLIC_SKILL_SLUG}/SKILL.md"
+)
+PUBLIC_SKILL_PAGE_PATH = f"skills/{PUBLIC_SKILL_SLUG}/index.html"
+PUBLIC_SKILL_OUTPUT_PATH = f"skills/{PUBLIC_SKILL_SLUG}/SKILL.md"
+PUBLIC_SKILL_METADATA = {
+    "adaptation_relation": "repository_local_derivative",
+    "description": (
+        "Traces one Site Reading Governance schema from tracked source through "
+        "an accepted release coordinate to its byte-identical Pages retrieval "
+        "copy. Applies when schema meaning, release identity, public projection, "
+        "or downstream use needs a verifiable source and receiver."
+    ),
+    "name": PUBLIC_SKILL_SLUG,
+    "skill_version": "0.1.0",
+    "source_band": "public_ready",
+    "lineage_key": "lims-src-006",
+}
 PROOF_FIELDS = {
     "contractVersion",
     "releaseAuthority",
@@ -75,6 +96,7 @@ MANIFEST_FIELDS = {
     "publication",
     "release",
     "schemas",
+    "skills",
     "source",
 }
 SHA_PATTERN = re.compile(r"^[0-9a-f]{40}$")
@@ -85,6 +107,7 @@ CNAME_PATTERN = re.compile(
 CATALOG_ROW = re.compile(
     r"^\|\s*`(?P<name>[^`]+\.schema\.json)`\s*\|\s*(?P<description>.*?)\s*\|\s*$"
 )
+MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\((?P<target>[^)]+)\)")
 
 
 class PagesBuildError(ValueError):
@@ -128,6 +151,38 @@ class SchemaRecord:
             "sourcePath": self.source_path,
             "sourceUrl": self.source_url,
             "title": self.title,
+        }
+
+
+@dataclass(frozen=True)
+class SkillRecord:
+    slug: str
+    name: str
+    description: str
+    version: str
+    source_path: str
+    output_path: str
+    page_path: str
+    byte_length: int
+    digest: str
+    source_url: str
+    lineage_key: str
+    adaptation_relation: str
+    content: str
+
+    def manifest_record(self) -> dict[str, Any]:
+        return {
+            "adaptationRelation": self.adaptation_relation,
+            "bytes": self.byte_length,
+            "description": self.description,
+            "lineageKey": self.lineage_key,
+            "name": self.name,
+            "outputPath": self.output_path,
+            "pagePath": self.page_path,
+            "sha256": self.digest,
+            "skillVersion": self.version,
+            "sourcePath": self.source_path,
+            "sourceUrl": self.source_url,
         }
 
 
@@ -495,6 +550,99 @@ def source_url(revision: str, path: str | None = None) -> str:
     return f"{REPOSITORY_URL}/blob/{revision}/{encoded}"
 
 
+def parse_skill_source(path: Path) -> tuple[dict[str, str], str]:
+    """Read one repository skill with flat, duplicate-free front matter."""
+    try:
+        content = path.read_bytes().decode("utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise PagesBuildError(f"{path} must be readable UTF-8") from exc
+    lines = content.splitlines()
+    if not lines or lines[0] != "---":
+        raise PagesBuildError(f"{path} requires skill front matter")
+    try:
+        boundary = lines.index("---", 1)
+    except ValueError as exc:
+        raise PagesBuildError(f"{path} requires a closing front-matter boundary") from exc
+    metadata: dict[str, str] = {}
+    for line in lines[1:boundary]:
+        if not line.strip() or ":" not in line:
+            raise PagesBuildError(f"{path} requires flat string front matter")
+        key, value = line.split(":", 1)
+        key = key.strip()
+        value = value.strip()
+        if not key or not value:
+            raise PagesBuildError(f"{path} requires non-empty skill metadata")
+        if key in metadata:
+            raise PagesBuildError(f"{path} repeats skill metadata {key!r}")
+        metadata[key] = value
+    if not any(line.strip() for line in lines[boundary + 1 :]):
+        raise PagesBuildError(f"{path} requires an instruction body")
+    return metadata, content
+
+
+def markdown_relative_targets(content: str) -> tuple[str, ...]:
+    """Return relative file targets carried by one Markdown source."""
+    targets: set[str] = set()
+    for match in MARKDOWN_LINK.finditer(content):
+        target = match.group("target").strip()
+        parts = urlsplit(target)
+        if parts.scheme or parts.netloc or not parts.path:
+            continue
+        targets.add(parts.path)
+    return tuple(sorted(targets))
+
+
+def collect_public_skills(source_root: Path, proof: SourceProof) -> list[SkillRecord]:
+    """Collect the exact repository-local skill set accepted for publication."""
+    skills_root = source_root / ".agents" / "skills"
+    skill_paths = sorted(skills_root.glob("*/SKILL.md"))
+    public_metadata: list[tuple[Path, dict[str, str], str]] = []
+    for path in skill_paths:
+        _reject_symlink_components(path, "skill source")
+        metadata, content = parse_skill_source(path)
+        if metadata.get("source_band") == "public_ready":
+            public_metadata.append((path, metadata, content))
+
+    expected_path = source_root / PUBLIC_SKILL_SOURCE_PATH
+    if [path for path, _, _ in public_metadata] != [expected_path]:
+        observed = [
+            path.relative_to(source_root).as_posix()
+            for path, _, _ in public_metadata
+        ]
+        raise PagesBuildError(
+            "public-ready skill inventory differs from the accepted repository set; "
+            f"observed={observed}"
+        )
+
+    path, metadata, content = public_metadata[0]
+    if metadata != PUBLIC_SKILL_METADATA:
+        raise PagesBuildError(
+            "public-ready skill identity or upstream lineage differs from the accepted contract"
+        )
+    if markdown_relative_targets(content):
+        raise PagesBuildError(
+            "public-ready skill contains a relative Markdown link without a published receiver"
+        )
+    content_bytes = path.read_bytes()
+    return [
+        SkillRecord(
+            slug=PUBLIC_SKILL_SLUG,
+            name=metadata["name"],
+            description=metadata["description"],
+            version=metadata["skill_version"],
+            source_path=PUBLIC_SKILL_SOURCE_PATH,
+            output_path=PUBLIC_SKILL_OUTPUT_PATH,
+            page_path=PUBLIC_SKILL_PAGE_PATH,
+            byte_length=len(content_bytes),
+            digest=sha256_bytes(content_bytes),
+            source_url=source_url(proof.source_revision, PUBLIC_SKILL_SOURCE_PATH),
+            lineage_key=metadata["lineage_key"],
+            adaptation_relation=metadata["adaptation_relation"],
+            content=content,
+        )
+    ]
+
+
 def _catalog_descriptions(source_root: Path) -> dict[str, str]:
     catalog_path = source_root / "schemas" / "README.md"
     try:
@@ -662,6 +810,7 @@ def _navigation(prefix: str, current: str) -> str:
         ("home", "Overview", f"{prefix}index.html"),
         ("guidance", "Use and authority", f"{prefix}guidance/index.html"),
         ("schemas", "Schema catalog", f"{prefix}schemas/index.html"),
+        ("skills", "Collaboration guide", f"{prefix}skills/index.html"),
         ("manifest", "Manifest", f"{prefix}manifest.json"),
     )
     rendered: list[str] = []
@@ -734,10 +883,15 @@ def _release_coordinate(proof: SourceProof) -> str:
 def render_pages(
     proof: SourceProof,
     schemas: Sequence[SchemaRecord],
+    skills: Sequence[SkillRecord],
     canonical_origin: str | None,
 ) -> dict[str, str]:
+    if len(skills) != 1:
+        raise PagesBuildError("the accepted Pages source requires one public-ready skill")
+    skill = skills[0]
     governance_link = source_url(proof.source_revision, "GOVERNANCE.md")
     catalog_link = source_url(proof.source_revision, "schemas/README.md")
+    promotion_link = source_url(proof.source_revision, "promotion-receipt.json")
     release_source = source_url(proof.source_revision)
 
     index_body = f"""
@@ -766,6 +920,7 @@ def render_pages(
     <section aria-labelledby="source-heading">
       <h2 id="source-heading">Source you can inspect</h2>
       <p>The release contains {len(schemas)} schemas. The <a href="{catalog_link}">source catalog</a>, <a href="{release_source}">accepted source tree</a>, and <a href="manifest.json">deterministic manifest</a> preserve the route back to the exact revision.</p>
+      <p>The <a href="skills/index.html">repository collaboration guide</a> shows how to follow one schema across these source, release, and retrieval roles.</p>
     </section>
 """
 
@@ -854,6 +1009,56 @@ def render_pages(
     </section>
 """
 
+    skills_body = f"""
+    <section class="hero hero--compact">
+      <p class="eyebrow">Public-ready repository skill</p>
+      <h1>Follow a schema from source to retrieval</h1>
+      <p class="lede">This repository-local guide keeps schema meaning, release acceptance, byte-identical projection, hosted delivery, and downstream use visible as distinct facts.</p>
+      {_release_coordinate(proof)}
+    </section>
+    <section aria-labelledby="skill-heading">
+      <h2 id="skill-heading">One focused collaboration guide</h2>
+      <article class="release-card">
+        <div><p class="eyebrow">Version {html.escape(skill.version)}</p><h3>{html.escape(skill.name)}</h3><p>{html.escape(skill.description)}</p></div>
+        <a class="button" href="{html.escape(skill.slug)}/index.html">Open the guide</a>
+      </article>
+    </section>
+    <section class="authority-callout" aria-labelledby="skill-authority-heading">
+      <div><p class="eyebrow">Source and use</p><h2 id="skill-authority-heading">A method supports the map</h2></div>
+      <p>The guide helps a collaborator trace one material object. The tracked schema and governance source retain their authority, and each release, projection, delivery, and acceptance signal keeps its own evidence role.</p>
+    </section>
+"""
+
+    skill_body = f"""
+    <section class="hero hero--compact">
+      <p class="eyebrow">Repository skill · {html.escape(skill.version)}</p>
+      <h1>{html.escape(skill.name)}</h1>
+      <p class="lede">{html.escape(skill.description)}</p>
+      {_release_coordinate(proof)}
+      <div class="actions">
+        <a class="button" href="SKILL.md">Open the exact skill source</a>
+        <a class="button button--quiet" href="{html.escape(skill.source_url)}">Inspect the tracked source</a>
+      </div>
+    </section>
+    <section aria-labelledby="lineage-skill-heading">
+      <h2 id="lineage-skill-heading">Transfer lineage</h2>
+      <p>This repository-local derivative narrows a shared source-authority method to Governance schema release and retrieval. Public lineage key <code>{html.escape(skill.lineage_key)}</code> identifies the selected method within an authorized resolver. Exact gated lineage remains recoverable through that resolver.</p>
+    </section>
+    <section aria-labelledby="skill-companions-heading">
+      <h2 id="skill-companions-heading">Use it with the accepted sources</h2>
+      <ul class="prose-list">
+        <li><a href="../../schemas/v2.0/index.html">Choose a versioned schema</a> and retain its stable identifier.</li>
+        <li><a href="../../guidance/index.html">Read the use and authority guide</a> for the schema's evidence boundary.</li>
+        <li><a href="../../manifest.json">Inspect the artifact manifest</a> for exact source, output, byte, and digest records.</li>
+        <li><a href="{html.escape(promotion_link)}">Inspect the tracked promotion receipt</a> when release standing affects the map.</li>
+      </ul>
+    </section>
+    <section aria-labelledby="skill-source-heading">
+      <div class="section-heading"><div><p class="eyebrow">Source-faithful projection</p><h2 id="skill-source-heading">Complete instruction source</h2></div><a href="SKILL.md">Download Markdown</a></div>
+      <pre class="skill-source"><code>{html.escape(skill.content)}</code></pre>
+    </section>
+"""
+
     content = {
         "index.html": _page(
             title="Site Reading Governance 2.0.1",
@@ -890,6 +1095,24 @@ def render_pages(
             prefix="../../",
             current="schemas",
             body=catalog_body,
+        ),
+        "skills/index.html": _page(
+            title="Collaboration guide · Site Reading Governance",
+            description="Public-ready repository guidance for tracing Governance schema release and retrieval lineage.",
+            stylesheet="../assets/site.css",
+            canonical=canonical_url(canonical_origin, "skills/index.html"),
+            prefix="../",
+            current="skills",
+            body=skills_body,
+        ),
+        skill.page_path: _page(
+            title=f"{skill.name} · Site Reading Governance",
+            description=skill.description,
+            stylesheet="../../assets/site.css",
+            canonical=canonical_url(canonical_origin, skill.page_path),
+            prefix="../../",
+            current="skills",
+            body=skill_body,
         ),
     }
     if tuple(sorted(content)) != HTML_PATHS:
@@ -1027,6 +1250,18 @@ tbody th { min-width: 14rem; }
 .note { max-width: 55rem; padding: clamp(1rem, 3vw, 2rem); }
 .note h2 { margin-top: 0; font-size: 1.6rem; }
 
+.skill-source {
+  max-height: 48rem;
+  overflow: auto;
+  padding: clamp(1rem, 3vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: .45rem;
+  background: var(--surface);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.skill-source code { font-size: .82rem; }
+
 .site-footer { margin-top: clamp(4rem, 8vw, 8rem); padding: 2rem max(1rem, calc((100% - var(--max)) / 2)); color: #eaf2ec; background: var(--forest-deep); }
 .visitor-boundary { padding-bottom: 1.2rem; border-bottom: 1px solid rgba(255, 255, 255, .35); }
 .visitor-boundary__context { color: #cfddd4; }
@@ -1112,6 +1347,7 @@ def _manifest(
     root: Path,
     proof: SourceProof,
     schemas: Sequence[SchemaRecord],
+    skills: Sequence[SkillRecord],
     canonical_origin: str | None,
     cname: str | None,
 ) -> dict[str, Any]:
@@ -1155,6 +1391,7 @@ def _manifest(
             "version": proof.release_version,
         },
         "schemas": [schema.manifest_record() for schema in schemas],
+        "skills": [skill.manifest_record() for skill in skills],
         "source": {
             "repository": proof.repository,
             "sourceRevision": proof.source_revision,
@@ -1391,6 +1628,7 @@ def validate_site(
             raise PagesBuildError("artifact CNAME differs from the canonical hostname")
 
     schemas = collect_schemas(source_root, proof)
+    skills = collect_public_skills(source_root, proof)
     if manifest.get("schemas") != [schema.manifest_record() for schema in schemas]:
         raise PagesBuildError("manifest schema records differ from accepted source")
     for schema in schemas:
@@ -1398,6 +1636,15 @@ def validate_site(
         output_bytes = (output_root / schema.output_path).read_bytes()
         if output_bytes != source_bytes:
             raise PagesBuildError(f"published schema bytes differ for {schema.output_path}")
+    if manifest.get("skills") != [skill.manifest_record() for skill in skills]:
+        raise PagesBuildError("manifest skill inventory differs from accepted source")
+    for skill in skills:
+        source_bytes = (source_root / skill.source_path).read_bytes()
+        output_bytes = (output_root / skill.output_path).read_bytes()
+        if output_bytes != source_bytes:
+            raise PagesBuildError(
+                f"published skill bytes differ for {skill.output_path}"
+            )
 
     actual_inventory = inventory_records(output_root)
     inventory = manifest.get("inventory")
@@ -1428,8 +1675,14 @@ def validate_site(
     actual_html = tuple(sorted(path for path in actual_files if path.endswith(".html")))
     if actual_html != HTML_PATHS:
         raise PagesBuildError("artifact HTML inventory differs from the publication contract")
-    if any(path.startswith("skills/") for path in actual_files):
-        raise PagesBuildError("artifact contains an unqualified repository skill catalog")
+    expected_skill_paths = {"skills/index.html"}
+    for skill in skills:
+        expected_skill_paths.update({skill.page_path, skill.output_path})
+    actual_skill_paths = {
+        path for path in actual_files if path.startswith("skills/")
+    }
+    if actual_skill_paths != expected_skill_paths:
+        raise PagesBuildError("artifact skill paths differ from the accepted public set")
     for record in expected_html:
         _validate_html_page(
             output_root,
@@ -1467,6 +1720,7 @@ def build_site(
     origin = normalize_canonical_origin(canonical_origin)
     normalized_cname = normalize_cname(cname, origin)
     schemas = collect_schemas(source_root, proof)
+    skills = collect_public_skills(source_root, proof)
 
     output_root.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(
@@ -1475,16 +1729,27 @@ def build_site(
         staging = Path(temporary)
         (staging / ".nojekyll").write_bytes(b"")
         _write_text(staging / "assets" / "site.css", SITE_CSS)
-        pages = render_pages(proof, schemas, origin)
+        pages = render_pages(proof, schemas, skills, origin)
         for relative_path, content in pages.items():
             _write_text(staging / relative_path, content)
         for schema in schemas:
             destination = staging / schema.output_path
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source_root / schema.source_path, destination)
+        for skill in skills:
+            destination = staging / skill.output_path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source_root / skill.source_path, destination)
         if normalized_cname is not None:
             _write_text(staging / "CNAME", f"{normalized_cname}\n")
-        manifest = _manifest(staging, proof, schemas, origin, normalized_cname)
+        manifest = _manifest(
+            staging,
+            proof,
+            schemas,
+            skills,
+            origin,
+            normalized_cname,
+        )
         _write_json(staging / "manifest.json", manifest)
         validate_site(
             staging,
