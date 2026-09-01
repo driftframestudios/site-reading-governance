@@ -9,7 +9,7 @@
 4. Confirm every configured CODEOWNER resolves to an eligible repository reviewer.
 5. Run the local governance validator and regression suite.
 6. Review and install the `main` promotion and release-tag ruleset exports.
-7. Create and sign canonical release `governance-v2.0.1`.
+7. Create and sign canonical release `governance-v2.1.0`.
 
 An approved **100–300 monthly runner-minute** allocation supports the small
 pull-request proof. A named receiver can allocate the manual `Governance` proof
@@ -50,7 +50,7 @@ Each consumer records:
 
 ```json
 {
-  "tag": "governance-v2.0.1",
+  "tag": "governance-v2.1.0",
   "commit_oid": "0123456789abcdef0123456789abcdef01234567",
   "archive_format": "git-tar",
   "archive_digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"

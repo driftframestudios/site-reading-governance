@@ -39,7 +39,7 @@ EXAMPLE_DIR = ROOT / "examples"
 RULESET_DIR = ROOT / "rulesets"
 WORKFLOW_DIR = ROOT / ".github" / "workflows"
 DRAFT = "https://json-schema.org/draft/2020-12/schema"
-SCHEMA_RELEASE = "2.0.1"
+SCHEMA_RELEASE = "2.1.0"
 SCHEMA_ID_PREFIX = "https://schemas.driftframe.org/site-reading-governance/v2.0/"
 SCHEMA_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9-]*\.schema\.json$")
 DOCUMENT_PATH_PATTERN = re.compile(
@@ -1491,11 +1491,11 @@ def _validate_repository_orientation_records(
                 "promotion receipt must use the governed repository receipt identity",
             )
         )
-    if promotion_receipt.get("target_release") != "governance-v2.0.1":
+    if promotion_receipt.get("target_release") != "governance-v2.1.0":
         findings.append(
             Finding(
                 "promotion-receipt.json.target_release",
-                "promotion receipt must bind the canonical governance-v2.0.1 tag",
+                "promotion receipt must bind the canonical governance-v2.1.0 tag",
             )
         )
 

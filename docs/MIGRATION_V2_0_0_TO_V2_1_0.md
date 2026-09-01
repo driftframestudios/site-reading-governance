@@ -1,13 +1,29 @@
-# Migration from 2.0.0 to 2.0.1
+# Migration from 2.0.0 to 2.1.0
 
-Schema release `2.0.1` retains the stable `/v2.0/` identifier coordinate and
-adds an executable repository-promotion record. Existing domain contracts retain
-their behavior.
+Schema release `2.1.0` retains the stable `/v2.0/` identifier family and adds
+backward-compatible contract capabilities. Existing 2.0.0 contract files keep
+their identifiers and document behavior. Consumers can adopt the new families
+when their work needs them.
+
+## Added contract families
+
+- `promotion-receipt` separates a release candidate from the later observation
+  of its accepted tag, commit, and archive bytes.
+- `language-control` binds a desired state, protected boundary, replacement
+  behavior, verification, and accountable ownership.
+- `data-contract`, `database-refactor-finding`, `database-migration-plan`,
+  `database-migration-receipt`, `data-reconciliation`, and
+  `database-release-manifest` form an additive database-change evidence chain.
+
+The release also adds deterministic language assurance, bounded pull-request
+automation, and a reproducible Governance Pages builder. These repository
+capabilities support the contracts without changing an existing 2.0.0
+document's structural meaning.
 
 ## Consumer actions
 
-1. Set governance `metadata.schema_version` fields to `2.0.1`.
-2. Pin the canonical `governance-v2.0.1` annotated tag, accepted commit, and
+1. Set `metadata.schema_version` to `2.1.0` when selecting this release.
+2. Pin the canonical `governance-v2.1.0` annotated tag, accepted commit, and
    SHA-256 digest of its raw `git archive --format=tar` bytes together.
 3. Run the governance, language, secret-shape, and regression proofs locally at
    the candidate coordinate.
@@ -20,6 +36,10 @@ their behavior.
    recovery route.
 5. Resolve every CODEOWNER to an eligible reviewer in the repository's current
    ownership model.
+
+Consumers that use only the 2.0.0 contract set can keep their existing document
+shape while pinning 2.1.0. A consumer adopting one of the added families should
+add the corresponding record and its materially related evidence together.
 
 A future reusable-workflow caller supplies a full 40-hex governance commit and
 owns its event, Actions setting, budget, permissions, secrets, and receipt

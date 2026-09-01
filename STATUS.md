@@ -30,13 +30,13 @@ class.
 
 ## Promotion path
 
-Candidate release `2.0.1` moves through:
+Candidate release `2.1.0` moves through:
 
 1. repository initialization on `main`;
 2. `develop` creation from the baseline;
 3. `feature/constellation-foundation` review into `develop`;
 4. complete local governance proof on the release candidate;
-5. `release/2.0.1` review into `main`;
+5. `release/2.1.0` review into `main`;
 6. signed annotated tagging of the accepted `main` commit;
 7. `develop` synchronization to the tagged commit;
 8. a later evidence commit that records and verifies the tag object, accepted
