@@ -103,6 +103,13 @@ python3 tools/scan_secret_shapes.py
 python3 -m unittest discover -s tests -v
 ```
 
+After a later receipt records an accepted release subject, verify its annotated
+tag, commit, reproducible archive digest, ancestry, and carrier bytes from Git:
+
+```bash
+python3 tools/validate_governance.py --verify-release-coordinate
+```
+
 Validate a downstream document against this package:
 
 ```bash
@@ -158,8 +165,10 @@ Schema releases follow semantic versioning:
 - minor: backward-compatible contract capability;
 - patch: clarification, example, or validation repair.
 
-Consumers pin a release tag and digest. Floating branch references support local
-exploration; governed comparisons use immutable release coordinates.
+Consumers pin the annotated release tag, its accepted commit, and the SHA-256
+digest of `git archive --format=tar <commit>`. Floating branch references
+support local exploration; governed comparisons use immutable release
+coordinates.
 
 ## Source posture
 

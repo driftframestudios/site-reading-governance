@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import importlib.util
+from hashlib import sha256
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -27,6 +29,101 @@ validation = load_tool("validate_governance")
 language = load_tool("check_language")
 branch_flow = load_tool("check_branch_flow")
 secret_shapes = load_tool("scan_secret_shapes")
+
+
+def run_git(repository: Path, *arguments: str) -> bytes:
+    """Run Git in one isolated test repository and return exact output."""
+    result = subprocess.run(
+        ["git", "-C", str(repository), *arguments],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return result.stdout
+
+
+def commit_all(repository: Path, message: str) -> str:
+    run_git(repository, "add", "--all")
+    run_git(repository, "commit", "-m", message)
+    return run_git(repository, "rev-parse", "HEAD").decode("ascii").strip()
+
+
+def release_observation(
+    repository: Path,
+    *,
+    commit_oid: str,
+    archive_digest: str,
+) -> dict[str, object]:
+    """Build one schema-valid observation from real Git object identifiers."""
+    receipt = json.loads((ROOT / "promotion-receipt.json").read_text(encoding="utf-8"))
+    tag = "governance-v2.0.1"
+    tag_ref = f"refs/tags/{tag}"
+    receipt["promotion_state"] = "release_observed"
+    receipt["evidence_mode"] = "observed"
+    receipt["assurance_stage"] = "verified"
+    receipt["release_coordinate"] = {
+        "git_object_format": run_git(
+            repository, "rev-parse", "--show-object-format"
+        ).decode("ascii").strip(),
+        "tag": tag,
+        "tag_object_oid": run_git(
+            repository, "rev-parse", "--verify", tag_ref
+        ).decode("ascii").strip(),
+        "commit_oid": commit_oid,
+        "archive_format": "git-tar",
+        "archive_digest": archive_digest,
+        "promoted_at": "2026-09-01T16:00:00Z",
+        "local_proof_receipt": "governed://local/governance-proof/2.0.1",
+        "hosted_check_contexts": [],
+        "hosted_automation_receipt": None,
+        "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
+        "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
+        "tag_signature_receipt": "governed://git/tag-signature/governance-2-0-1",
+    }
+    receipt["metadata"]["updated_at"] = "2026-09-01T16:05:00Z"
+    return receipt
+
+
+def initialize_release_repository(
+    repository: Path,
+    *,
+    lightweight_tag: bool = False,
+    carrier_from_base: bool = False,
+) -> tuple[str, str]:
+    """Create a tagged source and return its commit and archive digest."""
+    run_git(repository, "init", "--initial-branch=main")
+    run_git(repository, "config", "user.name", "Governance Test")
+    run_git(repository, "config", "user.email", "governance-test@example.invalid")
+    (repository / "baseline.txt").write_text("baseline\n", encoding="utf-8")
+    commit_all(repository, "Create baseline")
+    run_git(repository, "switch", "-c", "release")
+    (repository / "accepted-source.txt").write_text(
+        "accepted governance source\n", encoding="utf-8"
+    )
+    accepted_commit = commit_all(repository, "Prepare accepted source")
+    if lightweight_tag:
+        run_git(repository, "tag", "governance-v2.0.1", accepted_commit)
+    else:
+        run_git(
+            repository,
+            "tag",
+            "--annotate",
+            "governance-v2.0.1",
+            "--message",
+            "Governance 2.0.1",
+            accepted_commit,
+        )
+    archive = run_git(repository, "archive", "--format=tar", accepted_commit)
+    if carrier_from_base:
+        run_git(repository, "switch", "main")
+    return accepted_commit, f"sha256:{sha256(archive).hexdigest()}"
+
+
+def record_release_observation(repository: Path, receipt: dict[str, object]) -> str:
+    (repository / "promotion-receipt.json").write_text(
+        json.dumps(receipt, indent=2) + "\n", encoding="utf-8"
+    )
+    return commit_all(repository, "Record release observation")
 
 
 def load_database_examples() -> dict[str, object]:
@@ -75,7 +172,7 @@ class GovernancePackageTests(unittest.TestCase):
             findings,
         )
 
-    def test_released_provenance_closes_the_concrete_promotion_receipt(self) -> None:
+    def test_observed_release_closes_the_concrete_promotion_receipt(self) -> None:
         records = {
             name: json.loads((ROOT / name).read_text(encoding="utf-8"))
             for name in validation.ROOT_ORIENTATION_SCHEMAS
@@ -95,18 +192,23 @@ class GovernancePackageTests(unittest.TestCase):
         }
         node["open_receipts"] = []
         first_receipt["open_receipts"] = []
-        promotion["promotion_state"] = "released"
+        promotion["promotion_state"] = "release_observed"
         promotion["evidence_mode"] = "observed"
         promotion["assurance_stage"] = "verified"
         promotion["release_coordinate"] = {
+            "git_object_format": "sha1",
             "tag": "governance-v2.0.1",
-            "commit": commit,
-            "digest": digest,
+            "tag_object_oid": "c" * 40,
+            "commit_oid": commit,
+            "archive_format": "git-tar",
+            "archive_digest": digest,
             "promoted_at": "2026-07-28T22:00:00Z",
             "local_proof_receipt": "governed://local/governance-proof/2.0.1",
             "hosted_check_contexts": [],
+            "hosted_automation_receipt": None,
             "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
             "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
+            "tag_signature_receipt": "governed://git/tag-signature/governance-2-0-1",
         }
         for item in horizon["work_items"]:
             if "promotion" in item["horizon_label"].lower():
@@ -143,18 +245,23 @@ class GovernancePackageTests(unittest.TestCase):
         promotion = json.loads(
             (ROOT / "promotion-receipt.json").read_text(encoding="utf-8")
         )
-        promotion["promotion_state"] = "released"
+        promotion["promotion_state"] = "release_observed"
         promotion["evidence_mode"] = "observed"
         promotion["assurance_stage"] = "verified"
         promotion["release_coordinate"] = {
+            "git_object_format": "sha1",
             "tag": "governance-v2.0.1",
-            "commit": "a" * 40,
-            "digest": "sha256:" + ("b" * 64),
+            "tag_object_oid": "c" * 40,
+            "commit_oid": "a" * 40,
+            "archive_format": "git-tar",
+            "archive_digest": "sha256:" + ("b" * 64),
             "promoted_at": "2026-07-28T22:00:00Z",
             "local_proof_receipt": "governed://local/governance-proof/2.0.1",
             "hosted_check_contexts": ["governance-validation"],
+            "hosted_automation_receipt": None,
             "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
             "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
+            "tag_signature_receipt": "governed://git/tag-signature/governance-2-0-1",
         }
         schema = validation.SchemaValidator(
             ROOT / "schemas" / "promotion-receipt.schema.json"
@@ -170,20 +277,204 @@ class GovernancePackageTests(unittest.TestCase):
         )
         self.assertEqual([], schema.validate(promotion))
 
-    def test_candidate_promotion_schema_requires_zero_coordinates(self) -> None:
+    def test_candidate_promotion_schema_keeps_release_coordinate_open(self) -> None:
         promotion = json.loads(
             (ROOT / "examples" / "promotion-receipt.json").read_text(
                 encoding="utf-8"
             )
         )
-        promotion["candidate_coordinate"]["commit"] = "a" * 40
+        promotion["release_coordinate"] = {
+            "git_object_format": "sha1",
+            "tag": "governance-v2.0.1",
+            "tag_object_oid": "c" * 40,
+            "commit_oid": "a" * 40,
+            "archive_format": "git-tar",
+            "archive_digest": "sha256:" + ("b" * 64),
+            "promoted_at": "2026-07-28T22:00:00Z",
+            "local_proof_receipt": "governed://local/governance-proof/2.0.1",
+            "hosted_check_contexts": [],
+            "hosted_automation_receipt": None,
+            "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
+            "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
+            "tag_signature_receipt": "governed://git/tag-signature/governance-2-0-1",
+        }
         findings = validation.SchemaValidator(
             ROOT / "schemas" / "promotion-receipt.schema.json"
         ).validate(promotion)
         self.assertTrue(
-            any("value must equal" in finding.message for finding in findings),
+            any("type null" in finding.message for finding in findings),
             findings,
         )
+
+    def test_release_verifier_observes_tag_archive_and_later_carrier(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            accepted_commit, archive_digest = initialize_release_repository(repository)
+            receipt = release_observation(
+                repository,
+                commit_oid=accepted_commit,
+                archive_digest=archive_digest,
+            )
+            carrier_commit = record_release_observation(repository, receipt)
+
+            self.assertNotEqual(
+                receipt["release_coordinate"]["tag_object_oid"],
+                accepted_commit,
+            )
+            self.assertNotEqual(carrier_commit, accepted_commit)
+            self.assertEqual(
+                [],
+                validation.verify_release_coordinate(
+                    repository, Path("promotion-receipt.json")
+                ),
+            )
+            command = subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "tools" / "validate_governance.py"),
+                    "--verify-release-coordinate",
+                    "--release-repository",
+                    str(repository),
+                    "--promotion-receipt",
+                    "promotion-receipt.json",
+                ],
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            self.assertEqual(0, command.returncode, command.stderr)
+            self.assertEqual("Governance validation passed.\n", command.stdout)
+
+    def test_release_verifier_identifies_a_different_tag_subject(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            initialize_release_repository(repository)
+            (repository / "later-source.txt").write_text(
+                "different source\n", encoding="utf-8"
+            )
+            different_commit = commit_all(repository, "Create different source")
+            different_archive = run_git(
+                repository, "archive", "--format=tar", different_commit
+            )
+            receipt = release_observation(
+                repository,
+                commit_oid=different_commit,
+                archive_digest=f"sha256:{sha256(different_archive).hexdigest()}",
+            )
+            record_release_observation(repository, receipt)
+
+            findings = validation.verify_release_coordinate(
+                repository, Path("promotion-receipt.json")
+            )
+            self.assertTrue(
+                any("annotated tag subject" in item.message for item in findings),
+                findings,
+            )
+
+    def test_release_verifier_identifies_a_different_tag_object(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            accepted_commit, archive_digest = initialize_release_repository(repository)
+            receipt = release_observation(
+                repository,
+                commit_oid=accepted_commit,
+                archive_digest=archive_digest,
+            )
+            receipt["release_coordinate"]["tag_object_oid"] = accepted_commit
+            record_release_observation(repository, receipt)
+
+            findings = validation.verify_release_coordinate(
+                repository, Path("promotion-receipt.json")
+            )
+            self.assertTrue(
+                any("annotated tag" in item.message for item in findings),
+                findings,
+            )
+
+    def test_release_verifier_identifies_a_different_archive_digest(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            accepted_commit, _ = initialize_release_repository(repository)
+            receipt = release_observation(
+                repository,
+                commit_oid=accepted_commit,
+                archive_digest="sha256:" + ("d" * 64),
+            )
+            record_release_observation(repository, receipt)
+
+            findings = validation.verify_release_coordinate(
+                repository, Path("promotion-receipt.json")
+            )
+            self.assertTrue(
+                any("git archive --format=tar" in item.message for item in findings),
+                findings,
+            )
+
+    def test_release_verifier_requires_an_annotated_tag(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            accepted_commit, archive_digest = initialize_release_repository(
+                repository, lightweight_tag=True
+            )
+            receipt = release_observation(
+                repository,
+                commit_oid=accepted_commit,
+                archive_digest=archive_digest,
+            )
+            record_release_observation(repository, receipt)
+
+            findings = validation.verify_release_coordinate(
+                repository, Path("promotion-receipt.json")
+            )
+            self.assertTrue(
+                any("annotated tag object" in item.message for item in findings),
+                findings,
+            )
+
+    def test_release_verifier_requires_subject_ancestry(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            accepted_commit, archive_digest = initialize_release_repository(
+                repository, carrier_from_base=True
+            )
+            receipt = release_observation(
+                repository,
+                commit_oid=accepted_commit,
+                archive_digest=archive_digest,
+            )
+            record_release_observation(repository, receipt)
+
+            findings = validation.verify_release_coordinate(
+                repository, Path("promotion-receipt.json")
+            )
+            self.assertTrue(
+                any("ancestor of the receipt carrier" in item.message for item in findings),
+                findings,
+            )
+
+    def test_release_verifier_binds_receipt_bytes_to_the_carrier(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            accepted_commit, archive_digest = initialize_release_repository(repository)
+            receipt = release_observation(
+                repository,
+                commit_oid=accepted_commit,
+                archive_digest=archive_digest,
+            )
+            record_release_observation(repository, receipt)
+            receipt["metadata"]["updated_at"] = "2026-09-01T16:06:00Z"
+            (repository / "promotion-receipt.json").write_text(
+                json.dumps(receipt, indent=2) + "\n", encoding="utf-8"
+            )
+
+            findings = validation.verify_release_coordinate(
+                repository, Path("promotion-receipt.json")
+            )
+            self.assertTrue(
+                any("working receipt bytes" in item.message for item in findings),
+                findings,
+            )
 
     def test_root_contract_digest_binds_material_contract_file(self) -> None:
         records = {

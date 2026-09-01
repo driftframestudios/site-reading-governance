@@ -35,15 +35,19 @@ Candidate release `2.0.1` moves through:
 1. repository initialization on `main`;
 2. `develop` creation from the baseline;
 3. `feature/constellation-foundation` review into `develop`;
-4. complete local governance proof on the release coordinate;
+4. complete local governance proof on the release candidate;
 5. `release/2.0.1` review into `main`;
-6. `develop` synchronization to the released commit;
-7. downstream constellation pinning by commit and Git tree digest.
+6. signed annotated tagging of the accepted `main` commit;
+7. `develop` synchronization to the tagged commit;
+8. a later evidence commit that records and verifies the tag object, accepted
+   commit, and raw Git tar archive digest;
+9. downstream constellation pinning by tag, commit, and archive digest.
 
 The concrete promotion receipt records local proof, the explicit hosted-context
 posture, ruleset installation, resolvable CODEOWNER evidence, immutable
-coordinates, and signed-tag publication. Candidate placeholders remain visible
-until that observed receipt closes.
+coordinates, and signed-tag publication. The release tree remains
+`candidate_ready`; a later receipt carrier records `release_observed` and proves
+that the tagged source is its ancestor.
 
 ## Known extension points
 

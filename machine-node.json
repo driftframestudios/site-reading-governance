@@ -63,7 +63,7 @@
   "invalidation_conditions": [
     "The governance schema release, Control Plane Profile, or selected-future closure contract changes.",
     "The configured dependency ecosystem, automation branch grammar, bot author, or allowed target changes.",
-    "A promoted commit or release digest supersedes the candidate promotion coordinate."
+    "An observed annotated tag, accepted commit, and reproducible archive digest supersede the candidate promotion coordinate."
   ],
   "downstream_consumers": [
     "driftframestudios/lims-eln-program-specification",

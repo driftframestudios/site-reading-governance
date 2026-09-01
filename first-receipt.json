@@ -46,7 +46,7 @@
   ],
   "invalidation_conditions": [
     "A contract, schema, automation grammar, workflow authority, campaign marking, or validation result changes.",
-    "An immutable promoted commit and release digest supersede the candidate coordinate."
+    "An observed annotated tag, accepted commit, and reproducible archive digest supersede the candidate coordinate."
   ],
   "source_permissions": [
     {
@@ -67,8 +67,8 @@
   ],
   "handoff": {
     "recipient_role": "Constellation release steward",
-    "next_safe_action": "Promote the candidate through a governed release branch, rerun validation, and replace candidate provenance with the immutable promoted commit and digest.",
-    "success_evidence": "The promoted release retains schema release 2.0.1, Control Plane Profile 0.3.0, selected-future closure and automation contract digests, and passing repository checks."
+    "next_safe_action": "Promote the candidate through a governed release branch, tag the accepted source, then record and verify that release from a later evidence commit.",
+    "success_evidence": "The observed release retains schema release 2.0.1, Control Plane Profile 0.3.0, selected-future closure and automation contract digests, passing repository checks, and a reproducible Git tar archive digest."
   },
   "metadata": {
     "schema_version": "2.0.1",

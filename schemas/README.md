@@ -20,7 +20,7 @@ Control Plane Profile v0.3.
 | `practitioner-probe.schema.json` | Five-level probe, technical core, review surfaces, scenarios, and instruction yield |
 | `machine-node.schema.json` | Non-authorizing machine orientation, provenance, campaigns, contracts, and consumers |
 | `first-receipt.schema.json` | Compact entry orientation, evidence posture, source permissions, and handoff |
-| `promotion-receipt.schema.json` | Candidate and observed repository-promotion evidence |
+| `promotion-receipt.schema.json` | Candidate readiness and a later observation of the accepted tagged release subject |
 | `simulated-receipt-closure.schema.json` | Executable future-reality closure of all four substantive receipt families |
 | `simulation-assumption.schema.json` | Time-bounded assumption, basis, owner, and falsifiers |
 | `receipt.schema.json` | Environment-bound assurance evidence |
@@ -68,6 +68,9 @@ Control Plane Profile v0.3.
   and query digest, and record accountable dispositions for exceptions.
 - Database release manifests bind one contract and evidence chain while keeping
   simulated authority distinct from environment-observed promotion.
+- Release observations distinguish the accepted annotated tag and source commit
+  from the later commit that carries the receipt, then bind exact Git tar
+  archive bytes with SHA-256.
 
 ## Consumer pinning
 
