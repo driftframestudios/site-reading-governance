@@ -30,13 +30,20 @@ Every build begins with a structured proof supplied by the release receiver:
 
 Keep this proof outside the source worktree. For `standing: clean`, the builder
 requires the resolved source to be the Git worktree root for the named GitHub
-repository, neutralizes caller-supplied Git redirection, and resolves
-`HEAD^{commit}`. It rejects index flags that mask worktree standing, compares
-every tracked regular file's bytes and executable mode with its exact HEAD
-blob, and requires a zero-change tracked and untracked worktree. The release
-authority supplies the accepted status; the builder establishes the exact
-local source coordinate and clean standing. Branch names alone carry neither
-claim.
+repository, requires every configured `origin` URL to name that repository,
+neutralizes caller-supplied Git redirection, reads the commit without local
+replacement mappings, and resolves `HEAD^{commit}`. It rejects index flags that
+mask worktree standing, compares every tracked regular file's bytes and
+executable mode with its exact HEAD blob, and requires a zero-change tracked and
+untracked worktree. The release authority supplies the accepted status; the
+builder establishes the exact local source coordinate and clean standing.
+Branch names alone carry neither claim.
+
+Supply direct source, proof, and artifact paths. The builder keeps symbolic-link
+components outside those caller-selected paths while retaining root-owned
+operating-system path aliases. This makes the directory it reads or writes
+visible at invocation time and keeps artifact inspection on the same path
+contract as artifact construction.
 
 The behavior suite uses `standing: fixture` explicitly. The production command
 rejects fixture standing, so a test source cannot quietly acquire clean-release
