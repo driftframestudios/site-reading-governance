@@ -29,10 +29,14 @@ Every build begins with a structured proof supplied by the release receiver:
 ```
 
 Keep this proof outside the source worktree. For `standing: clean`, the builder
-resolves `HEAD^{commit}`, requires exact equality with `sourceRevision`, and
-requires a zero-change tracked and untracked worktree. The release authority
-supplies the accepted status; the builder establishes the exact local source
-coordinate and clean standing. Branch names alone carry neither claim.
+requires the resolved source to be the Git worktree root for the named GitHub
+repository, neutralizes caller-supplied Git redirection, and resolves
+`HEAD^{commit}`. It rejects index flags that mask worktree standing, compares
+every tracked regular file's bytes and executable mode with its exact HEAD
+blob, and requires a zero-change tracked and untracked worktree. The release
+authority supplies the accepted status; the builder establishes the exact
+local source coordinate and clean standing. Branch names alone carry neither
+claim.
 
 The behavior suite uses `standing: fixture` explicitly. The production command
 rejects fixture standing, so a test source cannot quietly acquire clean-release
@@ -94,7 +98,8 @@ The generated directory contains:
   and hostname.
 
 Every internal visitor link is relative. Every repository source link contains
-the complete accepted SHA. Every HTML page carries organization author and
+the named repository and complete accepted SHA. Every artifact entry is a
+self-contained regular file. Every HTML page carries organization author and
 publisher metadata, one main landmark, one top-level heading, a skip link, the
 two evaluation-data markers in their required order, a calm data-use
 explanation, and the approved visible attribution footer projected from the

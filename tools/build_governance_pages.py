@@ -12,6 +12,7 @@ import os
 import posixpath
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -185,19 +186,219 @@ def _write_json(path: Path, value: Any) -> None:
     )
 
 
-def _run_git(source_root: Path, *arguments: str) -> str:
+def _git_environment() -> dict[str, str]:
+    """Return a stable Git environment without caller-supplied redirection."""
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith("GIT_")
+    }
+    environment.update(
+        {
+            "GIT_CONFIG_GLOBAL": os.devnull,
+            "GIT_CONFIG_NOSYSTEM": "1",
+            "GIT_OPTIONAL_LOCKS": "0",
+            "LC_ALL": "C",
+        }
+    )
+    return environment
+
+
+def _git_command(source_root: Path, *arguments: str) -> list[str]:
+    return [
+        "git",
+        "-c",
+        "core.fsmonitor=false",
+        "-c",
+        "core.ignoreStat=false",
+        "-c",
+        "core.untrackedCache=false",
+        "-C",
+        str(source_root),
+        *arguments,
+    ]
+
+
+def _run_git_bytes(
+    source_root: Path,
+    *arguments: str,
+    input_bytes: bytes | None = None,
+) -> bytes:
     try:
         result = subprocess.run(
-            ["git", "-C", str(source_root), *arguments],
+            _git_command(source_root, *arguments),
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
-            encoding="utf-8",
+            input=input_bytes,
+            env=_git_environment(),
         )
     except (OSError, subprocess.CalledProcessError) as exc:
         raise PagesBuildError("the source proof requires a readable Git worktree") from exc
-    return result.stdout.strip()
+    return result.stdout
+
+
+def _run_git(source_root: Path, *arguments: str) -> str:
+    try:
+        return _run_git_bytes(source_root, *arguments).decode("utf-8").strip()
+    except UnicodeDecodeError as exc:
+        raise PagesBuildError("Git source proof returned non-UTF-8 text") from exc
+
+
+def _verify_repository_remote(source_root: Path) -> None:
+    expected = {
+        f"https://github.com/{REPOSITORY}",
+        f"https://github.com/{REPOSITORY}.git",
+        f"git@github.com:{REPOSITORY}",
+        f"git@github.com:{REPOSITORY}.git",
+        f"ssh://git@github.com/{REPOSITORY}",
+        f"ssh://git@github.com/{REPOSITORY}.git",
+    }
+    remotes = {
+        line.strip()
+        for line in _run_git(source_root, "remote", "get-url", "--all", "origin").splitlines()
+        if line.strip()
+    }
+    if not remotes.intersection(expected):
+        raise PagesBuildError("source origin differs from the repository named by the proof")
+
+
+def _head_blob_records(source_root: Path, revision: str) -> list[tuple[str, str, int]]:
+    records: list[tuple[str, str, int]] = []
+    tree = _run_git_bytes(source_root, "ls-tree", "-r", "-z", revision)
+    for raw_record in tree.split(b"\0"):
+        if not raw_record:
+            continue
+        try:
+            header, raw_path = raw_record.split(b"\t", 1)
+            mode, object_type, object_id = header.decode("ascii").split(" ")
+            relative_path = raw_path.decode("utf-8")
+        except (UnicodeDecodeError, ValueError) as exc:
+            raise PagesBuildError("HEAD tree contains an unsupported source entry") from exc
+        relative = PurePosixPath(relative_path)
+        if (
+            relative.is_absolute()
+            or not relative.parts
+            or any(part in {"", ".", ".."} for part in relative.parts)
+        ):
+            raise PagesBuildError("HEAD tree contains a non-canonical source path")
+        if object_type != "blob" or mode not in {"100644", "100755"}:
+            raise PagesBuildError(
+                f"HEAD source entry requires a regular file: {relative_path}"
+            )
+        records.append((relative_path, object_id, int(mode[-3:], 8)))
+    if not records:
+        raise PagesBuildError("HEAD source tree contains no tracked files")
+    return records
+
+
+def _head_blob_payloads(
+    source_root: Path,
+    records: Sequence[tuple[str, str, int]],
+) -> list[bytes]:
+    request = b"".join(f"{object_id}\n".encode("ascii") for _, object_id, _ in records)
+    response = _run_git_bytes(
+        source_root,
+        "cat-file",
+        "--batch",
+        input_bytes=request,
+    )
+    cursor = 0
+    payloads: list[bytes] = []
+    for relative_path, expected_id, _ in records:
+        header_end = response.find(b"\n", cursor)
+        if header_end < 0:
+            raise PagesBuildError("Git blob response ended before its header")
+        try:
+            object_id, object_type, raw_size = response[cursor:header_end].decode(
+                "ascii"
+            ).split(" ")
+            size = int(raw_size)
+        except (UnicodeDecodeError, ValueError) as exc:
+            raise PagesBuildError("Git blob response header is malformed") from exc
+        if object_id != expected_id or object_type != "blob" or size < 0:
+            raise PagesBuildError(
+                f"HEAD blob identity differs for tracked source: {relative_path}"
+            )
+        start = header_end + 1
+        end = start + size
+        if end >= len(response) or response[end : end + 1] != b"\n":
+            raise PagesBuildError("Git blob response ended before its payload")
+        payloads.append(response[start:end])
+        cursor = end + 1
+    if cursor != len(response):
+        raise PagesBuildError("Git blob response contains undeclared bytes")
+    return payloads
+
+
+def _verify_index_flags(source_root: Path) -> None:
+    records = _run_git_bytes(source_root, "ls-files", "-v", "-z").split(b"\0")
+    for raw_record in records:
+        if not raw_record:
+            continue
+        if len(raw_record) < 3 or raw_record[1:2] != b" ":
+            raise PagesBuildError("Git index flag record is malformed")
+        try:
+            path = raw_record[2:].decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise PagesBuildError("Git index contains a non-UTF-8 path") from exc
+        if raw_record[:1] != b"H":
+            raise PagesBuildError(
+                f"tracked source index flags mask worktree standing: {path}"
+            )
+
+
+def _verify_head_source_bytes(source_root: Path, revision: str) -> None:
+    records = _head_blob_records(source_root, revision)
+    payloads = _head_blob_payloads(source_root, records)
+    if len(records) != len(payloads):
+        raise PagesBuildError("Git blob response count differs from the HEAD tree")
+    for (relative_path, _, expected_mode), expected_payload in zip(records, payloads):
+        candidate = source_root.joinpath(*PurePosixPath(relative_path).parts)
+        try:
+            observed = candidate.lstat()
+            payload = candidate.read_bytes()
+        except OSError as exc:
+            raise PagesBuildError(
+                f"tracked source is unavailable: {relative_path}"
+            ) from exc
+        if not stat.S_ISREG(observed.st_mode) or candidate.is_symlink():
+            raise PagesBuildError(
+                f"tracked source requires a regular file: {relative_path}"
+            )
+        expected_executable = bool(expected_mode & stat.S_IXUSR)
+        observed_executable = bool(observed.st_mode & stat.S_IXUSR)
+        if expected_executable != observed_executable:
+            raise PagesBuildError(
+                f"tracked source mode differs from HEAD: {relative_path}"
+            )
+        if payload != expected_payload:
+            raise PagesBuildError(
+                f"tracked source bytes differ from HEAD: {relative_path}"
+            )
+
+
+def _verify_clean_source(source_root: Path) -> str:
+    top_level = Path(_run_git(source_root, "rev-parse", "--show-toplevel")).resolve()
+    if top_level != source_root:
+        raise PagesBuildError("source root differs from the Git worktree root")
+    _verify_repository_remote(source_root)
+    revision = _run_git(source_root, "rev-parse", "--verify", "HEAD^{commit}")
+    if not SHA_PATTERN.fullmatch(revision):
+        raise PagesBuildError("Git HEAD must resolve to one lowercase full commit SHA")
+    if _run_git(source_root, "cat-file", "-t", revision) != "commit":
+        raise PagesBuildError("source revision must identify a Git commit")
+    status = _run_git(
+        source_root,
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all",
+    )
+    if status:
+        raise PagesBuildError("clean source proof requires a worktree with zero changes")
+    _verify_index_flags(source_root)
+    _verify_head_source_bytes(source_root, revision)
+    return revision
 
 
 def load_source_proof(
@@ -252,17 +453,16 @@ def load_source_proof(
 
     resolved_source = source_root.resolve()
     if proof.standing == "clean":
-        head = _run_git(resolved_source, "rev-parse", "--verify", "HEAD^{commit}")
+        resolved_proof = proof_path.resolve()
+        if resolved_proof == resolved_source or resolved_proof.is_relative_to(
+            resolved_source
+        ):
+            raise PagesBuildError(
+                "clean source proof must remain outside the source worktree"
+            )
+        head = _verify_clean_source(resolved_source)
         if head != proof.source_revision:
             raise PagesBuildError("clean source proof does not name the exact checked-out HEAD")
-        status = _run_git(
-            resolved_source,
-            "status",
-            "--porcelain=v1",
-            "--untracked-files=all",
-        )
-        if status:
-            raise PagesBuildError("clean source proof requires a worktree with zero changes")
     elif proof.standing == "fixture":
         if not allow_fixture_standing:
             raise PagesBuildError("fixture standing is reserved for explicit test fixtures")
@@ -813,7 +1013,7 @@ tbody th { min-width: 14rem; }
 .site-footer { margin-top: clamp(4rem, 8vw, 8rem); padding: 2rem max(1rem, calc((100% - var(--max)) / 2)); color: #eaf2ec; background: var(--forest-deep); }
 .visitor-boundary { padding-bottom: 1.2rem; border-bottom: 1px solid rgba(255, 255, 255, .35); }
 .visitor-boundary__context { color: #cfddd4; }
-.visitor-boundary__marker { max-width: none; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .76rem; }
+.visitor-boundary__marker { max-width: none; overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .76rem; }
 .copyright { max-width: none; margin-bottom: 0; color: white; }
 
 @media (max-width: 48rem) {
@@ -841,13 +1041,30 @@ def _inventory_record(root: Path, relative_path: str) -> dict[str, Any]:
     }
 
 
+def _artifact_file_paths(root: Path, *, include_manifest: bool) -> list[str]:
+    paths: list[str] = []
+    for path in sorted(root.rglob("*")):
+        try:
+            observed = path.lstat()
+        except OSError as exc:
+            raise PagesBuildError("artifact inventory contains an unreadable entry") from exc
+        relative = path.relative_to(root).as_posix()
+        if stat.S_ISLNK(observed.st_mode):
+            raise PagesBuildError(f"artifact entry must be self-contained: {relative}")
+        if stat.S_ISDIR(observed.st_mode):
+            continue
+        if not stat.S_ISREG(observed.st_mode):
+            raise PagesBuildError(f"artifact entry must be a regular file: {relative}")
+        if include_manifest or path.name != "manifest.json":
+            paths.append(relative)
+    return paths
+
+
 def inventory_records(root: Path) -> list[dict[str, Any]]:
-    paths = sorted(
-        path.relative_to(root).as_posix()
-        for path in root.rglob("*")
-        if path.is_file() and path.name != "manifest.json"
-    )
-    return [_inventory_record(root, path) for path in paths]
+    return [
+        _inventory_record(root, path)
+        for path in _artifact_file_paths(root, include_manifest=False)
+    ]
 
 
 def records_digest(records: Iterable[dict[str, Any]]) -> str:
@@ -1047,11 +1264,18 @@ def _validate_html_page(
         if parsed.scheme:
             if parsed.scheme != "https":
                 raise PagesBuildError(f"{page_path} contains a non-HTTPS external link")
-            if parsed.netloc == "github.com" and (
-                f"/{proof.source_revision}/" not in parsed.path
-                and not parsed.path.endswith(f"/{proof.source_revision}")
-            ):
-                raise PagesBuildError(f"{page_path} contains a source link without the full SHA")
+            if parsed.netloc == "github.com":
+                if not parsed.path.startswith(f"/{REPOSITORY}/"):
+                    raise PagesBuildError(
+                        f"{page_path} contains a source link for a different repository"
+                    )
+                if (
+                    f"/{proof.source_revision}/" not in parsed.path
+                    and not parsed.path.endswith(f"/{proof.source_revision}")
+                ):
+                    raise PagesBuildError(
+                        f"{page_path} contains a source link without the full SHA"
+                    )
             continue
         if parsed.netloc or parsed.path.startswith("/"):
             raise PagesBuildError(f"{page_path} contains a non-relative internal link")
@@ -1179,11 +1403,7 @@ def validate_site(
     if manifest.get("digests") != expected_digests:
         raise PagesBuildError("manifest schema or content digest differs from the inventory")
 
-    actual_files = {
-        path.relative_to(output_root).as_posix()
-        for path in output_root.rglob("*")
-        if path.is_file()
-    }
+    actual_files = set(_artifact_file_paths(output_root, include_manifest=True))
     declared_files = {item["path"] for item in actual_inventory} | {"manifest.json"}
     if actual_files != declared_files:
         raise PagesBuildError("artifact contains a file outside the closed inventory")
@@ -1251,6 +1471,11 @@ def build_site(
             staging,
             source_root,
             proof_path,
+            allow_fixture_standing=allow_fixture_standing,
+        )
+        load_source_proof(
+            proof_path,
+            source_root,
             allow_fixture_standing=allow_fixture_standing,
         )
         os.replace(staging, output_root)

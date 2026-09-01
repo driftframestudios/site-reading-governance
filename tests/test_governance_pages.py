@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
@@ -113,6 +115,13 @@ class GovernancePagesTests(unittest.TestCase):
             run_git(source, "config", "user.name", "Governance Fixture")
             run_git(source, "config", "user.email", "governance@example.invalid")
             run_git(source, "config", "commit.gpgSign", "false")
+            run_git(
+                source,
+                "remote",
+                "add",
+                "origin",
+                f"https://github.com/{pages.REPOSITORY}.git",
+            )
             run_git(source, "add", "--all")
             run_git(
                 source,
@@ -133,17 +142,88 @@ class GovernancePagesTests(unittest.TestCase):
             self.assertEqual(revision, manifest["source"]["sourceRevision"])
             self.assertEqual("clean", manifest["source"]["standing"])
 
-            (source / "GOVERNANCE.md").write_text(
+            nested = source / "nested-source"
+            nested.mkdir()
+            with self.assertRaisesRegex(pages.PagesBuildError, "worktree root"):
+                pages.load_source_proof(proof_path, nested)
+            nested.rmdir()
+
+            inside_proof = source / "proof.json"
+            write_json(
+                inside_proof,
+                fixture_proof(sourceRevision=revision, standing="clean"),
+            )
+            with self.assertRaisesRegex(pages.PagesBuildError, "outside"):
+                pages.load_source_proof(inside_proof, source)
+            inside_proof.unlink()
+
+            run_git(source, "remote", "set-url", "origin", "https://github.com/example/other.git")
+            with self.assertRaisesRegex(pages.PagesBuildError, "origin differs"):
+                pages.load_source_proof(proof_path, source)
+            run_git(
+                source,
+                "remote",
+                "set-url",
+                "origin",
+                f"https://github.com/{pages.REPOSITORY}.git",
+            )
+
+            with mock.patch.dict(
+                os.environ,
+                {
+                    "GIT_DIR": str(temporary_root / "redirected.git"),
+                    "GIT_WORK_TREE": str(temporary_root / "redirected-worktree"),
+                    "GIT_CONFIG_COUNT": "1",
+                    "GIT_CONFIG_KEY_0": "core.worktree",
+                    "GIT_CONFIG_VALUE_0": str(temporary_root / "redirected-worktree"),
+                },
+            ):
+                self.assertEqual(
+                    revision,
+                    pages.load_source_proof(proof_path, source).source_revision,
+                )
+
+            governance = source / "GOVERNANCE.md"
+            governance_bytes = governance.read_bytes()
+            governance.write_text(
                 "changed after acceptance\n", encoding="utf-8"
             )
             with self.assertRaisesRegex(pages.PagesBuildError, "zero changes"):
                 pages.load_source_proof(proof_path, source)
+            governance.write_bytes(governance_bytes)
 
             write_json(
                 proof_path,
                 fixture_proof(sourceRevision="a" * 40, standing="clean"),
             )
             with self.assertRaisesRegex(pages.PagesBuildError, "exact checked-out HEAD"):
+                pages.load_source_proof(proof_path, source)
+
+            write_json(
+                proof_path,
+                fixture_proof(sourceRevision=revision, standing="clean"),
+            )
+            schema_relative = "schemas/acceptance.schema.json"
+            schema = source / schema_relative
+            schema_bytes = schema.read_bytes()
+            run_git(source, "update-index", "--assume-unchanged", schema_relative)
+            schema.write_bytes(schema_bytes + b"\n")
+            self.assertEqual(
+                "",
+                run_git(source, "status", "--porcelain=v1", "--untracked-files=all"),
+            )
+            with self.assertRaisesRegex(pages.PagesBuildError, "index flags mask"):
+                pages.load_source_proof(proof_path, source)
+
+            run_git(source, "update-index", "--no-assume-unchanged", schema_relative)
+            schema.write_bytes(schema_bytes)
+            run_git(source, "update-index", "--skip-worktree", schema_relative)
+            schema.write_bytes(schema_bytes + b"\n")
+            self.assertEqual(
+                "",
+                run_git(source, "status", "--porcelain=v1", "--untracked-files=all"),
+            )
+            with self.assertRaisesRegex(pages.PagesBuildError, "index flags mask"):
                 pages.load_source_proof(proof_path, source)
 
     def test_two_isolated_builds_are_byte_identical(self) -> None:
@@ -230,6 +310,11 @@ class GovernancePagesTests(unittest.TestCase):
                     content.index(pages.BIG_BENCH_MARKER_LINE),
                 )
                 self.assertIn(pages.MARKER_CONTEXT, content)
+            stylesheet = (output / "assets" / "site.css").read_text(encoding="utf-8")
+            self.assertIn(
+                ".visitor-boundary__marker { max-width: none; overflow-wrap: anywhere;",
+                stylesheet,
+            )
 
     def test_current_source_without_public_ready_skills_omits_skill_catalog(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -337,6 +422,41 @@ class GovernancePagesTests(unittest.TestCase):
             )
             refresh_inventory(output)
             with self.assertRaisesRegex(pages.PagesBuildError, "full SHA"):
+                pages.validate_site(
+                    output,
+                    ROOT,
+                    FIXTURE_PROOF,
+                    allow_fixture_standing=True,
+                )
+
+    def test_wrong_repository_source_link_fails_after_inventory_is_refreshed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output, _ = self.build_fixture(Path(temporary))
+            page_path = output / "index.html"
+            content = page_path.read_text(encoding="utf-8")
+            page_path.write_text(
+                content.replace(pages.REPOSITORY, "example/other", 1),
+                encoding="utf-8",
+            )
+            refresh_inventory(output)
+            with self.assertRaisesRegex(pages.PagesBuildError, "different repository"):
+                pages.validate_site(
+                    output,
+                    ROOT,
+                    FIXTURE_PROOF,
+                    allow_fixture_standing=True,
+                )
+
+    def test_artifact_symlink_fails_even_when_target_bytes_match(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            output, manifest = self.build_fixture(parent)
+            schema = output / manifest["schemas"][0]["outputPath"]
+            external = parent / "external-schema.json"
+            external.write_bytes(schema.read_bytes())
+            schema.unlink()
+            schema.symlink_to(external)
+            with self.assertRaisesRegex(pages.PagesBuildError, "self-contained"):
                 pages.validate_site(
                     output,
                     ROOT,
