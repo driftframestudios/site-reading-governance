@@ -17,11 +17,13 @@
 /tools/check_language.py @driftframestudios
 /tools/language_policy_core.py @driftframestudios
 /tools/validate_governance.py @driftframestudios
+/tools/build_governance_pages.py @driftframestudios
 /language-policy/ @driftframestudios
 /language-policy/manifest.json @driftframestudios
 /schemas/language-control.schema.json @driftframestudios
 /tests/test_check_branch_flow.py @driftframestudios
 /tests/test_governance.py @driftframestudios
+/tests/test_governance_pages.py @driftframestudios
 /tests/test_language_assurance.py @driftframestudios
 /machine-node.json @driftframestudios
 /first-receipt.json @driftframestudios
@@ -30,4 +32,5 @@
 /docs/NEGATION_AWARE_LANGUAGE.md @driftframestudios
 /docs/AUTHOR_FEEDBACK.md @driftframestudios
 /docs/SEMANTIC_SHADOW_REVIEW.md @driftframestudios
+/docs/GOVERNANCE_PAGES.md @driftframestudios
 /.github/CODEOWNERS @driftframestudios
