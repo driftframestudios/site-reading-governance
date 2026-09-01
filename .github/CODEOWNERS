@@ -6,10 +6,13 @@
 
 /schemas/ @driftframestudios
 /rulesets/ @driftframestudios
-/.github/dependabot.manual.yml @driftframestudios
+/AUTHORS @driftframestudios
+/.github/dependabot.yml @driftframestudios
+/.github/automation-controls.json @driftframestudios
 /.github/workflows/ @driftframestudios
 /.vale.ini @driftframestudios
 /.vale/ @driftframestudios
+/tools/automation_contract.py @driftframestudios
 /tools/check_branch_flow.py @driftframestudios
 /tools/check_language.py @driftframestudios
 /tools/language_policy_core.py @driftframestudios

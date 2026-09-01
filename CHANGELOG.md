@@ -37,12 +37,13 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
   dereferencing, exact `git archive --format=tar` SHA-256 reproduction,
   release-subject ancestry, and receipt-carrier bytes.
 - Preserved one approving review, deletion, non-fast-forward, CODEOWNER,
-  last-push, review-thread resolution, and applicable signature protections in
-  versioned rulesets while keeping hosted required-check sets empty for the
-  local-first **$0** resting state.
+  last-push, review-thread resolution, and signature protections in the `main`
+  promotion ruleset. `develop` remains the lean integration branch and release
+  branches remain short-lived.
 - Recast repository-promotion evidence around a local proof receipt and an
-  explicit hosted-context list. A future non-empty hosted-context list carries
-  its own reviewed automation-activation receipt.
+  explicit hosted-context list. The lightweight pull-request proof begins as
+  an observed context; any required-check binding receives its own reviewed
+  activation receipt.
 - Bound reusable contract validation to the approved governance repository and
   a full immutable commit coordinate.
 - Standardized the governance release tag family as `governance-v<semver>`.
@@ -50,10 +51,15 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
   bot authors, and governed targets; added spoof and malformed-coordinate
   regressions.
 - Retired the `pull_request_target` branch-policy workflow and retained branch
-  admission as a reviewer-invoked local checker with regression coverage. The
-  manual governance proof remains a separately activated, human-cued route.
-- Grouped GitHub Action minor and patch updates while preserving separate major
-  review coordinates.
+  admission as a reviewer-invoked local checker with regression coverage. A
+  read-only pull-request proof now exercises repository-owned governance while
+  the broader manual proof remains deliberate. A restricted semantic YAML
+  contract and mutation suite bind its triggers, permissions, jobs, step names,
+  commands, actions, raw-secret boundary, source projection, and dependency
+  route to that declared behavior.
+- Activated bounded monthly GitHub Action updates, grouped minor and patch
+  updates, and preserved separate major review coordinates.
+- Added a source-local authorship carrier and root orientation route.
 - Added root Machine Node, first-receipt, and Coordination Horizon records with
   cross-record validation for contracts, campaign markings, and candidate
   promotion posture.

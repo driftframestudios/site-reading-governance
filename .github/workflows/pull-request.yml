@@ -1,0 +1,38 @@
+name: Governance pull request
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: governance-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  governance-pr-validation:
+    name: governance-pr-validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the proposed source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Select Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.13"
+          cache: ""
+
+      - name: Validate repository-owned governance
+        run: |
+          python3 tools/validate_governance.py
+          python3 tools/check_language.py
+          python3 tools/scan_secret_shapes.py
+          python3 -m unittest discover -s tests -v

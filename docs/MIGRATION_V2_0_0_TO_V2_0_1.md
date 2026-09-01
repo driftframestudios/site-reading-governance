@@ -11,10 +11,13 @@ their behavior.
    SHA-256 digest of its raw `git archive --format=tar` bytes together.
 3. Run the governance, language, secret-shape, and regression proofs locally at
    the candidate coordinate.
-4. Install branch rulesets that preserve deletion, non-fast-forward,
-   one approving review, CODEOWNER review, last-push approval, review-thread
-   resolution, and applicable signature protections with an empty hosted
-   required-check set in the **$0** resting state.
+4. Install the `main` promotion ruleset and release-tag ruleset. Preserve
+   deletion, non-fast-forward, one approving review, CODEOWNER review,
+   last-push approval, review-thread resolution, and applicable signature
+   protections on `main`, while `develop` remains the lean integration branch.
+   Keep the hosted required-check list distinct from the observed lightweight
+   pull-request proof until a separate review establishes a stable context and
+   recovery route.
 5. Resolve every CODEOWNER to an eligible reviewer in the repository's current
    ownership model.
 

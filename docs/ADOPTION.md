@@ -4,18 +4,19 @@
 
 1. Create the private repository with `main` as its initial branch.
 2. Land this package through an administratively reviewed bootstrap change.
-3. Create `develop` from the protected `main` baseline.
+3. Create the lean `develop` integration branch from the protected `main`
+   baseline.
 4. Confirm every configured CODEOWNER resolves to an eligible repository reviewer.
 5. Run the local governance validator and regression suite.
-6. Review and install the versioned ruleset exports with an empty hosted-check
-   resting state.
+6. Review and install the `main` promotion and release-tag ruleset exports.
 7. Create and sign canonical release `governance-v2.0.1`.
 
-GitHub Actions rests disabled in repository settings at a **$0** budget. A named
-human can allocate the manual `Governance` proof by enabling Actions, setting
-`ENABLE_GITHUB_ACTIONS=true`, selecting `confirm_run`, and dispatching it. The
-named human sets `ENABLE_GITHUB_ACTIONS=false` and disables Actions in
-repository settings after the receipt is read.
+An approved **100–300 monthly runner-minute** allocation supports the small
+pull-request proof. A named receiver can allocate the manual `Governance` proof
+by setting `ENABLE_GITHUB_ACTIONS=true`, selecting `confirm_run`, and
+dispatching it. Setting the variable to `false` rests the manual path; disabling
+Actions in repository settings rests all hosted execution while local proof
+continues.
 
 ## Downstream contract workflow
 
@@ -77,13 +78,15 @@ Capture:
 - exported policy digest;
 - installation actor and timestamp;
 - active aggregate-rule screenshot or API response;
-- confirmation that branch rulesets contain no `required_status_checks` rule in
-  the $0 resting state;
+- confirmation that the `main` branch ruleset carries the reviewed promotion
+  protections and its current `required_status_checks` posture;
+- confirmation that `develop` remains the lean integration branch;
 - CODEOWNER resolution and eligible-reviewer evidence;
 - signed release tag;
 - reviewer and accountable governance steward.
 
-A later hosted context enters through its own activation receipt: stable
-context name, caller or manual workflow, funded execution path, branch-policy
-effect, and return procedure. Its promotion record pairs every hosted context
-with that reviewed receipt.
+The lightweight pull-request context first accumulates its observed name,
+runner-minute range, and useful evidence. A later required-check change receives
+its own activation receipt: stable context name, caller, funded execution path,
+branch-policy effect, and return procedure. Its promotion record pairs every
+required hosted context with that reviewed receipt.

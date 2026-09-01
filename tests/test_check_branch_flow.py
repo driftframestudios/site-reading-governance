@@ -143,14 +143,13 @@ class BranchFlowAutomationTests(unittest.TestCase):
         self.assertEqual(1, result)
         self.assertIn("outside the branch naming contract", output)
 
-    def test_dependency_activation_template_and_branch_grammar_share_ecosystems(
+    def test_monthly_dependency_route_and_branch_grammar_share_ecosystems(
         self,
     ) -> None:
-        config = (ROOT / ".github" / "dependabot.manual.yml").read_text(
+        config = (ROOT / ".github" / "dependabot.yml").read_text(
             encoding="utf-8"
         )
-        self.assertFalse((ROOT / ".github" / "dependabot.yml").exists())
-        self.assertIn("Activation template:", config)
+        self.assertFalse((ROOT / ".github" / "dependabot.manual.yml").exists())
         configured = {
             ecosystem.replace("-", "_")
             for ecosystem in re.findall(
@@ -160,14 +159,22 @@ class BranchFlowAutomationTests(unittest.TestCase):
             )
         }
         self.assertEqual(check_branch_flow.DEPENDABOT_BRANCH_ECOSYSTEMS, configured)
+        self.assertIn("target-branch: develop", config)
+        self.assertIn("interval: monthly", config)
+        self.assertIn("open-pull-requests-limit: 2", config)
+        self.assertIn("github-actions-minor-patch:", config)
+        self.assertIn("update-types:\n          - minor\n          - patch", config)
         self.assertNotIn("pull-request-branch-name:", config)
 
-    def test_workflow_catalog_preserves_human_cued_activation(self) -> None:
+    def test_workflow_catalog_separates_pull_request_and_deliberate_proofs(
+        self,
+    ) -> None:
         workflow_directory = ROOT / ".github" / "workflows"
         workflow_paths = sorted(
             [*workflow_directory.glob("*.yml"), *workflow_directory.glob("*.yaml")]
         )
         expected_triggers = {
+            "pull-request.yml": {"pull_request"},
             "validate.yml": {"workflow_dispatch"},
             "reusable-contract-validation.yml": {"workflow_call"},
             "reusable-governance-validation.yml": {"workflow_call"},
@@ -199,6 +206,29 @@ class BranchFlowAutomationTests(unittest.TestCase):
                 self.assertIn("vars.ENABLE_GITHUB_ACTIONS == 'true'", gate.group(1))
                 self.assertIn("inputs.confirm_run", gate.group(1))
 
+        pull_request = workflows["pull-request.yml"]
+        self.assertIn(
+            "  pull_request:\n    branches:\n      - develop\n      - main",
+            pull_request,
+        )
+        self.assertIn("permissions:\n  contents: read", pull_request)
+        self.assertIn("cancel-in-progress: true", pull_request)
+        self.assertNotIn("secrets.", pull_request)
+        pull_request_jobs = runner_job_blocks(pull_request)
+        self.assertEqual({"governance-pr-validation"}, set(pull_request_jobs))
+        job = pull_request_jobs["governance-pr-validation"]
+        self.assertIn("runs-on: ubuntu-24.04", job)
+        timeout = re.search(r"(?m)^    timeout-minutes: ([0-9]+)$", job)
+        self.assertIsNotNone(timeout)
+        assert timeout is not None
+        self.assertLessEqual(int(timeout.group(1)), 10)
+        self.assertEqual(1, pull_request.count("actions/setup-python@"))
+        self.assertIn('python-version: "3.13"', pull_request)
+        self.assertNotIn("strategy:", pull_request)
+        self.assertNotIn("matrix:", pull_request)
+        self.assertIn("python3 tools/validate_governance.py", pull_request)
+        self.assertIn("python3 -m unittest discover -s tests -v", pull_request)
+
         for name in (
             "reusable-governance-validation.yml",
             "reusable-contract-validation.yml",
@@ -207,6 +237,18 @@ class BranchFlowAutomationTests(unittest.TestCase):
                 reusable = workflows[name]
                 self.assertIn("permissions:\n  contents: read", reusable)
                 self.assertNotIn("python3 tools/check_branch_flow.py", reusable)
+
+        action_reference = re.compile(r"^\s*uses:\s*([^#\s]+)", re.MULTILINE)
+        for name, content in workflows.items():
+            with self.subTest(workflow_action_pins=name):
+                references = action_reference.findall(content)
+                self.assertTrue(references)
+                for reference in references:
+                    self.assertRegex(reference, r"^[^@]+@[a-f0-9]{40}$")
+                self.assertGreaterEqual(
+                    content.count("persist-credentials: false"),
+                    content.count("actions/checkout@"),
+                )
 
     def test_automation_grammar_rejects_noncanonical_segments(self) -> None:
         for head in (

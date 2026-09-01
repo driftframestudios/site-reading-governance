@@ -7,6 +7,10 @@
 | `main` | Production governance releases | `release/*` and `hotfix/*` | Signed semantic-version tag |
 | `develop` | Integrated next release | `feature/*`, `chore/*`, and reconciled release/hotfix changes | Candidate state |
 
+`main` carries the active protected-delivery ruleset. `develop` is the lean
+integration branch; ordinary review and the lightweight pull-request proof
+support fast integration while release promotion receives the protected gate.
+
 ## Short-lived branches
 
 - `feature/<issue>-<slug>` — governance capability or compatible schema addition
@@ -40,11 +44,12 @@ connects each branch to intent.
 5. Create a signed `governance-v<semver>` tag on the merge commit.
 6. Reproduce the tagged commit's `git archive --format=tar` SHA-256 digest.
 7. Merge the tagged release forward into `develop`.
-8. Create an evidence branch that records the tag object, accepted commit,
+8. Remove the short-lived release branch after its forward merge is settled.
+9. Create an evidence branch that records the tag object, accepted commit,
    archive digest, and reviewed proof locators in the promotion receipt.
-9. Run `python3 tools/validate_governance.py --verify-release-coordinate` from
+10. Run `python3 tools/validate_governance.py --verify-release-coordinate` from
    the receipt-carrier commit, then merge the evidence branch into `develop`.
-10. Publish schema digests and downstream upgrade guidance.
+11. Publish schema digests and downstream upgrade guidance.
 
 The signed tag identifies the accepted release subject. The later evidence
 commit carries the observation and proves that the subject is its ancestor;
@@ -59,18 +64,25 @@ information available when it is created.
 4. Tag the patch release.
 5. Reconcile the released commit into `develop` and active release branches.
 
-## Local proof and optional maintenance flow
+## Local proof and bounded hosted maintenance
 
-The dependency-free validator and regression suite are the standing proof path.
-GitHub Actions rests disabled in repository settings at a **$0** budget. The
-manual `Governance` proof becomes available only when a named human enables
-Actions, sets `ENABLE_GITHUB_ACTIONS=true`, selects `confirm_run`, and dispatches
-it. After the proof is read, set `ENABLE_GITHUB_ACTIONS=false` and disable
-Actions in repository settings to restore the resting state.
+The dependency-free validator and regression suite remain the complete
+source-owned proof path. The repository has a monthly **100–300 runner-minute**
+allocation for one small pull-request proof. Pull requests targeting `develop`
+or `main` run the governance aggregate, language and secret-shape checks, and
+repository regression suite on Python 3.13. One standard runner, read-only
+permissions, cancellation of superseded runs, and a ten-minute ceiling keep
+that observation bounded.
 
-Dependency scheduling rests in `.github/dependabot.manual.yml`. A reviewed
-rename to `.github/dependabot.yml` activates its schedule. When automation is
-active, dependency pull requests use a distinct, bounded coordinate contract.
+The manual `Governance` workflow retains advisory author feedback, language and
+secret-shape passes, and the complete regression proof. A named receiver sets
+`ENABLE_GITHUB_ACTIONS=true`, selects `confirm_run`, and dispatches it when the
+wider evidence is material. The reusable workflows remain available to
+reviewed callers through their bounded inputs.
+
+Monthly dependency updates live in `.github/dependabot.yml`, target `develop`,
+group minor and patch updates, and keep at most two update pull requests open.
+Dependency pull requests use a distinct, bounded coordinate contract.
 Admission requires three aligned facts:
 
 - the complete source branch matches the configured Dependabot or Renovate
@@ -78,9 +90,9 @@ Admission requires three aligned facts:
 - the pull-request author is the corresponding GitHub bot identity;
 - the target is `main` or `develop`.
 
-The activation template currently names GitHub Actions, so its admitted branch
-grammar begins with `dependabot/github_actions/`. A future package ecosystem
-extends the template, grammar, and regression fixtures in the same reviewed
+The active configuration names GitHub Actions, so its admitted branch grammar
+begins with `dependabot/github_actions/`. A future package ecosystem extends
+the configuration, grammar, and regression fixtures in the same reviewed
 change. Renovate uses its default `renovate/` branch prefix and hosted-app bot
 identity. A self-hosted Renovate caller adds its exact app identity through a
 reviewed policy change.
@@ -90,12 +102,15 @@ is local validation plus human review, immutable action-reference inspection,
 and the ordinary release evidence. An accepted change on `main` is reconciled
 into `develop` so the next release retains the dependency repair. The
 repository-local branch checker remains available to reviewers, and CODEOWNER
-review continues to cover the activation template and workflow contracts.
+review continues to cover the dependency configuration and workflow contracts.
 
-The ruleset exports preserve one approving review, CODEOWNER review,
-stale-review dismissal, last-push approval, review-thread resolution, deletion,
-non-fast-forward, and release-signature protections while their hosted
-required-check sets remain empty. A later hosted check becomes part of branch
+Setting `ENABLE_GITHUB_ACTIONS=false` rests the manual proof. Repository
+settings can rest all hosted execution, and a reviewed return to
+`.github/dependabot.manual.yml` rests dependency scheduling. The `main` ruleset
+export preserves one approving review, CODEOWNER review, stale-review
+dismissal, last-push approval, review-thread resolution, deletion,
+non-fast-forward, and release-signature protection while its hosted
+required-check set remains empty. A later hosted check becomes part of branch
 policy only through a separate reviewed activation state with a stable context
 and a funded execution path.
 

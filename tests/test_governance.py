@@ -535,7 +535,7 @@ class GovernancePackageTests(unittest.TestCase):
     def test_ruleset_exports_preserve_governed_flow(self) -> None:
         self.assertEqual([], validation.validate_rulesets())
 
-    def test_branch_rulesets_preserve_one_review_bundle(self) -> None:
+    def test_main_promotion_ruleset_preserves_one_review_bundle(self) -> None:
         expected = {
             "required_approving_review_count": 1,
             "dismiss_stale_reviews_on_push": True,
@@ -544,15 +544,33 @@ class GovernancePackageTests(unittest.TestCase):
             "required_review_thread_resolution": True,
             "allowed_merge_methods": ["merge", "squash"],
         }
-        for name in ("main.json", "develop.json", "release-hotfix.json"):
-            with self.subTest(ruleset=name):
-                ruleset = json.loads(
-                    (ROOT / "rulesets" / name).read_text(encoding="utf-8")
-                )
-                pull_request = next(
-                    rule for rule in ruleset["rules"] if rule["type"] == "pull_request"
-                )
-                self.assertEqual(expected, pull_request["parameters"])
+        ruleset_paths = sorted(path.name for path in (ROOT / "rulesets").glob("*.json"))
+        self.assertEqual(["main.json", "release-tags.json"], ruleset_paths)
+        ruleset = json.loads(
+            (ROOT / "rulesets" / "main.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            ["refs/heads/main"],
+            ruleset["conditions"]["ref_name"]["include"],
+        )
+        pull_request = next(
+            rule for rule in ruleset["rules"] if rule["type"] == "pull_request"
+        )
+        self.assertEqual(expected, pull_request["parameters"])
+        branching = (ROOT / "BRANCHING.md").read_text(encoding="utf-8")
+        self.assertIn("`develop` is the lean\nintegration branch", branching)
+        self.assertIn("Remove the short-lived release branch", branching)
+
+    def test_repository_attribution_uses_its_source_local_carrier(self) -> None:
+        authors = (ROOT / "AUTHORS").read_text(encoding="utf-8")
+        self.assertTrue(authors.startswith("# General provenance\n"))
+        self.assertIn("Driftframe Studios, Limited Liability Company", authors)
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("[`AUTHORS`](AUTHORS)", readme)
+        codeowners = (ROOT / ".github" / "CODEOWNERS").read_text(encoding="utf-8")
+        self.assertIn("/AUTHORS @driftframestudios", codeowners)
+        self.assertIn("/.github/dependabot.yml @driftframestudios", codeowners)
+        self.assertNotIn("dependabot.manual.yml", codeowners)
 
     def test_workflows_use_bounded_permissions_and_immutable_actions(self) -> None:
         self.assertEqual([], validation.validate_workflows())

@@ -5,6 +5,10 @@ constellations. It gives planning, implementation, simulation, and evidence
 repositories one versioned contract for decisions, scenarios, receipts,
 acceptance, comparison, and change-triggered invalidation.
 
+Repository authorship and maintenance provenance is recorded in
+[`AUTHORS`](AUTHORS). Git history and reviewed pull requests preserve change
+chronology and contribution credit.
+
 The package is private-repository ready. Its examples use synthetic identifiers,
 its automation uses read-only permissions by default, and its ruleset exports
 can be reviewed before installation through the GitHub Rulesets API.

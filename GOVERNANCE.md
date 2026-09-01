@@ -110,32 +110,37 @@ number of temporal buckets. It records current items, entry and completion
 evidence, dependencies, retained effects, consequential questions, and a
 re-entry capsule. Teams can choose labels and cadence that fit the work.
 
-## Governed local proof and optional automation
+## Governed local and bounded hosted proof
 
-Local governance validation is the standing proof path. GitHub Actions rests
-disabled in repository settings at a **$0** budget. The manual `Governance`
-workflow requires repository enablement, `ENABLE_GITHUB_ACTIONS=true`, explicit
-`confirm_run` selection, read-only permission, and a bounded timeout. A named
-human can allocate one run and then set `ENABLE_GITHUB_ACTIONS=false` and
-disable Actions in repository settings to restore the resting state.
+Local governance validation remains the complete source-owned proof path. The
+repository's **100–300 monthly runner-minute** allocation supports one small,
+read-only pull-request job for changes targeting `develop` or `main`. The job
+uses one Python version and standard runner, cancels superseded runs, and has a
+ten-minute ceiling.
+
+The manual `Governance` workflow retains the complete language, secret-shape,
+author-feedback, and regression paths. A named receiver sets
+`ENABLE_GITHUB_ACTIONS=true`, selects `confirm_run`, and dispatches it when the
+wider observation is material. Setting the variable to `false` rests that
+manual path.
 
 The two reusable workflows are caller-owned contracts. They activate only
 through `workflow_call`, inherit the caller's event and budget decision, and
-currently have zero callers across the five-repository LIMS family. A future
-caller pins the governance commit and owns its repository setting, permissions,
-inputs, secrets, and evidence interpretation.
+receive execution through a reviewed caller. The caller pins the governance
+commit and owns its repository setting, permissions, inputs, secrets, and
+evidence interpretation.
 
-Dependency scheduling rests in `.github/dependabot.manual.yml`. A reviewed
-rename to the canonical `.github/dependabot.yml` activates the schedule.
-When active, dependency automation follows a bounded-caller posture: the full
-Dependabot or Renovate branch grammar, exact bot author, and `main` or `develop`
+Monthly dependency scheduling lives in `.github/dependabot.yml`, targets
+`develop`, groups minor and patch updates, and keeps at most two update pull
+requests open. Dependency automation follows a bounded-caller posture: the
+full Dependabot or Renovate branch grammar, exact bot author, and governed
 target agree. Local tests, immutable action references, CODEOWNER review, and
 release evidence remain the substantive proof.
 
-The ruleset exports preserve human pull-request review and release protections
-with empty hosted required-check sets. Adding a hosted context later is an
-explicit replacement state with a stable context, funded execution path, and
-reviewed recovery route.
+The `main` ruleset export preserves one approval, CODEOWNER review, last-push
+approval, and the release protections for promotion. `develop` remains the
+lean integration branch. Release and hotfix branches remain short-lived and
+advance through the protected `main` pull request.
 
 The behavioral basis is maintained in GitHub's
 [Dependabot options reference](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference)
