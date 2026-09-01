@@ -49,13 +49,14 @@
       "horizon_label": "Immutable governance promotion",
       "sequence": 3,
       "state": "settling",
-      "desired_state": "The promoted governance release identifies its immutable commit, digest, branch coordinate, schema release, and downstream adoption path.",
+      "desired_state": "The governance release identifies its annotated tag object, accepted commit, reproducible archive digest, schema release, and downstream adoption path.",
       "entry_evidence": [
         "All repository-local governance and automation checks pass."
       ],
       "completion_evidence": [
-        "A governed release branch targets main and records its immutable PR-head or release coordinate.",
-        "The Machine Node replaces candidate zeros with the promoted commit and digest.",
+        "A governed release branch targets main and becomes an accepted, signed, annotated release tag.",
+        "A later evidence commit records the tag object, accepted commit, archive digest, and their ancestry relationship.",
+        "The Machine Node replaces candidate zeros with the accepted commit and archive digest.",
         "Downstream repositories validate against the promoted schema and workflow coordinates."
       ],
       "owner_role": "Constellation release steward",
@@ -71,8 +72,8 @@
       "DECISION-BOT-IDENTITY-BOUND-BRANCHES-001",
       "DECISION-DEFAULT-BRANCH-SECURITY-UPDATES-001"
     ],
-    "next_safe_action": "Run the full validation suite, promote through a release branch, and replace candidate provenance with immutable coordinates.",
-    "verification": "Confirm 2.0.1 schema conformance, 0.3.0 profile binding, selected-future and automation digests, campaign markings, read-only workflow permissions, and passing regression tests."
+    "next_safe_action": "Run the full validation suite, promote through a release branch, tag the accepted source, and record the observation from a later evidence commit.",
+    "verification": "Confirm 2.0.1 schema conformance, 0.3.0 profile binding, selected-future and automation digests, campaign markings, read-only workflow permissions, passing regression tests, and Git-backed release-coordinate verification."
   },
   "retained_effects": [
     "Simulation closure remains definitive only within its selected future reality.",

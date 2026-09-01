@@ -30,7 +30,12 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
   advisory-only authority, privacy controls, reproducible coordinates,
   measurable qualification thresholds, and accountable recovery.
 - Prepared candidate `2.0.1` with a schema-valid repository-promotion receipt
-  and an executable candidate-to-released lifecycle.
+  and an executable `candidate_ready` to `release_observed` lifecycle. The
+  accepted tagged commit remains the release subject while a later commit
+  carries its observation.
+- Added Git-backed release-coordinate verification for annotated-tag
+  dereferencing, exact `git archive --format=tar` SHA-256 reproduction,
+  release-subject ancestry, and receipt-carrier bytes.
 - Preserved one approving review, deletion, non-fast-forward, CODEOWNER,
   last-push, review-thread resolution, and applicable signature protections in
   versioned rulesets while keeping hosted required-check sets empty for the

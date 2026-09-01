@@ -38,8 +38,18 @@ connects each branch to intent.
 3. Run the full validation suite and downstream contract rehearsal.
 4. Merge the release into `main` through an approved pull request.
 5. Create a signed `governance-v<semver>` tag on the merge commit.
-6. Merge the released state back into `develop`.
-7. Publish schema digests and downstream upgrade guidance.
+6. Reproduce the tagged commit's `git archive --format=tar` SHA-256 digest.
+7. Merge the tagged release forward into `develop`.
+8. Create an evidence branch that records the tag object, accepted commit,
+   archive digest, and reviewed proof locators in the promotion receipt.
+9. Run `python3 tools/validate_governance.py --verify-release-coordinate` from
+   the receipt-carrier commit, then merge the evidence branch into `develop`.
+10. Publish schema digests and downstream upgrade guidance.
+
+The signed tag identifies the accepted release subject. The later evidence
+commit carries the observation and proves that the subject is its ancestor;
+the receipt therefore expresses both roles while each commit carries only the
+information available when it is created.
 
 ## Hotfix flow
 

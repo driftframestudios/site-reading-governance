@@ -49,13 +49,15 @@ Each consumer records:
 
 ```json
 {
-  "release": "governance-v2.0.1",
-  "commit": "0123456789abcdef0123456789abcdef01234567",
-  "digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+  "tag": "governance-v2.0.1",
+  "commit_oid": "0123456789abcdef0123456789abcdef01234567",
+  "archive_format": "git-tar",
+  "archive_digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 }
 ```
 
-The release tag supports human navigation. The commit and digest support exact
+The annotated tag supports human navigation and object-level verification. The
+accepted commit and digest of its raw Git tar archive support exact
 reproduction.
 
 ## Evidence storage

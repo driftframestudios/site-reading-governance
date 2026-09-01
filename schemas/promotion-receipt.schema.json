@@ -11,7 +11,6 @@
     "promotion_state",
     "evidence_mode",
     "assurance_stage",
-    "candidate_coordinate",
     "release_coordinate",
     "required_evidence",
     "accountable_role",
@@ -34,8 +33,8 @@
     "promotion_state": {
       "type": "string",
       "enum": [
-        "candidate_pending",
-        "released"
+        "candidate_ready",
+        "release_observed"
       ]
     },
     "evidence_mode": {
@@ -43,9 +42,6 @@
     },
     "assurance_stage": {
       "$ref": "common.schema.json#/$defs/assuranceStage"
-    },
-    "candidate_coordinate": {
-      "$ref": "common.schema.json#/$defs/versionedCoordinate"
     },
     "release_coordinate": {
       "oneOf": [
@@ -56,25 +52,45 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
+            "git_object_format",
             "tag",
-            "commit",
-            "digest",
+            "tag_object_oid",
+            "commit_oid",
+            "archive_format",
+            "archive_digest",
             "promoted_at",
             "local_proof_receipt",
             "hosted_check_contexts",
+            "hosted_automation_receipt",
             "ruleset_receipt",
-            "codeowner_resolution"
+            "codeowner_resolution",
+            "tag_signature_receipt"
           ],
           "properties": {
+            "git_object_format": {
+              "type": "string",
+              "enum": [
+                "sha1",
+                "sha256"
+              ]
+            },
             "tag": {
               "type": "string",
               "pattern": "^governance-v(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$"
             },
-            "commit": {
+            "tag_object_oid": {
               "type": "string",
-              "pattern": "^(?!0{40}$)[a-f0-9]{40}$"
+              "pattern": "^(?:(?!0{40}$)[a-f0-9]{40}|(?!0{64}$)[a-f0-9]{64})$"
             },
-            "digest": {
+            "commit_oid": {
+              "type": "string",
+              "pattern": "^(?:(?!0{40}$)[a-f0-9]{40}|(?!0{64}$)[a-f0-9]{64})$"
+            },
+            "archive_format": {
+              "type": "string",
+              "const": "git-tar"
+            },
+            "archive_digest": {
               "type": "string",
               "pattern": "^sha256:(?!0{64}$)[a-f0-9]{64}$"
             },
@@ -95,16 +111,55 @@
               }
             },
             "hosted_automation_receipt": {
-              "$ref": "common.schema.json#/$defs/governedLocator"
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "common.schema.json#/$defs/governedLocator"
+                }
+              ]
             },
             "ruleset_receipt": {
               "$ref": "common.schema.json#/$defs/governedLocator"
             },
             "codeowner_resolution": {
               "$ref": "common.schema.json#/$defs/governedLocator"
+            },
+            "tag_signature_receipt": {
+              "$ref": "common.schema.json#/$defs/governedLocator"
             }
           },
           "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "git_object_format": {
+                    "const": "sha1"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "tag_object_oid": {
+                    "pattern": "^(?!0{40}$)[a-f0-9]{40}$"
+                  },
+                  "commit_oid": {
+                    "pattern": "^(?!0{40}$)[a-f0-9]{40}$"
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "tag_object_oid": {
+                    "pattern": "^(?!0{64}$)[a-f0-9]{64}$"
+                  },
+                  "commit_oid": {
+                    "pattern": "^(?!0{64}$)[a-f0-9]{64}$"
+                  }
+                }
+              }
+            },
             {
               "if": {
                 "properties": {
@@ -114,9 +169,18 @@
                 }
               },
               "then": {
-                "required": [
-                  "hosted_automation_receipt"
-                ]
+                "properties": {
+                  "hosted_automation_receipt": {
+                    "type": "string"
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "hosted_automation_receipt": {
+                    "type": "null"
+                  }
+                }
               }
             }
           ]
@@ -147,7 +211,7 @@
       "if": {
         "properties": {
           "promotion_state": {
-            "const": "candidate_pending"
+            "const": "candidate_ready"
           }
         }
       },
@@ -159,20 +223,6 @@
           "assurance_stage": {
             "const": "specified"
           },
-          "candidate_coordinate": {
-            "type": "object",
-            "properties": {
-              "release": {
-                "pattern": "^candidate-governance-v(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$"
-              },
-              "commit": {
-                "const": "0000000000000000000000000000000000000000"
-              },
-              "digest": {
-                "const": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
-              }
-            }
-          },
           "release_coordinate": {
             "type": "null"
           }
@@ -183,7 +233,7 @@
       "if": {
         "properties": {
           "promotion_state": {
-            "const": "released"
+            "const": "release_observed"
           }
         }
       },

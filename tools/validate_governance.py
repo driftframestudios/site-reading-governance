@@ -9,6 +9,7 @@ from hashlib import sha256
 import json
 import math
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -1511,20 +1512,13 @@ def _validate_repository_orientation_records(
                 )
             )
         if (
-            promotion_receipt.get("promotion_state") != "candidate_pending"
+            promotion_receipt.get("promotion_state") != "candidate_ready"
             or promotion_receipt.get("release_coordinate") is not None
         ):
             findings.append(
                 Finding(
                     "promotion-receipt.json",
-                    "candidate provenance requires a pending promotion receipt",
-                )
-            )
-        if promotion_receipt.get("candidate_coordinate") != provenance:
-            findings.append(
-                Finding(
-                    "promotion-receipt.json.candidate_coordinate",
-                    "candidate promotion coordinates must equal Machine Node provenance",
+                    "candidate provenance requires a ready promotion receipt",
                 )
             )
     elif not zero_commit and not zero_digest:
@@ -1533,29 +1527,29 @@ def _validate_repository_orientation_records(
             findings.append(
                 Finding(
                     "machine-node.json.lifecycle_state",
-                    "released provenance requires a reference-ready or active lifecycle",
+                    "observed release provenance requires a reference-ready or active lifecycle",
                 )
             )
         if promotion_receipt_id in node.get("open_receipts", []):
             findings.append(
                 Finding(
                     "machine-node.json.open_receipts",
-                    "released provenance requires the promotion receipt to be closed",
+                    "observed release provenance requires the promotion receipt to be closed",
                 )
             )
         if (
-            promotion_receipt.get("promotion_state") != "released"
+            promotion_receipt.get("promotion_state") != "release_observed"
             or not isinstance(release_coordinate, dict)
         ):
             findings.append(
                 Finding(
                     "promotion-receipt.json",
-                    "released provenance requires observed promotion evidence",
+                    "observed release provenance requires a release observation",
                 )
             )
         elif (
-            release_coordinate.get("commit") != provenance.get("commit")
-            or release_coordinate.get("digest") != provenance.get("digest")
+            release_coordinate.get("commit_oid") != provenance.get("commit")
+            or release_coordinate.get("archive_digest") != provenance.get("digest")
             or release_coordinate.get("tag") != provenance.get("release")
         ):
             findings.append(
@@ -1565,11 +1559,20 @@ def _validate_repository_orientation_records(
                 )
             )
         if isinstance(release_coordinate, dict):
+            if release_coordinate.get("tag") != promotion_receipt.get(
+                "target_release"
+            ):
+                findings.append(
+                    Finding(
+                        "promotion-receipt.json.release_coordinate.tag",
+                        "observed release tag must equal the receipt target release",
+                    )
+                )
             if not release_coordinate.get("local_proof_receipt"):
                 findings.append(
                     Finding(
                         "promotion-receipt.json.release_coordinate.local_proof_receipt",
-                        "released provenance requires the local proof receipt",
+                        "observed release provenance requires the local proof receipt",
                     )
                 )
             hosted_contexts = release_coordinate.get("hosted_check_contexts")
@@ -1599,7 +1602,7 @@ def _validate_repository_orientation_records(
             findings.append(
                 Finding(
                     "coordination-horizon.json.work_items",
-                    "released provenance requires completed promotion work",
+                    "observed release provenance requires completed promotion work",
                 )
             )
     return findings
@@ -1982,6 +1985,257 @@ def validate_contract_request(
     return validate_pair(schema_path, resolved_document)
 
 
+def _run_git(repository_root: Path, *arguments: str) -> subprocess.CompletedProcess[bytes]:
+    """Run one bounded Git observation without a shell."""
+    return subprocess.run(
+        ["git", "-C", str(repository_root), *arguments],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+
+def _git_stdout(
+    repository_root: Path,
+    arguments: tuple[str, ...],
+    finding_path: str,
+    failure_message: str,
+) -> tuple[bytes | None, list[Finding]]:
+    """Return Git output or one public-safe observation finding."""
+    try:
+        result = _run_git(repository_root, *arguments)
+    except OSError:
+        return None, [Finding(finding_path, "Git is unavailable for this observation")]
+    if result.returncode != 0:
+        return None, [Finding(finding_path, failure_message)]
+    return result.stdout, []
+
+
+def verify_release_coordinate(
+    repository_root: Path,
+    promotion_receipt_path: Path,
+    carrier_ref: str = "HEAD",
+) -> list[Finding]:
+    """Verify an observed release subject from the later receipt carrier."""
+    findings: list[Finding] = []
+    try:
+        resolved_repository = repository_root.resolve(strict=True)
+        candidate_receipt = (
+            promotion_receipt_path
+            if promotion_receipt_path.is_absolute()
+            else resolved_repository / promotion_receipt_path
+        )
+        resolved_receipt = candidate_receipt.resolve(strict=True)
+        resolved_receipt.relative_to(resolved_repository)
+        if not resolved_receipt.is_file():
+            raise ContractInputError("promotion receipt resolves to a non-file path")
+    except (OSError, ValueError, ContractInputError):
+        return [
+            Finding(
+                "release-coordinate",
+                "promotion receipt must be a readable file inside the Git repository",
+            )
+        ]
+
+    if (
+        re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]{0,199}", carrier_ref) is None
+        or ".." in carrier_ref
+        or "//" in carrier_ref
+        or "@{" in carrier_ref
+    ):
+        return [
+            Finding(
+                "release-coordinate.carrier_ref",
+                "carrier ref must use a bounded Git ref or object identifier",
+            )
+        ]
+
+    try:
+        receipt = load_json(resolved_receipt)
+    except (
+        OSError,
+        json.JSONDecodeError,
+        DuplicateKeyError,
+        NonFiniteNumberError,
+    ) as exc:
+        return [Finding("release-coordinate.receipt", str(exc))]
+
+    schema_findings = SchemaValidator(
+        SCHEMA_DIR / "promotion-receipt.schema.json"
+    ).validate(receipt)
+    if schema_findings:
+        return [
+            Finding(f"promotion-receipt.json{item.path[1:]}", item.message)
+            for item in schema_findings
+        ]
+    if receipt.get("promotion_state") != "release_observed":
+        return [
+            Finding(
+                "promotion-receipt.json.promotion_state",
+                "Git-backed verification begins after the release observation is recorded",
+            )
+        ]
+
+    coordinate = receipt["release_coordinate"]
+    if coordinate["tag"] != receipt["target_release"]:
+        findings.append(
+            Finding(
+                "release-coordinate.tag",
+                "observed release tag must equal the receipt target release",
+            )
+        )
+    object_format_bytes, object_format_findings = _git_stdout(
+        resolved_repository,
+        ("rev-parse", "--show-object-format"),
+        "release-coordinate.git_object_format",
+        "Git object format could not be observed",
+    )
+    findings.extend(object_format_findings)
+    if object_format_bytes is not None:
+        observed_format = object_format_bytes.decode("ascii", errors="replace").strip()
+        if coordinate["git_object_format"] != observed_format:
+            findings.append(
+                Finding(
+                    "release-coordinate.git_object_format",
+                    "recorded Git object format differs from the repository",
+                )
+            )
+
+    tag_ref = f"refs/tags/{coordinate['tag']}"
+    tag_type_bytes, tag_type_findings = _git_stdout(
+        resolved_repository,
+        ("cat-file", "-t", tag_ref),
+        "release-coordinate.tag",
+        "recorded release tag is unavailable",
+    )
+    findings.extend(tag_type_findings)
+    if tag_type_bytes is not None and tag_type_bytes.strip() != b"tag":
+        findings.append(
+            Finding(
+                "release-coordinate.tag",
+                "release tag must be an annotated tag object",
+            )
+        )
+
+    tag_oid_bytes, tag_oid_findings = _git_stdout(
+        resolved_repository,
+        ("rev-parse", "--verify", tag_ref),
+        "release-coordinate.tag_object_oid",
+        "release tag object identifier could not be resolved",
+    )
+    findings.extend(tag_oid_findings)
+    if tag_oid_bytes is not None:
+        observed_tag_oid = tag_oid_bytes.decode("ascii", errors="replace").strip()
+        if coordinate["tag_object_oid"] != observed_tag_oid:
+            findings.append(
+                Finding(
+                    "release-coordinate.tag_object_oid",
+                    "recorded tag object identifier differs from the annotated tag",
+                )
+            )
+
+    tag_commit_bytes, tag_commit_findings = _git_stdout(
+        resolved_repository,
+        ("rev-parse", "--verify", f"{tag_ref}^{{commit}}"),
+        "release-coordinate.commit_oid",
+        "release tag could not be dereferenced to a commit",
+    )
+    findings.extend(tag_commit_findings)
+    if tag_commit_bytes is not None:
+        observed_commit_oid = tag_commit_bytes.decode("ascii", errors="replace").strip()
+        if coordinate["commit_oid"] != observed_commit_oid:
+            findings.append(
+                Finding(
+                    "release-coordinate.commit_oid",
+                    "recorded commit differs from the annotated tag subject",
+                )
+            )
+
+    archive_bytes, archive_findings = _git_stdout(
+        resolved_repository,
+        ("archive", "--format=tar", coordinate["commit_oid"]),
+        "release-coordinate.archive_digest",
+        "accepted source could not be rendered as a Git tar archive",
+    )
+    findings.extend(archive_findings)
+    if archive_bytes is not None:
+        observed_digest = f"sha256:{sha256(archive_bytes).hexdigest()}"
+        if coordinate["archive_digest"] != observed_digest:
+            findings.append(
+                Finding(
+                    "release-coordinate.archive_digest",
+                    "recorded archive digest differs from git archive --format=tar",
+                )
+            )
+
+    carrier_oid_bytes, carrier_oid_findings = _git_stdout(
+        resolved_repository,
+        ("rev-parse", "--verify", f"{carrier_ref}^{{commit}}"),
+        "release-coordinate.carrier_ref",
+        "receipt carrier commit could not be resolved",
+    )
+    findings.extend(carrier_oid_findings)
+    if carrier_oid_bytes is not None:
+        carrier_oid = carrier_oid_bytes.decode("ascii", errors="replace").strip()
+        if carrier_oid == coordinate["commit_oid"]:
+            findings.append(
+                Finding(
+                    "release-coordinate.carrier_ref",
+                    "receipt carrier must follow the tagged release subject",
+                )
+            )
+        try:
+            ancestry = _run_git(
+                resolved_repository,
+                "merge-base",
+                "--is-ancestor",
+                coordinate["commit_oid"],
+                carrier_oid,
+            )
+        except OSError:
+            findings.append(
+                Finding(
+                    "release-coordinate.carrier_ref",
+                    "Git is unavailable for the ancestry observation",
+                )
+            )
+        else:
+            if ancestry.returncode == 1:
+                findings.append(
+                    Finding(
+                        "release-coordinate.carrier_ref",
+                        "tagged release subject must be an ancestor of the receipt carrier",
+                    )
+                )
+            elif ancestry.returncode != 0:
+                findings.append(
+                    Finding(
+                        "release-coordinate.carrier_ref",
+                        "release-subject ancestry could not be observed",
+                    )
+                )
+
+        relative_receipt = resolved_receipt.relative_to(resolved_repository).as_posix()
+        carrier_receipt_bytes, carrier_receipt_findings = _git_stdout(
+            resolved_repository,
+            ("show", f"{carrier_oid}:{relative_receipt}"),
+            "release-coordinate.carrier_ref",
+            "receipt carrier does not contain the selected promotion receipt",
+        )
+        findings.extend(carrier_receipt_findings)
+        if (
+            carrier_receipt_bytes is not None
+            and carrier_receipt_bytes != resolved_receipt.read_bytes()
+        ):
+            findings.append(
+                Finding(
+                    "release-coordinate.carrier_ref",
+                    "working receipt bytes differ from the receipt carrier",
+                )
+            )
+    return findings
+
+
 def report(findings: Iterable[Finding]) -> int:
     """Render stable output for local and continuous-integration use."""
     materialized = list(findings)
@@ -2002,6 +2256,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--source-root", type=Path)
     parser.add_argument("--schema-name")
     parser.add_argument("--document-path")
+    parser.add_argument("--verify-release-coordinate", action="store_true")
+    parser.add_argument("--release-repository", type=Path)
+    parser.add_argument("--promotion-receipt", type=Path)
+    parser.add_argument("--carrier-ref", default="HEAD")
     args = parser.parse_args(argv)
     if (args.schema is None) != (args.document is None):
         parser.error("--schema and --document travel together")
@@ -2020,11 +2278,32 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         )
     if args.schema is not None and args.schema_name is not None:
         parser.error("select either direct paths or a bounded contract request")
+    if args.verify_release_coordinate and (
+        args.schema is not None or args.schema_name is not None
+    ):
+        parser.error("select release-coordinate verification as its own observation")
+    if not args.verify_release_coordinate and (
+        args.release_repository is not None
+        or args.promotion_receipt is not None
+        or args.carrier_ref != "HEAD"
+    ):
+        parser.error(
+            "--release-repository, --promotion-receipt, and --carrier-ref "
+            "belong to --verify-release-coordinate"
+        )
     return args
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
+    if args.verify_release_coordinate:
+        return report(
+            verify_release_coordinate(
+                args.release_repository or ROOT,
+                args.promotion_receipt or Path("promotion-receipt.json"),
+                args.carrier_ref,
+            )
+        )
     if args.schema:
         return report(validate_pair(args.schema, args.document))
     if args.schema_name:
