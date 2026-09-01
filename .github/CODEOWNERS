@@ -7,6 +7,8 @@
 /schemas/ @driftframestudios
 /rulesets/ @driftframestudios
 /AUTHORS @driftframestudios
+/AGENTS.md @driftframestudios
+/.agents/skills/ @driftframestudios
 /.github/dependabot.yml @driftframestudios
 /.github/automation-controls.json @driftframestudios
 /.github/workflows/ @driftframestudios

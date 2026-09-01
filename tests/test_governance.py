@@ -572,6 +572,31 @@ class GovernancePackageTests(unittest.TestCase):
         self.assertIn("/.github/dependabot.yml @driftframestudios", codeowners)
         self.assertNotIn("dependabot.manual.yml", codeowners)
 
+    def test_public_ready_skill_has_one_exact_identity_and_path(self) -> None:
+        self.assertEqual([], validation.validate_public_ready_skills())
+        skill_path = ROOT / validation.PUBLIC_SKILL_SOURCE_PATH
+        metadata, content = validation.parse_skill_source(skill_path)
+        self.assertEqual(validation.PUBLIC_SKILL_METADATA, metadata)
+        self.assertEqual(
+            "governance-schema-release-lineage",
+            metadata["name"],
+        )
+        self.assertIn("authorized resolver", " ".join(content.split()))
+        self.assertNotIn("https://github.com/", content)
+
+    def test_public_language_route_is_complete_and_locator_safe(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        guide = (ROOT / "docs" / "NEGATION_AWARE_LANGUAGE.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            "[`docs/NEGATION_AWARE_LANGUAGE.md`](docs/NEGATION_AWARE_LANGUAGE.md)",
+            readme,
+        )
+        self.assertIn("public authority", guide)
+        self.assertNotIn("app.notion", readme.lower())
+        self.assertNotIn("app.notion", guide.lower())
+
     def test_workflows_use_bounded_permissions_and_immutable_actions(self) -> None:
         self.assertEqual([], validation.validate_workflows())
 

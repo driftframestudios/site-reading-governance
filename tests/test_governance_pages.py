@@ -110,6 +110,7 @@ class GovernancePagesTests(unittest.TestCase):
             source = temporary_root / "source"
             source.mkdir()
             shutil.copytree(ROOT / "schemas", source / "schemas")
+            shutil.copytree(ROOT / ".agents", source / ".agents")
             shutil.copy2(ROOT / "GOVERNANCE.md", source / "GOVERNANCE.md")
             run_git(source, "init", "--initial-branch=develop")
             run_git(source, "config", "user.name", "Governance Fixture")
@@ -395,17 +396,51 @@ class GovernancePagesTests(unittest.TestCase):
                 stylesheet,
             )
 
-    def test_current_source_without_public_ready_skills_omits_skill_catalog(self) -> None:
+    def test_public_ready_skill_is_source_faithful_and_exactly_routed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             output, manifest = self.build_fixture(Path(temporary))
-            self.assertNotIn("skills", manifest)
-            self.assertFalse((output / "skills").exists())
-            self.assertFalse(
-                any(
-                    item["path"].startswith("skills/")
-                    for item in manifest["inventory"]["files"]
-                )
+            self.assertEqual(1, len(manifest["skills"]))
+            skill = manifest["skills"][0]
+            self.assertEqual(pages.PUBLIC_SKILL_SLUG, skill["name"])
+            self.assertEqual(pages.PUBLIC_SKILL_SOURCE_PATH, skill["sourcePath"])
+            self.assertEqual(pages.PUBLIC_SKILL_OUTPUT_PATH, skill["outputPath"])
+            self.assertEqual(pages.PUBLIC_SKILL_PAGE_PATH, skill["pagePath"])
+            self.assertIn(f"/{'f' * 40}/", skill["sourceUrl"])
+            self.assertEqual(
+                (ROOT / pages.PUBLIC_SKILL_SOURCE_PATH).read_bytes(),
+                (output / pages.PUBLIC_SKILL_OUTPUT_PATH).read_bytes(),
             )
+            self.assertTrue((output / "skills" / "index.html").is_file())
+            self.assertTrue((output / pages.PUBLIC_SKILL_PAGE_PATH).is_file())
+            page = (output / pages.PUBLIC_SKILL_PAGE_PATH).read_text(encoding="utf-8")
+            self.assertIn('href="SKILL.md"', page)
+            self.assertIn(pages.PUBLIC_SKILL_METADATA["lineage_key"], page)
+
+    def test_projected_skill_has_no_unpublished_relative_markdown_links(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output, _ = self.build_fixture(Path(temporary))
+            content = (output / pages.PUBLIC_SKILL_OUTPUT_PATH).read_text(
+                encoding="utf-8"
+            )
+            self.assertEqual((), pages.markdown_relative_targets(content))
+
+    def test_public_ready_skill_inventory_is_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "source"
+            shutil.copytree(ROOT / ".agents", source / ".agents")
+            extra = source / ".agents" / "skills" / "extra" / "SKILL.md"
+            extra.parent.mkdir(parents=True)
+            extra.write_text(
+                "---\nname: extra\nsource_band: public_ready\n---\n# Extra\n",
+                encoding="utf-8",
+            )
+            proof = pages.load_source_proof(
+                FIXTURE_PROOF,
+                source,
+                allow_fixture_standing=True,
+            )
+            with self.assertRaisesRegex(pages.PagesBuildError, "inventory differs"):
+                pages.collect_public_skills(source, proof)
 
     def test_default_build_has_no_canonical_metadata_or_cname(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -465,6 +500,20 @@ class GovernancePagesTests(unittest.TestCase):
             schema_path.write_bytes(schema_path.read_bytes() + b"\n")
             refresh_inventory(output)
             with self.assertRaisesRegex(pages.PagesBuildError, "schema records|schema bytes"):
+                pages.validate_site(
+                    output,
+                    ROOT,
+                    FIXTURE_PROOF,
+                    allow_fixture_standing=True,
+                )
+
+    def test_skill_byte_mutation_fails_after_inventory_is_refreshed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output, _ = self.build_fixture(Path(temporary))
+            skill_path = output / pages.PUBLIC_SKILL_OUTPUT_PATH
+            skill_path.write_bytes(skill_path.read_bytes() + b"\n")
+            refresh_inventory(output)
+            with self.assertRaisesRegex(pages.PagesBuildError, "published skill bytes"):
                 pages.validate_site(
                     output,
                     ROOT,

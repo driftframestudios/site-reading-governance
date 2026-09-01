@@ -26,6 +26,12 @@ from automation_contract import (
     MISSING_AUTOMATION_CONTROLS,
     validate_repository_automation,
 )
+from build_governance_pages import (
+    PUBLIC_SKILL_METADATA,
+    PUBLIC_SKILL_SOURCE_PATH,
+    PagesBuildError,
+    parse_skill_source,
+)
 
 
 SCHEMA_DIR = ROOT / "schemas"
@@ -1329,6 +1335,68 @@ def validate_repository_orientation() -> list[Finding]:
     return findings
 
 
+def validate_public_ready_skills() -> list[Finding]:
+    """Validate the exact repository-local skill accepted for public projection."""
+    findings: list[Finding] = []
+    skills_root = ROOT / ".agents" / "skills"
+    public_paths: list[str] = []
+    for path in sorted(skills_root.glob("*/SKILL.md")):
+        relative = path.relative_to(ROOT).as_posix()
+        try:
+            metadata, content = parse_skill_source(path)
+        except PagesBuildError as exc:
+            findings.append(Finding(relative, str(exc)))
+            continue
+        if metadata.get("source_band") == "public_ready":
+            public_paths.append(relative)
+            normalized_content = " ".join(content.split())
+            if metadata != PUBLIC_SKILL_METADATA:
+                findings.append(
+                    Finding(
+                        relative,
+                        "public-ready skill identity and upstream lineage must match "
+                        "the accepted Governance collaboration guide",
+                    )
+                )
+            if (
+                "authorized resolver" not in normalized_content
+                or "https://github.com/" in content
+            ):
+                findings.append(
+                    Finding(
+                        relative,
+                        "public adaptation lineage must use its operator-blind key "
+                        "and authorized resolver without a gated GitHub locator",
+                    )
+                )
+
+    if public_paths != [PUBLIC_SKILL_SOURCE_PATH]:
+        findings.append(
+            Finding(
+                ".agents/skills",
+                "public-ready skill inventory must contain exactly "
+                f"{PUBLIC_SKILL_SOURCE_PATH}",
+            )
+        )
+
+    expected_route = f"[`{PUBLIC_SKILL_METADATA['name']}`]({PUBLIC_SKILL_SOURCE_PATH})"
+    for orientation_path in ("README.md", "AGENTS.md"):
+        path = ROOT / orientation_path
+        try:
+            content = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            findings.append(Finding(orientation_path, str(exc)))
+            continue
+        if expected_route not in content:
+            findings.append(
+                Finding(
+                    orientation_path,
+                    "repository orientation must link the exact public-ready skill path",
+                )
+            )
+    return findings
+
+
 def _validate_repository_orientation_records(
     records: dict[str, Any],
 ) -> list[Finding]:
@@ -2412,6 +2480,7 @@ def main(argv: list[str] | None = None) -> int:
             *validate_schema_catalog(),
             *validate_examples(),
             *validate_repository_orientation(),
+            *validate_public_ready_skills(),
             *validate_rulesets(),
             *validate_workflows(),
             *validate_coordination_vocabulary(),

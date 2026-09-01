@@ -1,13 +1,34 @@
 # Site Reading Governance
 
-This repository is the reusable governance plane for comparative Site Reading
-constellations. It gives planning, implementation, simulation, and evidence
-repositories one versioned contract for decisions, scenarios, receipts,
-acceptance, comparison, and change-triggered invalidation.
+This repository provides the shared schemas, examples, release evidence,
+language rules, and governance guidance used by the five-repository LIMS/ELN
+suite. Planning, implementation, simulation, and comparison repositories use
+its versioned contracts for decisions, scenarios, receipts, acceptance,
+comparison, and change-triggered review.
 
 Repository authorship and maintenance provenance is recorded in
 [`AUTHORS`](AUTHORS). Git history and reviewed pull requests preserve change
 chronology and contribution credit.
+
+## Start here
+
+1. Read [`GOVERNANCE.md`](GOVERNANCE.md) for meaning, decision rights, evidence
+   stages, review, and recovery.
+2. Use [`schemas/README.md`](schemas/README.md) to find the record you need, then
+   keep its stable identifier and release coordinate with each validation.
+3. Run `make check` with Python 3.11 or newer. Use the focused validation
+   command in [Quick start](#quick-start) when checking one downstream record.
+4. Start changes from `develop` using [`BRANCHING.md`](BRANCHING.md). Read
+   [`promotion-receipt.json`](promotion-receipt.json) when the accepted tag,
+   commit, archive digest, or release state affects the work.
+5. Use the repository-local
+   [`governance-schema-release-lineage`](.agents/skills/governance-schema-release-lineage/SKILL.md)
+   skill when one schema needs to be followed from source through release and
+   its byte-identical Pages retrieval copy.
+
+[`first-receipt.json`](first-receipt.json) provides compact re-entry context.
+[`coordination-horizon.json`](coordination-horizon.json) records current work
+and the next evidence-bearing move.
 
 The package is private-repository ready. Its examples use synthetic identifiers,
 its automation uses read-only permissions by default, and its ruleset exports
@@ -185,6 +206,9 @@ coordinates.
 
 ## Source posture
 
-The language policy is derived from the Notion field-guide page
-[Semantic Attractor Design — Negation-Aware Instructions](https://app.notion.com/p/abcb29b960a842ce8f1a409408a29257).
-The local guide records the applied interpretation and the automated checks.
+[`docs/NEGATION_AWARE_LANGUAGE.md`](docs/NEGATION_AWARE_LANGUAGE.md) is the
+public authority for this repository's applied language posture. It records the
+desired-state guidance, hard-boundary treatment, automated checks, and exact
+local verification path. Working-source lineage remains with its authorized
+steward while this repository-local guide gives public collaborators the
+complete behavior needed here.

@@ -2,9 +2,10 @@
 
 ## Source and application
 
-This repository applies the collaboration pattern documented in
-[Semantic Attractor Design — Negation-Aware Instructions](https://app.notion.com/p/abcb29b960a842ce8f1a409408a29257),
-retrieved July 28, 2026.
+This guide is the public authority for this repository's negation-aware
+language posture. It records the applied collaboration pattern, the exact
+local assurance behavior, and the verification route available to repository
+readers. Working-source lineage remains with its authorized steward.
 
 The governing question is:
 
