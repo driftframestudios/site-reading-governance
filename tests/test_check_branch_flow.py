@@ -75,7 +75,7 @@ class BranchFlowAutomationTests(unittest.TestCase):
 
     def test_partial_pull_request_coordinates_fail_closed(self) -> None:
         for arguments in (
-            ["--base", "main", "--head", "release/2.0.1"],
+            ["--base", "main", "--head", "release/2.1.0"],
             ["--author", "repository-contributor"],
             ["--base", "main", "--author", "repository-contributor"],
         ):
@@ -127,7 +127,7 @@ class BranchFlowAutomationTests(unittest.TestCase):
 
     def test_automation_branch_preserves_allowed_target_binding(self) -> None:
         result, output = self.invoke(
-            base="release/2.0.1",
+            base="release/2.1.0",
             head="dependabot/github_actions/actions/checkout-5.0.0",
             author="dependabot[bot]",
         )

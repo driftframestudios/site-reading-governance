@@ -34,7 +34,7 @@ The package is private-repository ready. Its examples use synthetic identifiers,
 its automation uses read-only permissions by default, and its ruleset exports
 can be reviewed before installation through the GitHub Rulesets API.
 
-The current governance schema candidate is `2.0.1`; stable schema identifiers use
+The current governance schema candidate is `2.1.0`; stable schema identifiers use
 the `/v2.0/` coordinate. It implements **Control Plane Profile v0.3**, the
 Enterprise Human-AI Practitioner Registry-derived capability profile for
 bounded callers, veracity, orientation, coordination, and future-reality
@@ -168,11 +168,11 @@ python3 tools/validate_governance.py \
   simulated-closure operating model
 - [`docs/MIGRATION_V1_TO_V2.md`](docs/MIGRATION_V1_TO_V2.md) — downstream
   migration sequence and release validation
-- [`docs/MIGRATION_V2_0_0_TO_V2_0_1.md`](docs/MIGRATION_V2_0_0_TO_V2_0_1.md) —
-  patch migration for promotion receipts, immutable workflow inputs, and policy
-  contexts
+- [`docs/MIGRATION_V2_0_0_TO_V2_1_0.md`](docs/MIGRATION_V2_0_0_TO_V2_1_0.md) —
+  additive migration for promotion, language-control, and database-change
+  contracts
 - [`docs/GOVERNANCE_PAGES.md`](docs/GOVERNANCE_PAGES.md) — deterministic
-  Governance 2.0.1 schema retrieval, source proof, authority, and publication
+  Governance 2.1.0 schema retrieval, source proof, authority, and publication
   handoff
 - [`schemas/`](schemas/) — JSON Schema 2020-12 contracts
 - [`examples/`](examples/) — valid synthetic exemplars for every contract

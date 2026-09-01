@@ -1,7 +1,7 @@
 # Schema Catalog
 
 All contracts use JSON Schema 2020-12 and stable HTTPS identifiers.
-Release candidate `2.0.1` uses the stable `/v2.0/` identifier coordinate and implements
+Release candidate `2.1.0` uses the stable `/v2.0/` identifier coordinate and implements
 Control Plane Profile v0.3.
 
 | Schema | Record |
