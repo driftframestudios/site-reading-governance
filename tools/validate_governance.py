@@ -18,6 +18,16 @@ from urllib.parse import urldefrag, urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
+TOOL_DIRECTORY = Path(__file__).resolve().parent
+if str(TOOL_DIRECTORY) not in sys.path:
+    sys.path.insert(0, str(TOOL_DIRECTORY))
+
+from automation_contract import (
+    MISSING_AUTOMATION_CONTROLS,
+    validate_repository_automation,
+)
+
+
 SCHEMA_DIR = ROOT / "schemas"
 EXAMPLE_DIR = ROOT / "examples"
 RULESET_DIR = ROOT / "rulesets"
@@ -1279,6 +1289,22 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
 def validate_repository_orientation() -> list[Finding]:
     """Validate root orientation records and their cross-record contract."""
     findings: list[Finding] = []
+    authors_path = ROOT / "AUTHORS"
+    if not authors_path.is_file():
+        findings.append(
+            Finding("AUTHORS", "repository provenance requires its source-local carrier")
+        )
+    else:
+        authors = authors_path.read_text(encoding="utf-8")
+        if not authors.startswith("# General provenance\n"):
+            findings.append(
+                Finding("AUTHORS", "repository provenance requires its named carrier")
+            )
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    if "[`AUTHORS`](AUTHORS)" not in readme:
+        findings.append(
+            Finding("README.md", "repository orientation requires the AUTHORS route")
+        )
     records: dict[str, Any] = {}
     for document_name, schema_name in ROOT_ORIENTATION_SCHEMAS.items():
         document_path = ROOT / document_name
@@ -1633,14 +1659,9 @@ def validate_coordination_vocabulary() -> list[Finding]:
 
 
 def validate_rulesets() -> list[Finding]:
-    """Check exported protections for the shared branch and release invariants."""
+    """Check exported protections for main promotion and release tags."""
     findings: list[Finding] = []
-    expected = {
-        "main.json",
-        "develop.json",
-        "release-hotfix.json",
-        "release-tags.json",
-    }
+    expected = {"main.json", "release-tags.json"}
     available = {path.name for path in RULESET_DIR.glob("*.json")}
     if available != expected:
         findings.append(
@@ -1717,10 +1738,23 @@ def validate_rulesets() -> list[Finding]:
                 findings.append(
                     Finding(relative, "branch ruleset requires one pull-request rule")
                 )
-        if path.name in {"main.json", "release-hotfix.json", "release-tags.json"}:
+        if path.name in {"main.json", "release-tags.json"}:
             if "required_signatures" not in rule_types:
                 findings.append(
                     Finding(relative, "production coordinates require signatures")
+                )
+        if path.name == "main.json":
+            includes = set(
+                ruleset.get("conditions", {})
+                .get("ref_name", {})
+                .get("include", [])
+            )
+            if includes != {"refs/heads/main"}:
+                findings.append(
+                    Finding(
+                        relative,
+                        "main promotion protection requires the main branch coordinate",
+                    )
                 )
         if path.name == "release-tags.json":
             includes = set(
@@ -1781,9 +1815,10 @@ def runner_job_blocks(workflow: str) -> dict[str, str]:
 
 
 def validate_workflows() -> list[Finding]:
-    """Check workflow permissions and immutable third-party action coordinates."""
+    """Check semantic automation contracts and immutable action coordinates."""
     findings: list[Finding] = []
     expected_triggers = {
+        "pull-request.yml": {"pull_request"},
         "validate.yml": {"workflow_dispatch"},
         "reusable-governance-validation.yml": {"workflow_call"},
         "reusable-contract-validation.yml": {"workflow_call"},
@@ -1801,29 +1836,64 @@ def validate_workflows() -> list[Finding]:
             )
         )
 
-    dependency_template = ROOT / ".github" / "dependabot.manual.yml"
-    if not dependency_template.exists():
-        findings.append(
-            Finding(
-                ".github/dependabot.manual.yml",
-                "dependency activation template is required for the resting state",
-            )
-        )
-    else:
-        template_content = dependency_template.read_text(encoding="utf-8")
-        if "Activation template:" not in template_content:
-            findings.append(
-                Finding(
-                    ".github/dependabot.manual.yml",
-                    "dependency activation template requires its activation cue",
-                )
-            )
-    if (ROOT / ".github" / "dependabot.yml").exists():
+    dependency_config = ROOT / ".github" / "dependabot.yml"
+    dependency_content: str | None = None
+    if not dependency_config.exists():
         findings.append(
             Finding(
                 ".github/dependabot.yml",
-                "scheduled dependency updates are active; the resting state uses "
-                "dependabot.manual.yml",
+                "monthly dependency upkeep requires its active configuration",
+            )
+        )
+    else:
+        dependency_content = dependency_config.read_text(encoding="utf-8")
+    if (ROOT / ".github" / "dependabot.manual.yml").exists():
+        findings.append(
+            Finding(
+                ".github/dependabot.manual.yml",
+                "monthly dependency upkeep uses the active dependabot.yml source",
+            )
+        )
+
+    automation_controls_path = ROOT / ".github" / "automation-controls.json"
+    declared_controls: Any = MISSING_AUTOMATION_CONTROLS
+    try:
+        declared_controls = load_json(automation_controls_path)
+    except (
+        OSError,
+        json.JSONDecodeError,
+        DuplicateKeyError,
+        NonFiniteNumberError,
+    ) as exc:
+        findings.append(Finding(".github/automation-controls.json", str(exc)))
+
+    pull_request_path = WORKFLOW_DIR / "pull-request.yml"
+    if dependency_content is not None and pull_request_path.exists():
+        for message in validate_repository_automation(
+            pull_request_path.read_text(encoding="utf-8"),
+            dependency_content,
+            declared_controls,
+        ):
+            findings.append(Finding(".github/workflows/pull-request.yml", message))
+
+    codeowners_path = ROOT / ".github" / "CODEOWNERS"
+    codeowners = (
+        codeowners_path.read_text(encoding="utf-8")
+        if codeowners_path.exists()
+        else ""
+    )
+    if "/tools/automation_contract.py @driftframestudios" not in codeowners:
+        findings.append(
+            Finding(
+                ".github/CODEOWNERS",
+                "the semantic automation contract requires its source owner",
+            )
+        )
+    if "/.github/automation-controls.json @driftframestudios" not in codeowners:
+        findings.append(
+            Finding(
+                ".github/CODEOWNERS",
+                "the automation controls projection requires its source owner",
             )
         )
 
@@ -1921,6 +1991,28 @@ def validate_workflows() -> list[Finding]:
                 Finding(
                     relative,
                     "each checkout should preserve credentials in runner memory only",
+                )
+            )
+
+    automation_note = (ROOT / ".github" / "AUTOMATION.md").read_text(
+        encoding="utf-8"
+    )
+    required_automation_fragments = (
+        "100–300 GitHub Actions runner\nminutes per month",
+        "Pull requests targeting `develop` or `main`",
+        "Superseded runs cancel",
+        "## Deliberate full proof",
+        "`ENABLE_GITHUB_ACTIONS=true`",
+        "## Recovery",
+        "`.github/dependabot.manual.yml` returns dependency scheduling",
+    )
+    for fragment in required_automation_fragments:
+        if fragment not in automation_note:
+            findings.append(
+                Finding(
+                    ".github/AUTOMATION.md",
+                    "automation orientation requires the funded proof and recovery route: "
+                    f"{fragment!r}",
                 )
             )
     return findings

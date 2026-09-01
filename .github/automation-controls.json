@@ -1,0 +1,53 @@
+{
+  "contract_version": "1.0.0",
+  "pull_request": {
+    "path": ".github/workflows/pull-request.yml",
+    "name": "Governance pull request",
+    "targets": ["develop", "main"],
+    "permissions": {"contents": "read"},
+    "concurrency": {
+      "group": "governance-pr-${{ github.event.pull_request.number }}",
+      "cancel-in-progress": true
+    },
+    "job": {
+      "id": "governance-pr-validation",
+      "name": "governance-pr-validation",
+      "runner": "ubuntu-24.04",
+      "timeout_minutes": 10,
+      "python_version": "3.13",
+      "step_names": [
+        "Check out the proposed source",
+        "Select Python",
+        "Validate repository-owned governance"
+      ],
+      "checkout_action": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "setup_python_action": "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+      "install_command": null,
+      "validation_commands": [
+        "python3 tools/validate_governance.py",
+        "python3 tools/check_language.py",
+        "python3 tools/scan_secret_shapes.py",
+        "python3 -m unittest discover -s tests -v"
+      ]
+    }
+  },
+  "dependabot": {
+    "path": ".github/dependabot.yml",
+    "version": 2,
+    "updates": [
+      {
+        "package-ecosystem": "github-actions",
+        "directory": "/",
+        "target-branch": "develop",
+        "schedule": {"interval": "monthly"},
+        "open-pull-requests-limit": 2,
+        "groups": {
+          "github-actions-minor-patch": {
+            "patterns": ["*"],
+            "update-types": ["minor", "patch"]
+          }
+        }
+      }
+    ]
+  }
+}
