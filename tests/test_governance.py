@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 
@@ -148,6 +149,39 @@ def load_database_examples() -> dict[str, object]:
 class GovernancePackageTests(unittest.TestCase):
     def test_schema_catalog_is_coherent(self) -> None:
         self.assertEqual([], validation.validate_schema_catalog())
+
+    def test_schema_catalog_diagnostic_names_stable_identifier_family(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temporary_root = Path(directory)
+            schema_dir = temporary_root / "schemas"
+            schema_dir.mkdir()
+            schema = json.loads(
+                (ROOT / "schemas" / "common.schema.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            schema["$id"] = (
+                "https://schemas.driftframe.org/site-reading-governance/"
+                "v2.1/common.schema.json"
+            )
+            (schema_dir / "common.schema.json").write_text(
+                json.dumps(schema, indent=2) + "\n",
+                encoding="utf-8",
+            )
+
+            with (
+                patch.object(validation, "ROOT", temporary_root),
+                patch.object(validation, "SCHEMA_DIR", schema_dir),
+            ):
+                findings = validation.validate_schema_catalog()
+
+            self.assertTrue(
+                any(
+                    "stable /v2.0/ identifier family" in finding.message
+                    for finding in findings
+                ),
+                findings,
+            )
 
     def test_schema_catalog_rejects_unsupported_evaluator_keywords(self) -> None:
         findings = validation._validate_schema_keywords(

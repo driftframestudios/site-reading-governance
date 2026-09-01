@@ -22,7 +22,10 @@ document's structural meaning.
 
 ## Consumer actions
 
-1. Set `metadata.schema_version` to `2.1.0` when selecting this release.
+1. Set `metadata.schema_version` to `2.1.0` when selecting this release. In a
+   Machine Node, also set `schema_release` and every campaign's
+   `marking_schema_version` to `2.1.0` so the orientation record names one
+   coherent release.
 2. Pin the canonical `governance-v2.1.0` annotated tag, accepted commit, and
    SHA-256 digest of its raw `git archive --format=tar` bytes together.
 3. Run the governance, language, secret-shape, and regression proofs locally at

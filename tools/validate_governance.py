@@ -477,7 +477,8 @@ def validate_schema_catalog() -> list[Finding]:
             findings.append(
                 Finding(
                     relative,
-                    f"schema $id must use the {SCHEMA_RELEASE} release coordinate",
+                    "schema $id must use the stable /v2.0/ identifier family "
+                    "for this 2.x release line",
                 )
             )
         elif schema_id in ids:
