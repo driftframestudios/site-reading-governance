@@ -81,7 +81,7 @@
     "Ordinary validation and accountable review continue for automated maintenance."
   ],
   "consequential_questions": [
-    "Which promoted coordinate should downstream repositories pin after every local suite is green?",
+    "Which downstream repository should adopt the accepted tag, commit, and archive digest next?",
     "Which future automation caller provides enough value to justify a new explicit grammar and author binding?"
   ],
   "metadata": {
