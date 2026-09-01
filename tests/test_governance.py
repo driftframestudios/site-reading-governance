@@ -77,9 +77,9 @@ def release_observation(
         "local_proof_receipt": "governed://local/governance-proof/2.1.0",
         "hosted_check_contexts": [],
         "hosted_automation_receipt": None,
-        "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
-        "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
-        "tag_signature_receipt": "governed://git/tag-signature/governance-2-0-1",
+        "ruleset_receipt": "governed://github/rulesets/governance-2-1-0",
+        "codeowner_resolution": "governed://github/codeowners/governance-2-1-0",
+        "tag_signature_receipt": "governed://git/tag-signature/governance-2-1-0",
     }
     receipt["metadata"]["updated_at"] = "2026-09-01T16:05:00Z"
     return receipt
@@ -207,6 +207,25 @@ class GovernancePackageTests(unittest.TestCase):
             name: json.loads((ROOT / name).read_text(encoding="utf-8"))
             for name in validation.ROOT_ORIENTATION_SCHEMAS
         }
+        node = records["machine-node.json"]
+        first_receipt = records["first-receipt.json"]
+        promotion = records["promotion-receipt.json"]
+        horizon = records["coordination-horizon.json"]
+        receipt_id = promotion["promotion_receipt_id"]
+
+        node["lifecycle_state"] = "settling"
+        node["current_provenance"] = {
+            "release": "candidate-governance-v2.1.0",
+            "commit": "0" * 40,
+            "digest": "sha256:" + ("0" * 64),
+        }
+        node["open_receipts"] = [receipt_id]
+        first_receipt["open_receipts"] = [receipt_id]
+        promotion["promotion_state"] = "candidate_ready"
+        promotion["evidence_mode"] = "planned"
+        promotion["assurance_stage"] = "specified"
+        promotion["release_coordinate"] = None
+        horizon["current_item_ids"].append("WORK-GOVERNANCE-PROMOTION-002")
         for item in records["coordination-horizon.json"]["work_items"]:
             if item["item_id"] in records["coordination-horizon.json"][
                 "current_item_ids"
@@ -252,9 +271,9 @@ class GovernancePackageTests(unittest.TestCase):
             "local_proof_receipt": "governed://local/governance-proof/2.1.0",
             "hosted_check_contexts": [],
             "hosted_automation_receipt": None,
-            "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
-            "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
-            "tag_signature_receipt": "governed://git/tag-signature/governance-2-0-1",
+            "ruleset_receipt": "governed://github/rulesets/governance-2-1-0",
+            "codeowner_resolution": "governed://github/codeowners/governance-2-1-0",
+            "tag_signature_receipt": "governed://git/tag-signature/governance-2-1-0",
         }
         for item in horizon["work_items"]:
             if "promotion" in item["horizon_label"].lower():
@@ -315,9 +334,9 @@ class GovernancePackageTests(unittest.TestCase):
             "local_proof_receipt": "governed://local/governance-proof/2.1.0",
             "hosted_check_contexts": ["governance-validation"],
             "hosted_automation_receipt": None,
-            "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
-            "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
-            "tag_signature_receipt": "governed://git/tag-signature/governance-2-0-1",
+            "ruleset_receipt": "governed://github/rulesets/governance-2-1-0",
+            "codeowner_resolution": "governed://github/codeowners/governance-2-1-0",
+            "tag_signature_receipt": "governed://git/tag-signature/governance-2-1-0",
         }
         schema = validation.SchemaValidator(
             ROOT / "schemas" / "promotion-receipt.schema.json"
@@ -350,9 +369,9 @@ class GovernancePackageTests(unittest.TestCase):
             "local_proof_receipt": "governed://local/governance-proof/2.1.0",
             "hosted_check_contexts": [],
             "hosted_automation_receipt": None,
-            "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
-            "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
-            "tag_signature_receipt": "governed://git/tag-signature/governance-2-0-1",
+            "ruleset_receipt": "governed://github/rulesets/governance-2-1-0",
+            "codeowner_resolution": "governed://github/codeowners/governance-2-1-0",
+            "tag_signature_receipt": "governed://git/tag-signature/governance-2-1-0",
         }
         findings = validation.SchemaValidator(
             ROOT / "schemas" / "promotion-receipt.schema.json"
