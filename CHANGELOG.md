@@ -6,13 +6,15 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+## [2.1.0] — 2026-09-01
+
 - Added a root collaboration guide, an ordinary-language README entry path,
   and one public-ready schema-release-lineage skill. Governance Pages now
   publishes the exact skill source and a readable catalog while its manifest,
   validator, and mutation suite bind the accepted identity, local path, source
   bytes, and locator-safe upstream adaptation lineage.
 - Added a standard-library Governance Pages builder for byte-identical accepted
-  2.0.1 JSON Schema retrieval, ordinary-language authority guidance, full-SHA
+  2.1.0 JSON Schema retrieval, ordinary-language authority guidance, full-SHA
   source recovery, accessible relative-link pages, explicit canonical and CNAME
   inputs, and a deterministic closed manifest with schema, content, and file
   digests. Material mutation, two-build reproducibility, and generated HTML/CSS
@@ -40,7 +42,7 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 - Documented an inactive semantic shadow-review contract with bounded inputs,
   advisory-only authority, privacy controls, reproducible coordinates,
   measurable qualification thresholds, and accountable recovery.
-- Prepared candidate `2.0.1` with a schema-valid repository-promotion receipt
+- Prepared candidate `2.1.0` with a schema-valid repository-promotion receipt
   and an executable `candidate_ready` to `release_observed` lifecycle. The
   accepted tagged commit remains the release subject while a later commit
   carries its observation.

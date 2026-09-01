@@ -2,9 +2,9 @@
   "machine_node_id": "NODE-SITE-READING-GOVERNANCE-002",
   "canonical_identity": "driftframestudios/site-reading-governance",
   "title": "Site Reading governance control plane",
-  "purpose": "Orient collaborators to governance schema release 2.0.1, Control Plane Profile 0.3.0, the selected-future closure contract, governed dependency automation, and current promotion posture.",
+  "purpose": "Orient collaborators to governance schema release 2.1.0, Control Plane Profile 0.3.0, the selected-future closure contract, governed dependency automation, and current promotion posture.",
   "control_plane_profile": "0.3.0",
-  "schema_release": "2.0.1",
+  "schema_release": "2.1.0",
   "repository_role": "site_reading_governance",
   "authority": {
     "mode": "orientation_only",
@@ -32,17 +32,17 @@
   "campaigns": [
     {
       "campaign_id": "LIMS-ELN-OPEN-RECEIPTS",
-      "marking_schema_version": "2.0.1",
+      "marking_schema_version": "2.1.0",
       "status": "settling"
     },
     {
       "campaign_id": "COMPARATIVE-LITERACY-COLLABORATION",
-      "marking_schema_version": "2.0.1",
+      "marking_schema_version": "2.1.0",
       "status": "active"
     },
     {
       "campaign_id": "SITE-READING-SYSTEM",
-      "marking_schema_version": "2.0.1",
+      "marking_schema_version": "2.1.0",
       "status": "active"
     }
   ],
@@ -52,7 +52,7 @@
     "digest": "sha256:0843bd8d9a46475c1f27e3cac68a0d947289e42495befeedc3181912197a182d"
   },
   "current_provenance": {
-    "release": "candidate-governance-v2.0.1",
+    "release": "candidate-governance-v2.1.0",
     "commit": "0000000000000000000000000000000000000000",
     "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
   },
@@ -94,7 +94,7 @@
     }
   ],
   "metadata": {
-    "schema_version": "2.0.1",
+    "schema_version": "2.1.0",
     "created_at": "2026-07-28T17:30:02Z",
     "updated_at": "2026-07-28T17:30:02Z",
     "owner": {

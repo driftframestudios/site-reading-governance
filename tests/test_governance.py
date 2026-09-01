@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 
@@ -56,7 +57,7 @@ def release_observation(
 ) -> dict[str, object]:
     """Build one schema-valid observation from real Git object identifiers."""
     receipt = json.loads((ROOT / "promotion-receipt.json").read_text(encoding="utf-8"))
-    tag = "governance-v2.0.1"
+    tag = "governance-v2.1.0"
     tag_ref = f"refs/tags/{tag}"
     receipt["promotion_state"] = "release_observed"
     receipt["evidence_mode"] = "observed"
@@ -73,7 +74,7 @@ def release_observation(
         "archive_format": "git-tar",
         "archive_digest": archive_digest,
         "promoted_at": "2026-09-01T16:00:00Z",
-        "local_proof_receipt": "governed://local/governance-proof/2.0.1",
+        "local_proof_receipt": "governed://local/governance-proof/2.1.0",
         "hosted_check_contexts": [],
         "hosted_automation_receipt": None,
         "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
@@ -111,7 +112,7 @@ def initialize_release_repository(
             repository,
             "tag",
             "--no-sign",
-            "governance-v2.0.1",
+            "governance-v2.1.0",
             accepted_commit,
         )
     else:
@@ -120,9 +121,9 @@ def initialize_release_repository(
             "tag",
             "--annotate",
             "--no-sign",
-            "governance-v2.0.1",
+            "governance-v2.1.0",
             "--message",
-            "Governance 2.0.1",
+            "Governance 2.1.0",
             accepted_commit,
         )
     archive = run_git(repository, "archive", "--format=tar", accepted_commit)
@@ -148,6 +149,39 @@ def load_database_examples() -> dict[str, object]:
 class GovernancePackageTests(unittest.TestCase):
     def test_schema_catalog_is_coherent(self) -> None:
         self.assertEqual([], validation.validate_schema_catalog())
+
+    def test_schema_catalog_diagnostic_names_stable_identifier_family(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temporary_root = Path(directory)
+            schema_dir = temporary_root / "schemas"
+            schema_dir.mkdir()
+            schema = json.loads(
+                (ROOT / "schemas" / "common.schema.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            schema["$id"] = (
+                "https://schemas.driftframe.org/site-reading-governance/"
+                "v2.1/common.schema.json"
+            )
+            (schema_dir / "common.schema.json").write_text(
+                json.dumps(schema, indent=2) + "\n",
+                encoding="utf-8",
+            )
+
+            with (
+                patch.object(validation, "ROOT", temporary_root),
+                patch.object(validation, "SCHEMA_DIR", schema_dir),
+            ):
+                findings = validation.validate_schema_catalog()
+
+            self.assertTrue(
+                any(
+                    "stable /v2.0/ identifier family" in finding.message
+                    for finding in findings
+                ),
+                findings,
+            )
 
     def test_schema_catalog_rejects_unsupported_evaluator_keywords(self) -> None:
         findings = validation._validate_schema_keywords(
@@ -198,7 +232,7 @@ class GovernancePackageTests(unittest.TestCase):
 
         node["lifecycle_state"] = "active"
         node["current_provenance"] = {
-            "release": "governance-v2.0.1",
+            "release": "governance-v2.1.0",
             "commit": commit,
             "digest": digest,
         }
@@ -209,13 +243,13 @@ class GovernancePackageTests(unittest.TestCase):
         promotion["assurance_stage"] = "verified"
         promotion["release_coordinate"] = {
             "git_object_format": "sha1",
-            "tag": "governance-v2.0.1",
+            "tag": "governance-v2.1.0",
             "tag_object_oid": "c" * 40,
             "commit_oid": commit,
             "archive_format": "git-tar",
             "archive_digest": digest,
             "promoted_at": "2026-07-28T22:00:00Z",
-            "local_proof_receipt": "governed://local/governance-proof/2.0.1",
+            "local_proof_receipt": "governed://local/governance-proof/2.1.0",
             "hosted_check_contexts": [],
             "hosted_automation_receipt": None,
             "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
@@ -244,8 +278,8 @@ class GovernancePackageTests(unittest.TestCase):
             any("receipt target release" in finding.message for finding in findings),
             findings,
         )
-        promotion["release_coordinate"]["tag"] = "governance-v2.0.1"
-        node["current_provenance"]["release"] = "governance-v2.0.1"
+        promotion["release_coordinate"]["tag"] = "governance-v2.1.0"
+        node["current_provenance"]["release"] = "governance-v2.1.0"
 
         promotion["release_coordinate"]["hosted_check_contexts"] = [
             "governance-validation"
@@ -272,13 +306,13 @@ class GovernancePackageTests(unittest.TestCase):
         promotion["assurance_stage"] = "verified"
         promotion["release_coordinate"] = {
             "git_object_format": "sha1",
-            "tag": "governance-v2.0.1",
+            "tag": "governance-v2.1.0",
             "tag_object_oid": "c" * 40,
             "commit_oid": "a" * 40,
             "archive_format": "git-tar",
             "archive_digest": "sha256:" + ("b" * 64),
             "promoted_at": "2026-07-28T22:00:00Z",
-            "local_proof_receipt": "governed://local/governance-proof/2.0.1",
+            "local_proof_receipt": "governed://local/governance-proof/2.1.0",
             "hosted_check_contexts": ["governance-validation"],
             "hosted_automation_receipt": None,
             "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
@@ -307,13 +341,13 @@ class GovernancePackageTests(unittest.TestCase):
         )
         promotion["release_coordinate"] = {
             "git_object_format": "sha1",
-            "tag": "governance-v2.0.1",
+            "tag": "governance-v2.1.0",
             "tag_object_oid": "c" * 40,
             "commit_oid": "a" * 40,
             "archive_format": "git-tar",
             "archive_digest": "sha256:" + ("b" * 64),
             "promoted_at": "2026-07-28T22:00:00Z",
-            "local_proof_receipt": "governed://local/governance-proof/2.0.1",
+            "local_proof_receipt": "governed://local/governance-proof/2.1.0",
             "hosted_check_contexts": [],
             "hosted_automation_receipt": None,
             "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
@@ -652,7 +686,7 @@ class GovernancePackageTests(unittest.TestCase):
         )
 
     def test_release_branch_advances_main(self) -> None:
-        self.assertEqual([], branch_flow.check_flow("main", "release/2.0.1"))
+        self.assertEqual([], branch_flow.check_flow("main", "release/2.1.0"))
 
     def test_feature_branch_advances_develop(self) -> None:
         self.assertEqual(
@@ -671,10 +705,10 @@ class GovernancePackageTests(unittest.TestCase):
         )
 
     def test_release_branch_uses_unprefixed_semver(self) -> None:
-        self.assertTrue(branch_flow.check_flow("main", "release/v2.0.1"))
+        self.assertTrue(branch_flow.check_flow("main", "release/v2.1.0"))
 
     def test_schema_release_coordinates_are_current(self) -> None:
-        self.assertEqual("2.0.1", (ROOT / "VERSION").read_text().strip())
+        self.assertEqual("2.1.0", (ROOT / "VERSION").read_text().strip())
         for path in sorted((ROOT / "schemas").glob("*.schema.json")):
             schema = json.loads(path.read_text())
             self.assertTrue(schema["$id"].startswith(validation.SCHEMA_ID_PREFIX))
