@@ -2,10 +2,9 @@
   "horizon_id": "HORIZON-GOVERNANCE-PROMOTION-002",
   "title": "Governance 2.1.0 control-plane promotion",
   "objective": "Settle Governance 2.1.0, Control Plane Profile 0.3.0, selected-future closure, bounded-caller contracts, and bot-bound dependency automation into one reviewable release.",
-  "as_of": "2026-07-28T17:30:02Z",
+  "as_of": "2026-09-01T23:42:14Z",
   "current_item_ids": [
-    "WORK-GOVERNED-AUTOMATION-002",
-    "WORK-GOVERNANCE-PROMOTION-002"
+    "WORK-GOVERNED-AUTOMATION-002"
   ],
   "work_items": [
     {
@@ -48,7 +47,7 @@
       "item_id": "WORK-GOVERNANCE-PROMOTION-002",
       "horizon_label": "Immutable governance promotion",
       "sequence": 3,
-      "state": "settling",
+      "state": "complete",
       "desired_state": "The governance release identifies its annotated tag object, accepted commit, reproducible archive digest, schema release, and downstream adoption path.",
       "entry_evidence": [
         "All repository-local governance and automation checks pass."
@@ -57,7 +56,7 @@
         "A governed release branch targets main and becomes an accepted, signed, annotated release tag.",
         "A later evidence commit records the tag object, accepted commit, archive digest, and their ancestry relationship.",
         "The Machine Node replaces candidate zeros with the accepted commit and archive digest.",
-        "Downstream repositories validate against the promoted schema and workflow coordinates."
+        "Downstream adoption guidance names the promoted schema and workflow coordinates."
       ],
       "owner_role": "Constellation release steward",
       "dependency_ids": [
@@ -66,14 +65,14 @@
     }
   ],
   "reentry_capsule": {
-    "current_state": "Governance 2.1.0 contracts and the bot-bound branch policy pass locally; release promotion and downstream immutable coordinates are settling.",
+    "current_state": "Governance 2.1.0 is accepted and its tag, source commit, and reproducible archive digest are recorded; downstream adoption and Pages publication are ready for their receivers.",
     "recent_decisions": [
       "DECISION-CONTROL-PLANE-PROFILE-003",
       "DECISION-BOT-IDENTITY-BOUND-BRANCHES-001",
       "DECISION-DEFAULT-BRANCH-SECURITY-UPDATES-001"
     ],
-    "next_safe_action": "Run the full validation suite, promote through a release branch, tag the accepted source, and record the observation from a later evidence commit.",
-    "verification": "Confirm 2.1.0 schema conformance, 0.3.0 profile binding, selected-future and automation digests, campaign markings, read-only workflow permissions, passing regression tests, and Git-backed release-coordinate verification."
+    "next_safe_action": "Pin Governance 2.1.0 in downstream repositories and publish the accepted deterministic retrieval artifact.",
+    "verification": "Confirm the exact tag, accepted commit, reproducible archive digest, 2.1.0 schema conformance, and retrieval-artifact manifest before downstream use."
   },
   "retained_effects": [
     "Simulation closure remains definitive only within its selected future reality.",
@@ -82,13 +81,13 @@
     "Ordinary validation and accountable review continue for automated maintenance."
   ],
   "consequential_questions": [
-    "Which promoted coordinate should downstream repositories pin after every local suite is green?",
+    "Which downstream repository should adopt the accepted tag, commit, and archive digest next?",
     "Which future automation caller provides enough value to justify a new explicit grammar and author binding?"
   ],
   "metadata": {
     "schema_version": "2.1.0",
     "created_at": "2026-07-28T17:30:02Z",
-    "updated_at": "2026-07-28T17:30:02Z",
+    "updated_at": "2026-09-01T23:42:14Z",
     "owner": {
       "actor_id": "OWNER-GOVERNANCE-HORIZON-002",
       "display_name": "Site Reading governance stewardship role",

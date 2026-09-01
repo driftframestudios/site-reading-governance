@@ -28,26 +28,27 @@ production authorization effect. This lets the collaboration finish a coherent
 simulated reality while keeping later observed evidence as a separate evidence
 class.
 
-## Promotion path
+## Accepted release
 
-Candidate release `2.1.0` moves through:
+Governance `2.1.0` has completed its source release path:
 
-1. repository initialization on `main`;
-2. `develop` creation from the baseline;
-3. `feature/constellation-foundation` review into `develop`;
-4. complete local governance proof on the release candidate;
-5. `release/2.1.0` review into `main`;
-6. signed annotated tagging of the accepted `main` commit;
-7. `develop` synchronization to the tagged commit;
-8. a later evidence commit that records and verifies the tag object, accepted
-   commit, and raw Git tar archive digest;
-9. downstream constellation pinning by tag, commit, and archive digest.
+1. the full local governance proof passed on the release candidate;
+2. `release/2.1.0` entered `main` through its protected pull-request route;
+3. the signed annotated `governance-v2.1.0` tag identifies the accepted merge
+   commit;
+4. two accepted-source Governance Pages builds produced the same inventory and
+   bytes;
+5. the tagged release was merged forward into `develop`; and
+6. this later evidence record captures the tag object, accepted commit, raw Git
+   tar archive digest, hosted check results, and signature verification.
 
-The concrete promotion receipt records local proof, the explicit hosted-context
-posture, ruleset installation, resolvable CODEOWNER evidence, immutable
-coordinates, and signed-tag publication. The release tree remains
-`candidate_ready`; a later receipt carrier records `release_observed` and proves
-that the tagged source is its ancestor.
+The Git-backed verifier establishes tag type, tag object, accepted subject,
+archive digest, subject ancestry, and exact receipt-carrier bytes. The tag's
+cryptographic signature verifies locally, and GitHub recognizes the matching
+registered signing key.
+
+The next receivers pin the immutable release coordinate in downstream
+repositories and publish the inspected deterministic schema-retrieval artifact.
 
 ## Known extension points
 

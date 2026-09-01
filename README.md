@@ -34,8 +34,8 @@ The package is private-repository ready. Its examples use synthetic identifiers,
 its automation uses read-only permissions by default, and its ruleset exports
 can be reviewed before installation through the GitHub Rulesets API.
 
-The current governance schema candidate is `2.1.0`; stable schema identifiers use
-the `/v2.0/` coordinate. It implements **Control Plane Profile v0.3**, the
+The current accepted governance schema release is `2.1.0`; stable schema
+identifiers use the `/v2.0/` coordinate. It implements **Control Plane Profile v0.3**, the
 Enterprise Human-AI Practitioner Registry-derived capability profile for
 bounded callers, veracity, orientation, coordination, and future-reality
 simulation.
