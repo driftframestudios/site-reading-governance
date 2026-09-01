@@ -1,0 +1,581 @@
+{
+  "authority": {
+    "humanReadable": {
+      "role": "meaning, use, decision rights, and evidence boundaries",
+      "sourcePath": "GOVERNANCE.md",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/GOVERNANCE.md"
+    },
+    "machineValidation": {
+      "dialect": "https://json-schema.org/draft/2020-12/schema",
+      "identifierPrefix": "https://schemas.driftframe.org/site-reading-governance/v2.0/",
+      "role": "structural validation authority for Governance 2.1.0 documents"
+    },
+    "publication": {
+      "role": "byte-identical retrieval projection",
+      "sourcePath": "schemas/",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/tree/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas"
+    }
+  },
+  "digests": {
+    "content": "sha256:3ef7c831906e5cc503fa8130de1885e38896e139ea3e1b9358df46ac2ff88bf2",
+    "schemas": "sha256:f4890d3a6043b4e340dec699bd908939b0f0024ab85b0371392efeb771e0f418"
+  },
+  "inventory": {
+    "algorithm": "sha256",
+    "excludes": [
+      "manifest.json"
+    ],
+    "files": [
+      {
+        "bytes": 0,
+        "path": ".nojekyll",
+        "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 6221,
+        "path": "assets/site.css",
+        "sha256": "sha256:145b2664587ae37e61cd500443ff9fff07ec499fd946cce405cf4f083b66ee18"
+      },
+      {
+        "bytes": 5875,
+        "path": "guidance/index.html",
+        "sha256": "sha256:2d79f144c1c0ef17f7ec4623f12925c686b698c55d2f9a59cea45d582b05f8dd"
+      },
+      {
+        "bytes": 5341,
+        "path": "index.html",
+        "sha256": "sha256:956cdae583bb9d303c656bbc364f4c9dd51002a2456c822efc8f084c31b7875b"
+      },
+      {
+        "bytes": 3876,
+        "path": "schemas/index.html",
+        "sha256": "sha256:4164626990293c26a2dda4a841d728c345a37d8d79622e9b76fd45017575f37c"
+      },
+      {
+        "bytes": 4332,
+        "path": "schemas/v2.0/acceptance.schema.json",
+        "sha256": "sha256:2763c5c8c60129f5b9eca0574bf8dabee5d6f9496a83b41bfc97895dc4df96f0"
+      },
+      {
+        "bytes": 4015,
+        "path": "schemas/v2.0/approval.schema.json",
+        "sha256": "sha256:fd065b3912ba83382513db2934c891b3bacda0b2384ed7a800019ef6f6bda3aa"
+      },
+      {
+        "bytes": 4794,
+        "path": "schemas/v2.0/bounded-caller.schema.json",
+        "sha256": "sha256:fe1b95507c99507987852dac624bd366f4ac4109787fe6e8ffd995d23370fc3c"
+      },
+      {
+        "bytes": 3906,
+        "path": "schemas/v2.0/call-receipt.schema.json",
+        "sha256": "sha256:eef16d2c38ccc6b3c4ffe1a8aaeca7eb37d963d600b63cf5cc8b8841cae8371f"
+      },
+      {
+        "bytes": 4959,
+        "path": "schemas/v2.0/claim-veracity.schema.json",
+        "sha256": "sha256:610bd0d4399dd9d9129c695b4b8ceefec3e36d8d76e178c07b723bafb0c18589"
+      },
+      {
+        "bytes": 11765,
+        "path": "schemas/v2.0/common.schema.json",
+        "sha256": "sha256:a578ee7b7e18adab0dd8424a5edbe8fbb01a6b03f2c2b96d9e1e3856f2025014"
+      },
+      {
+        "bytes": 4576,
+        "path": "schemas/v2.0/comparison.schema.json",
+        "sha256": "sha256:165e75f570f9316de8b9ef244f8ef32c1d3cdc953cb0e51ccd5644583665dd09"
+      },
+      {
+        "bytes": 2673,
+        "path": "schemas/v2.0/constellation.schema.json",
+        "sha256": "sha256:7d6597d5a4d17507f3d84bdf197c0d333304ee19308ba635397fb10116333004"
+      },
+      {
+        "bytes": 4092,
+        "path": "schemas/v2.0/coordination-horizon.schema.json",
+        "sha256": "sha256:0e4236b2928484c882f5c8984619ff639f32b0662b0a1c79a7497b5b6d8dce0e"
+      },
+      {
+        "bytes": 13882,
+        "path": "schemas/v2.0/data-contract.schema.json",
+        "sha256": "sha256:b85409595f085238493ae141c7cfd8b120f62ffef8ae296cc6515fcbfed6b8fb"
+      },
+      {
+        "bytes": 7303,
+        "path": "schemas/v2.0/data-reconciliation.schema.json",
+        "sha256": "sha256:0141449b4ce543dde8f2578e7d272b794cd5310d884f6a7e0e58e9c6eaa73e8e"
+      },
+      {
+        "bytes": 11840,
+        "path": "schemas/v2.0/database-migration-plan.schema.json",
+        "sha256": "sha256:999c80dc5ae0214ac4c45b047c3c68ae75cbe8d646c77d9f3bff5b122779169c"
+      },
+      {
+        "bytes": 10646,
+        "path": "schemas/v2.0/database-migration-receipt.schema.json",
+        "sha256": "sha256:a67026b22dba3a5a2a24af8c5d915f743d1093b3a42ca9eae2e761c13469f29e"
+      },
+      {
+        "bytes": 5727,
+        "path": "schemas/v2.0/database-refactor-finding.schema.json",
+        "sha256": "sha256:e6b5d2ddf602e35a32163492cfe405327ea74a47a979a3e94045c2e6adb8fc86"
+      },
+      {
+        "bytes": 7850,
+        "path": "schemas/v2.0/database-release-manifest.schema.json",
+        "sha256": "sha256:6eff7c1f5aaed80b137161e7986850991128505e57bc3e340fe73fd04c89dc60"
+      },
+      {
+        "bytes": 4046,
+        "path": "schemas/v2.0/decision.schema.json",
+        "sha256": "sha256:5ed18f568bbaee240fdb1b3b0cc9bce5d9b32fb50ea7c5182ef968e3f70bdfb3"
+      },
+      {
+        "bytes": 2818,
+        "path": "schemas/v2.0/effect.schema.json",
+        "sha256": "sha256:df1c4bd46674f7c0f0ff15b1eaadd3b34497b403bd1a236a99fb5f8960d47a05"
+      },
+      {
+        "bytes": 4423,
+        "path": "schemas/v2.0/first-receipt.schema.json",
+        "sha256": "sha256:6457169c37de220fa54a90a92695c11beb48a63e473378f66bf2def7e1940cb3"
+      },
+      {
+        "bytes": 18822,
+        "path": "schemas/v2.0/index.html",
+        "sha256": "sha256:b14a8d8ba0b7c9804b29333b0b8820b0e977b3d34990dd35c87bd41257d792ff"
+      },
+      {
+        "bytes": 3763,
+        "path": "schemas/v2.0/invalidation.schema.json",
+        "sha256": "sha256:a999d8c823968677d24cb91e3b5634af1121b169ab6a6214a4c916f5d38c2dbf"
+      },
+      {
+        "bytes": 2874,
+        "path": "schemas/v2.0/language-control.schema.json",
+        "sha256": "sha256:b653dce5df36d02a2d0d6ed86ef9cbb5d3570917321bedd411445a8b95c62d83"
+      },
+      {
+        "bytes": 5225,
+        "path": "schemas/v2.0/machine-node.schema.json",
+        "sha256": "sha256:7b6b335e303c035355b0c6882be2954d0782cc43fbcebf2aa345c1691ca4f5d2"
+      },
+      {
+        "bytes": 5434,
+        "path": "schemas/v2.0/operation.schema.json",
+        "sha256": "sha256:40e8d0d77a36fc3bd33e6054ee8452b71645a9177a09d9531ac5e8dc9a7a883a"
+      },
+      {
+        "bytes": 3946,
+        "path": "schemas/v2.0/practitioner-probe.schema.json",
+        "sha256": "sha256:1cff14a4f0e91c5c7c5f5ef9cc7e504d5d80f846399012859c628a6807891b1f"
+      },
+      {
+        "bytes": 6799,
+        "path": "schemas/v2.0/promotion-receipt.schema.json",
+        "sha256": "sha256:5c643f1b65b2dd2b46ec96987c8d451eab18c4bccf3993e4840e3a150515c7a3"
+      },
+      {
+        "bytes": 4494,
+        "path": "schemas/v2.0/receipt.schema.json",
+        "sha256": "sha256:74eeb039786974bf5f413cfe9c608df806cb869ad88f8c2330a0248cc1e64fbc"
+      },
+      {
+        "bytes": 2462,
+        "path": "schemas/v2.0/scenario.schema.json",
+        "sha256": "sha256:990d00a4b5b2e4d9d1d6434b6feaa2d875dc474a1d318159a781a7c8b8499fd2"
+      },
+      {
+        "bytes": 6557,
+        "path": "schemas/v2.0/simulated-receipt-closure.schema.json",
+        "sha256": "sha256:522d2a6a5b7f40fe71e6bafcf5373c6b15490445ea0e303062d787afafaa4e55"
+      },
+      {
+        "bytes": 1669,
+        "path": "schemas/v2.0/simulation-assumption.schema.json",
+        "sha256": "sha256:09ffa80850ca6a70b857443d28ea5da36f1a0e915996b04f3b2076252b6b7488"
+      },
+      {
+        "bytes": 2487,
+        "path": "schemas/v2.0/specification.schema.json",
+        "sha256": "sha256:802ca8812e28b067ded223229011d861354e13195adbf8be411bf08fcbae7700"
+      },
+      {
+        "bytes": 6253,
+        "path": "skills/governance-schema-release-lineage/SKILL.md",
+        "sha256": "sha256:9c5dd630a26b20d997c18de771d0cae7af9f936fd5f1185d52cc56a5e823b588"
+      },
+      {
+        "bytes": 11817,
+        "path": "skills/governance-schema-release-lineage/index.html",
+        "sha256": "sha256:5ed73dc614002cfeca51d64886c68b088eafed44180735d34dc41e083d58aa54"
+      },
+      {
+        "bytes": 4199,
+        "path": "skills/index.html",
+        "sha256": "sha256:810a9160feede002c776a1f5d6373f394490dabee83adebc46c8261957c1b2f0"
+      }
+    ]
+  },
+  "manifestVersion": "1.0.0",
+  "publication": {
+    "canonicalHtmlPaths": [],
+    "canonicalOrigin": null,
+    "cname": null,
+    "html": [
+      {
+        "canonicalUrl": null,
+        "path": "guidance/index.html"
+      },
+      {
+        "canonicalUrl": null,
+        "path": "index.html"
+      },
+      {
+        "canonicalUrl": null,
+        "path": "schemas/index.html"
+      },
+      {
+        "canonicalUrl": null,
+        "path": "schemas/v2.0/index.html"
+      },
+      {
+        "canonicalUrl": null,
+        "path": "skills/governance-schema-release-lineage/index.html"
+      },
+      {
+        "canonicalUrl": null,
+        "path": "skills/index.html"
+      }
+    ],
+    "htmlPaths": [
+      "guidance/index.html",
+      "index.html",
+      "schemas/index.html",
+      "schemas/v2.0/index.html",
+      "skills/governance-schema-release-lineage/index.html",
+      "skills/index.html"
+    ],
+    "jekyll": false
+  },
+  "release": {
+    "authority": "Constellation release steward",
+    "schemaCoordinate": "v2.0",
+    "status": "accepted",
+    "version": "2.1.0"
+  },
+  "schemas": [
+    {
+      "bytes": 4332,
+      "description": "Scientific, Quality, Regulatory, and other accountable decisions",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/acceptance.schema.json",
+      "outputPath": "schemas/v2.0/acceptance.schema.json",
+      "sha256": "sha256:2763c5c8c60129f5b9eca0574bf8dabee5d6f9496a83b41bfc97895dc4df96f0",
+      "sourcePath": "schemas/acceptance.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/acceptance.schema.json",
+      "title": "Accountable Acceptance Decision"
+    },
+    {
+      "bytes": 4015,
+      "description": "Scoped, expiring organizational or future-reality operation decision",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/approval.schema.json",
+      "outputPath": "schemas/v2.0/approval.schema.json",
+      "sha256": "sha256:fd065b3912ba83382513db2934c891b3bacda0b2384ed7a800019ef6f6bda3aa",
+      "sourcePath": "schemas/approval.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/approval.schema.json",
+      "title": "Bounded Operation Approval"
+    },
+    {
+      "bytes": 4794,
+      "description": "Caller identity, authority ceiling, scope, tools, egress, budget, audit, and recovery",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/bounded-caller.schema.json",
+      "outputPath": "schemas/v2.0/bounded-caller.schema.json",
+      "sha256": "sha256:fe1b95507c99507987852dac624bd366f4ac4109787fe6e8ffd995d23370fc3c",
+      "sourcePath": "schemas/bounded-caller.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/bounded-caller.schema.json",
+      "title": "Bounded Caller"
+    },
+    {
+      "bytes": 3906,
+      "description": "Caller, operation, boundary decision, approval, effect, result, and resource audit",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/call-receipt.schema.json",
+      "outputPath": "schemas/v2.0/call-receipt.schema.json",
+      "sha256": "sha256:eef16d2c38ccc6b3c4ffe1a8aaeca7eb37d963d600b63cf5cc8b8841cae8371f",
+      "sourcePath": "schemas/call-receipt.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/call-receipt.schema.json",
+      "title": "Bounded Call Receipt"
+    },
+    {
+      "bytes": 4959,
+      "description": "Claim status, source band, verification, limitations, and recheck triggers",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/claim-veracity.schema.json",
+      "outputPath": "schemas/v2.0/claim-veracity.schema.json",
+      "sha256": "sha256:610bd0d4399dd9d9129c695b4b8ceefec3e36d8d76e178c07b723bafb0c18589",
+      "sourcePath": "schemas/claim-veracity.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/claim-veracity.schema.json",
+      "title": "Claim Veracity Record"
+    },
+    {
+      "bytes": 11765,
+      "description": "Shared identifiers, actors, artifacts, metrics, and boundaries",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/common.schema.json",
+      "outputPath": "schemas/v2.0/common.schema.json",
+      "sha256": "sha256:a578ee7b7e18adab0dd8424a5edbe8fbb01a6b03f2c2b96d9e1e3856f2025014",
+      "sourcePath": "schemas/common.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/common.schema.json",
+      "title": "Site Reading Common Definitions"
+    },
+    {
+      "bytes": 4576,
+      "description": "Pinned actual/simulation result and adjudication",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/comparison.schema.json",
+      "outputPath": "schemas/v2.0/comparison.schema.json",
+      "sha256": "sha256:165e75f570f9316de8b9ef244f8ef32c1d3cdc953cb0e51ccd5644583665dd09",
+      "sourcePath": "schemas/comparison.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/comparison.schema.json",
+      "title": "Actual and Simulation Comparison"
+    },
+    {
+      "bytes": 2673,
+      "description": "Repository topology, authority, and release policy",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/constellation.schema.json",
+      "outputPath": "schemas/v2.0/constellation.schema.json",
+      "sha256": "sha256:7d6597d5a4d17507f3d84bdf197c0d333304ee19308ba635397fb10116333004",
+      "sourcePath": "schemas/constellation.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/constellation.schema.json",
+      "title": "Comparative Site Reading Constellation"
+    },
+    {
+      "bytes": 4092,
+      "description": "Flexible work horizon, completion evidence, retained effects, and re-entry",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/coordination-horizon.schema.json",
+      "outputPath": "schemas/v2.0/coordination-horizon.schema.json",
+      "sha256": "sha256:0e4236b2928484c882f5c8984619ff639f32b0662b0a1c79a7497b5b6d8dce0e",
+      "sourcePath": "schemas/coordination-horizon.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/coordination-horizon.schema.json",
+      "title": "Coordination Horizon"
+    },
+    {
+      "bytes": 13882,
+      "description": "Logical and physical database meaning, constraints, compatibility, and invalidation triggers",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/data-contract.schema.json",
+      "outputPath": "schemas/v2.0/data-contract.schema.json",
+      "sha256": "sha256:b85409595f085238493ae141c7cfd8b120f62ffef8ae296cc6515fcbfed6b8fb",
+      "sourcePath": "schemas/data-contract.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/data-contract.schema.json",
+      "title": "Database Data Contract"
+    },
+    {
+      "bytes": 7303,
+      "description": "Cohort-bound exact comparisons, scientific invariants, exceptions, and accountable review",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/data-reconciliation.schema.json",
+      "outputPath": "schemas/v2.0/data-reconciliation.schema.json",
+      "sha256": "sha256:0141449b4ce543dde8f2578e7d272b794cd5310d884f6a7e0e58e9c6eaa73e8e",
+      "sourcePath": "schemas/data-reconciliation.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/data-reconciliation.schema.json",
+      "title": "Database Data Reconciliation"
+    },
+    {
+      "bytes": 11840,
+      "description": "Ordered expand-through-contract phases, execution budgets, compatibility window, approval, and recovery",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/database-migration-plan.schema.json",
+      "outputPath": "schemas/v2.0/database-migration-plan.schema.json",
+      "sha256": "sha256:999c80dc5ae0214ac4c45b047c3c68ae75cbe8d646c77d9f3bff5b122779169c",
+      "sourcePath": "schemas/database-migration-plan.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/database-migration-plan.schema.json",
+      "title": "Database Migration Plan"
+    },
+    {
+      "bytes": 10646,
+      "description": "Plan-bound execution, phase outcomes, environment coordinate, measurements, and recovery evidence",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/database-migration-receipt.schema.json",
+      "outputPath": "schemas/v2.0/database-migration-receipt.schema.json",
+      "sha256": "sha256:a67026b22dba3a5a2a24af8c5d915f743d1093b3a42ca9eae2e761c13469f29e",
+      "sourcePath": "schemas/database-migration-receipt.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/database-migration-receipt.schema.json",
+      "title": "Database Migration Execution Receipt"
+    },
+    {
+      "bytes": 5727,
+      "description": "Located primitive finding, material effect, target state, disposition, ownership, and migration linkage",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/database-refactor-finding.schema.json",
+      "outputPath": "schemas/v2.0/database-refactor-finding.schema.json",
+      "sha256": "sha256:e6b5d2ddf602e35a32163492cfe405327ea74a47a979a3e94045c2e6adb8fc86",
+      "sourcePath": "schemas/database-refactor-finding.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/database-refactor-finding.schema.json",
+      "title": "Database Refactor Finding"
+    },
+    {
+      "bytes": 7850,
+      "description": "Contract, ordered migration, receipt, acceptance, finding, and evidence-bundle release coordinate",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/database-release-manifest.schema.json",
+      "outputPath": "schemas/v2.0/database-release-manifest.schema.json",
+      "sha256": "sha256:6eff7c1f5aaed80b137161e7986850991128505e57bc3e340fe73fd04c89dc60",
+      "sourcePath": "schemas/database-release-manifest.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/database-release-manifest.schema.json",
+      "title": "Database Release Manifest"
+    },
+    {
+      "bytes": 4046,
+      "description": "Selected option, alternatives, named probability event, horizon, basis, conditions, and falsifiers",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/decision.schema.json",
+      "outputPath": "schemas/v2.0/decision.schema.json",
+      "sha256": "sha256:5ed18f568bbaee240fdb1b3b0cc9bce5d9b32fb50ea7c5182ef968e3f70bdfb3",
+      "sourcePath": "schemas/decision.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/decision.schema.json",
+      "title": "Comparative Site Reading Decision"
+    },
+    {
+      "bytes": 2818,
+      "description": "Attributable state effect, evidence mode, digests, and recovery",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/effect.schema.json",
+      "outputPath": "schemas/v2.0/effect.schema.json",
+      "sha256": "sha256:df1c4bd46674f7c0f0ff15b1eaadd3b34497b403bd1a236a99fb5f8960d47a05",
+      "sourcePath": "schemas/effect.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/effect.schema.json",
+      "title": "Bounded Operation Effect"
+    },
+    {
+      "bytes": 4423,
+      "description": "Compact entry orientation, evidence posture, source permissions, and handoff",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/first-receipt.schema.json",
+      "outputPath": "schemas/v2.0/first-receipt.schema.json",
+      "sha256": "sha256:6457169c37de220fa54a90a92695c11beb48a63e473378f66bf2def7e1940cb3",
+      "sourcePath": "schemas/first-receipt.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/first-receipt.schema.json",
+      "title": "First Receipt Orientation Contract"
+    },
+    {
+      "bytes": 3763,
+      "description": "Change-triggered re-evaluation and successor evidence",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/invalidation.schema.json",
+      "outputPath": "schemas/v2.0/invalidation.schema.json",
+      "sha256": "sha256:a999d8c823968677d24cb91e3b5634af1121b169ab6a6214a4c916f5d38c2dbf",
+      "sourcePath": "schemas/invalidation.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/invalidation.schema.json",
+      "title": "Assurance Invalidation and Re-evaluation"
+    },
+    {
+      "bytes": 2874,
+      "description": "Typed target, boundary, replacement, verification, ownership, and evidence for high-consequence instructions",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/language-control.schema.json",
+      "outputPath": "schemas/v2.0/language-control.schema.json",
+      "sha256": "sha256:b653dce5df36d02a2d0d6ed86ef9cbb5d3570917321bedd411445a8b95c62d83",
+      "sourcePath": "schemas/language-control.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/language-control.schema.json",
+      "title": "High-consequence Language Control"
+    },
+    {
+      "bytes": 5225,
+      "description": "Non-authorizing machine orientation, provenance, campaigns, contracts, and consumers",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/machine-node.schema.json",
+      "outputPath": "schemas/v2.0/machine-node.schema.json",
+      "sha256": "sha256:7b6b335e303c035355b0c6882be2954d0782cc43fbcebf2aa345c1691ca4f5d2",
+      "sourcePath": "schemas/machine-node.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/machine-node.schema.json",
+      "title": "Machine Node Orientation"
+    },
+    {
+      "bytes": 5434,
+      "description": "Service-owned typed operation, effect class, approval, idempotency, and verification",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/operation.schema.json",
+      "outputPath": "schemas/v2.0/operation.schema.json",
+      "sha256": "sha256:40e8d0d77a36fc3bd33e6054ee8452b71645a9177a09d9531ac5e8dc9a7a883a",
+      "sourcePath": "schemas/operation.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/operation.schema.json",
+      "title": "Service-Owned Operation"
+    },
+    {
+      "bytes": 3946,
+      "description": "Five-level probe, technical core, review surfaces, scenarios, and instruction yield",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/practitioner-probe.schema.json",
+      "outputPath": "schemas/v2.0/practitioner-probe.schema.json",
+      "sha256": "sha256:1cff14a4f0e91c5c7c5f5ef9cc7e504d5d80f846399012859c628a6807891b1f",
+      "sourcePath": "schemas/practitioner-probe.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/practitioner-probe.schema.json",
+      "title": "Practitioner Probe"
+    },
+    {
+      "bytes": 6799,
+      "description": "Candidate readiness and a later observation of the accepted tagged release subject",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/promotion-receipt.schema.json",
+      "outputPath": "schemas/v2.0/promotion-receipt.schema.json",
+      "sha256": "sha256:5c643f1b65b2dd2b46ec96987c8d451eab18c4bccf3993e4840e3a150515c7a3",
+      "sourcePath": "schemas/promotion-receipt.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/promotion-receipt.schema.json",
+      "title": "Repository Promotion Receipt"
+    },
+    {
+      "bytes": 4494,
+      "description": "Environment-bound assurance evidence",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/receipt.schema.json",
+      "outputPath": "schemas/v2.0/receipt.schema.json",
+      "sha256": "sha256:74eeb039786974bf5f413cfe9c608df806cb869ad88f8c2330a0248cc1e64fbc",
+      "sourcePath": "schemas/receipt.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/receipt.schema.json",
+      "title": "Assurance Receipt"
+    },
+    {
+      "bytes": 2462,
+      "description": "Given/When/Then example with material effect and recovery",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/scenario.schema.json",
+      "outputPath": "schemas/v2.0/scenario.schema.json",
+      "sha256": "sha256:990d00a4b5b2e4d9d1d6434b6feaa2d875dc474a1d318159a781a7c8b8499fd2",
+      "sourcePath": "schemas/scenario.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/scenario.schema.json",
+      "title": "Specification-by-Example Scenario"
+    },
+    {
+      "bytes": 6557,
+      "description": "Executable future-reality closure of all four substantive receipt families",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/simulated-receipt-closure.schema.json",
+      "outputPath": "schemas/v2.0/simulated-receipt-closure.schema.json",
+      "sha256": "sha256:522d2a6a5b7f40fe71e6bafcf5373c6b15490445ea0e303062d787afafaa4e55",
+      "sourcePath": "schemas/simulated-receipt-closure.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/simulated-receipt-closure.schema.json",
+      "title": "Simulated Substantive Receipt Closure"
+    },
+    {
+      "bytes": 1669,
+      "description": "Time-bounded assumption, basis, owner, and falsifiers",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/simulation-assumption.schema.json",
+      "outputPath": "schemas/v2.0/simulation-assumption.schema.json",
+      "sha256": "sha256:09ffa80850ca6a70b857443d28ea5da36f1a0e915996b04f3b2076252b6b7488",
+      "sourcePath": "schemas/simulation-assumption.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/simulation-assumption.schema.json",
+      "title": "Simulation Assumption"
+    },
+    {
+      "bytes": 2487,
+      "description": "Desired behavior, rules, scenarios, and acceptance roles",
+      "identifier": "https://schemas.driftframe.org/site-reading-governance/v2.0/specification.schema.json",
+      "outputPath": "schemas/v2.0/specification.schema.json",
+      "sha256": "sha256:802ca8812e28b067ded223229011d861354e13195adbf8be411bf08fcbae7700",
+      "sourcePath": "schemas/specification.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/schemas/specification.schema.json",
+      "title": "Site Reading Specification"
+    }
+  ],
+  "skills": [
+    {
+      "adaptationRelation": "repository_local_derivative",
+      "bytes": 6253,
+      "description": "Traces one Site Reading Governance schema from tracked source through an accepted release coordinate to its byte-identical Pages retrieval copy. Applies when schema meaning, release identity, public projection, or downstream use needs a verifiable source and receiver.",
+      "lineageKey": "lims-src-006",
+      "name": "governance-schema-release-lineage",
+      "outputPath": "skills/governance-schema-release-lineage/SKILL.md",
+      "pagePath": "skills/governance-schema-release-lineage/index.html",
+      "sha256": "sha256:9c5dd630a26b20d997c18de771d0cae7af9f936fd5f1185d52cc56a5e823b588",
+      "skillVersion": "0.1.0",
+      "sourcePath": ".agents/skills/governance-schema-release-lineage/SKILL.md",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/.agents/skills/governance-schema-release-lineage/SKILL.md"
+    }
+  ],
+  "source": {
+    "repository": "driftframestudios/site-reading-governance",
+    "sourceRevision": "8469c2a6b2c7f4445523cee262b961ffe3d2523b",
+    "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/tree/8469c2a6b2c7f4445523cee262b961ffe3d2523b",
+    "standing": "clean"
+  }
+}

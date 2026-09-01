@@ -1,0 +1,456 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/database-migration-receipt.schema.json",
+  "title": "Database Migration Execution Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "migration_receipt_id",
+    "migration_plan_id",
+    "data_contract_id",
+    "claim",
+    "evidence_mode",
+    "assurance_stage",
+    "authority",
+    "actual_acceptance_required",
+    "outcome",
+    "environment",
+    "tool_binding",
+    "script_digest",
+    "source_schema_digest",
+    "target_schema_digest",
+    "phase_results",
+    "reconciliation_ids",
+    "execution_metrics",
+    "recovery_evidence",
+    "exceptions",
+    "artifacts",
+    "performed_at",
+    "performer",
+    "reviewer",
+    "limitations",
+    "retest_triggers",
+    "metadata"
+  ],
+  "properties": {
+    "migration_receipt_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "migration_plan_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "data_contract_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1200
+    },
+    "evidence_mode": {
+      "$ref": "common.schema.json#/$defs/evidenceMode"
+    },
+    "assurance_stage": {
+      "$ref": "common.schema.json#/$defs/assuranceStage"
+    },
+    "authority": {
+      "type": "string",
+      "enum": [
+        "simulation_only",
+        "engineering",
+        "organizational"
+      ]
+    },
+    "actual_acceptance_required": {
+      "type": "boolean"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed",
+        "inconclusive"
+      ]
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environment_id",
+        "class",
+        "region",
+        "configuration_digest",
+        "engine_family",
+        "engine_version",
+        "extension_versions",
+        "collation",
+        "database_timezone",
+        "settings_digest"
+      ],
+      "properties": {
+        "environment_id": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "class": {
+          "type": "string",
+          "enum": [
+            "local",
+            "continuous_integration",
+            "vendor_sandbox",
+            "qualification",
+            "staging",
+            "production"
+          ]
+        },
+        "region": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "configuration_digest": {
+          "$ref": "common.schema.json#/$defs/digest"
+        },
+        "engine_family": {
+          "type": "string",
+          "enum": [
+            "postgresql",
+            "mysql",
+            "mariadb",
+            "oracle",
+            "sqlserver",
+            "sqlite",
+            "other"
+          ]
+        },
+        "engine_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "extension_versions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*@[A-Za-z0-9][A-Za-z0-9_.-]*$",
+            "maxLength": 200
+          }
+        },
+        "collation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "database_timezone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "settings_digest": {
+          "$ref": "common.schema.json#/$defs/digest"
+        }
+      }
+    },
+    "tool_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool_name",
+        "tool_version",
+        "implementation_digest"
+      ],
+      "properties": {
+        "tool_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "tool_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "implementation_digest": {
+          "$ref": "common.schema.json#/$defs/digest"
+        }
+      }
+    },
+    "script_digest": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "source_schema_digest": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "target_schema_digest": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "phase_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "phase_id",
+          "sequence",
+          "outcome",
+          "started_at",
+          "completed_at",
+          "checkpoint_digest"
+        ],
+        "properties": {
+          "phase_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "skipped_by_plan"
+            ]
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "checkpoint_digest": {
+            "$ref": "common.schema.json#/$defs/digest"
+          }
+        }
+      }
+    },
+    "reconciliation_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "execution_metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lock_wait_milliseconds",
+        "maximum_lock_held_milliseconds",
+        "write_pause_milliseconds",
+        "elapsed_milliseconds",
+        "backfill_rows",
+        "retry_count"
+      ],
+      "properties": {
+        "lock_wait_milliseconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_lock_held_milliseconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "write_pause_milliseconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "elapsed_milliseconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "backfill_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "retry_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "recovery_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backup_coordinate",
+        "recovery_point_at",
+        "disposition",
+        "restore_receipt_ids",
+        "rto_seconds",
+        "rpo_seconds"
+      ],
+      "properties": {
+        "backup_coordinate": {
+          "$ref": "common.schema.json#/$defs/artifact"
+        },
+        "recovery_point_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "disposition": {
+          "type": "string",
+          "enum": [
+            "roll_forward_verified",
+            "rollback_verified",
+            "restore_verified"
+          ]
+        },
+        "restore_receipt_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          }
+        },
+        "rto_seconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rpo_seconds": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "exception_id",
+          "description",
+          "disposition",
+          "owner_role"
+        ],
+        "properties": {
+          "exception_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 700
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "resolved",
+              "accepted_with_control",
+              "successor_migration_planned"
+            ]
+          },
+          "owner_role": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "common.schema.json#/$defs/artifact"
+      }
+    },
+    "performed_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "performer": {
+      "$ref": "common.schema.json#/$defs/actor"
+    },
+    "reviewer": {
+      "$ref": "common.schema.json#/$defs/actor"
+    },
+    "accountable_approver": {
+      "$ref": "common.schema.json#/$defs/actor"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 700
+      }
+    },
+    "retest_triggers": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 300
+      }
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "evidence_mode": {
+            "const": "simulated"
+          }
+        },
+        "required": [
+          "evidence_mode"
+        ]
+      },
+      "then": {
+        "properties": {
+          "authority": {
+            "const": "simulation_only"
+          },
+          "actual_acceptance_required": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assurance_stage": {
+            "const": "accepted"
+          }
+        },
+        "required": [
+          "assurance_stage"
+        ]
+      },
+      "then": {
+        "required": [
+          "accountable_approver"
+        ],
+        "properties": {
+          "evidence_mode": {
+            "const": "observed"
+          },
+          "authority": {
+            "const": "organizational"
+          },
+          "actual_acceptance_required": {
+            "const": false
+          }
+        }
+      }
+    }
+  ]
+}

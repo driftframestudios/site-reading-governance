@@ -1,0 +1,317 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/database-release-manifest.schema.json",
+  "title": "Database Release Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "release_manifest_id",
+    "release",
+    "release_state",
+    "evidence_mode",
+    "assurance_stage",
+    "actual_acceptance_required",
+    "production_authorization_effect",
+    "data_contract",
+    "current_schema_digest",
+    "supported_upgrade_baselines",
+    "ordered_migrations",
+    "required_receipt_ids",
+    "acceptance_bindings",
+    "evidence_bundle",
+    "unresolved_finding_ids",
+    "invalidation_triggers",
+    "metadata"
+  ],
+  "properties": {
+    "release_manifest_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "release": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "release_state": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "qualified",
+        "promoted"
+      ]
+    },
+    "evidence_mode": {
+      "$ref": "common.schema.json#/$defs/evidenceMode"
+    },
+    "assurance_stage": {
+      "$ref": "common.schema.json#/$defs/assuranceStage"
+    },
+    "actual_acceptance_required": {
+      "type": "boolean"
+    },
+    "production_authorization_effect": {
+      "type": "string",
+      "enum": [
+        "none",
+        "approved"
+      ]
+    },
+    "data_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data_contract_id",
+        "version",
+        "digest"
+      ],
+      "properties": {
+        "data_contract_id": {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        "version": {
+          "$ref": "common.schema.json#/$defs/semver"
+        },
+        "digest": {
+          "$ref": "common.schema.json#/$defs/digest"
+        }
+      }
+    },
+    "current_schema_digest": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "supported_upgrade_baselines": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "baseline_id",
+          "schema_digest",
+          "supported_application_releases",
+          "convergence_receipt_ids"
+        ],
+        "properties": {
+          "baseline_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "schema_digest": {
+            "$ref": "common.schema.json#/$defs/digest"
+          },
+          "supported_application_releases": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "convergence_receipt_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "common.schema.json#/$defs/identifier"
+            }
+          }
+        }
+      }
+    },
+    "ordered_migrations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "migration_plan_id",
+          "migration_version",
+          "sequence",
+          "script_digest",
+          "source_schema_digest",
+          "applied_schema_digest",
+          "migration_receipt_id",
+          "reconciliation_ids",
+          "contract_phase_status"
+        ],
+        "properties": {
+          "migration_plan_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "migration_version": {
+            "$ref": "common.schema.json#/$defs/semver"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "script_digest": {
+            "$ref": "common.schema.json#/$defs/digest"
+          },
+          "source_schema_digest": {
+            "$ref": "common.schema.json#/$defs/digest"
+          },
+          "applied_schema_digest": {
+            "$ref": "common.schema.json#/$defs/digest"
+          },
+          "migration_receipt_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "reconciliation_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "common.schema.json#/$defs/identifier"
+            }
+          },
+          "contract_phase_status": {
+            "type": "string",
+            "enum": [
+              "pending_compatibility_window",
+              "approved_for_execution",
+              "complete"
+            ]
+          }
+        }
+      }
+    },
+    "required_receipt_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "acceptance_bindings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "acceptance_id",
+          "acceptance_type",
+          "status",
+          "evidence_mode",
+          "decision_digest"
+        ],
+        "properties": {
+          "acceptance_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "acceptance_type": {
+            "type": "string",
+            "enum": [
+              "scientific",
+              "quality",
+              "regulatory",
+              "security_privacy",
+              "operations",
+              "business"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "projected",
+              "pending",
+              "conditionally_approved",
+              "approved"
+            ]
+          },
+          "evidence_mode": {
+            "$ref": "common.schema.json#/$defs/evidenceMode"
+          },
+          "decision_digest": {
+            "$ref": "common.schema.json#/$defs/digest"
+          }
+        }
+      }
+    },
+    "evidence_bundle": {
+      "$ref": "common.schema.json#/$defs/artifact"
+    },
+    "unresolved_finding_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/identifier"
+      }
+    },
+    "invalidation_triggers": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 300
+      }
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "evidence_mode": {
+            "const": "simulated"
+          }
+        },
+        "required": [
+          "evidence_mode"
+        ]
+      },
+      "then": {
+        "properties": {
+          "actual_acceptance_required": {
+            "const": true
+          },
+          "production_authorization_effect": {
+            "const": "none"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "release_state": {
+            "const": "promoted"
+          }
+        },
+        "required": [
+          "release_state"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidence_mode": {
+            "const": "observed"
+          },
+          "assurance_stage": {
+            "enum": [
+              "validated",
+              "accepted"
+            ]
+          },
+          "actual_acceptance_required": {
+            "const": false
+          },
+          "production_authorization_effect": {
+            "const": "approved"
+          },
+          "unresolved_finding_ids": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ]
+}
