@@ -107,6 +107,12 @@ python3 tools/scan_secret_shapes.py
 python3 -m unittest discover -s tests -v
 ```
 
+The standard-library Governance Pages builder prepares a deterministic,
+reviewable retrieval artifact after a release receiver supplies a structured
+proof for the exact accepted source revision. See
+[`docs/GOVERNANCE_PAGES.md`](docs/GOVERNANCE_PAGES.md) for the clean-source,
+two-build, manifest, and optional canonical-origin paths.
+
 After a later receipt records an accepted release subject, verify its annotated
 tag, commit, reproducible archive digest, ancestry, and carrier bytes from Git:
 
@@ -144,6 +150,9 @@ python3 tools/validate_governance.py \
 - [`docs/MIGRATION_V2_0_0_TO_V2_0_1.md`](docs/MIGRATION_V2_0_0_TO_V2_0_1.md) —
   patch migration for promotion receipts, immutable workflow inputs, and policy
   contexts
+- [`docs/GOVERNANCE_PAGES.md`](docs/GOVERNANCE_PAGES.md) — deterministic
+  Governance 2.0.1 schema retrieval, source proof, authority, and publication
+  handoff
 - [`schemas/`](schemas/) — JSON Schema 2020-12 contracts
 - [`examples/`](examples/) — valid synthetic exemplars for every contract
 - [`machine-node.json`](machine-node.json), [`first-receipt.json`](first-receipt.json),

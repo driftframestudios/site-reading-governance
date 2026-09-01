@@ -6,6 +6,12 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+- Added a standard-library Governance Pages builder for byte-identical accepted
+  2.0.1 JSON Schema retrieval, ordinary-language authority guidance, full-SHA
+  source recovery, accessible relative-link pages, explicit canonical and CNAME
+  inputs, and a deterministic closed manifest with schema, content, and file
+  digests. Material mutation, two-build reproducibility, and generated HTML/CSS
+  secret-shape checks travel through the existing aggregate suite.
 - Aligned the synthetic database-change evidence chain with Flyway Community
   13.0.0 while keeping the governance contracts tool neutral; schema evolution,
   vendor lifecycle, cross-platform data movement, and acceptance retain separate

@@ -56,6 +56,21 @@ commit carries the observation and proves that the subject is its ancestor;
 the receipt therefore expresses both roles while each commit carries only the
 information available when it is created.
 
+### Retrieval artifact handoff
+
+The Governance Pages source remains an ordinary reviewed repository change.
+After an accepted source coordinate exists, a release receiver supplies its
+structured proof and builds twice from a clean worktree into two new local
+artifact directories. Exact schema bytes, full-SHA source links, relative
+visitor links, manifest digests, and generated-artifact safety checks provide
+the review surface.
+
+The builder changes only the selected local artifact directory. A publication
+receiver separately selects a GitHub Pages source and activates hosted settings.
+Canonical metadata and a matching `CNAME` enter the artifact only through
+explicit build inputs; domain ownership and DNS retain their existing human
+authority.
+
 ## Hotfix flow
 
 1. Create `hotfix/<issue>-<slug>` from `main`.

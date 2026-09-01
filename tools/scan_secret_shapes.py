@@ -15,6 +15,8 @@ TEXT_SUFFIXES = {
     ".cfg",
     ".conf",
     ".env",
+    ".css",
+    ".html",
     ".ini",
     ".json",
     ".md",
