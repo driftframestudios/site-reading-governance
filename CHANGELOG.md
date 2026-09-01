@@ -6,6 +6,8 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+## [2.0.1] — 2026-09-01
+
 - Added a root collaboration guide, an ordinary-language README entry path,
   and one public-ready schema-release-lineage skill. Governance Pages now
   publishes the exact skill source and a readable catalog while its manifest,
