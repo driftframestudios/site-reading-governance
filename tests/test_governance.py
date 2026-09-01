@@ -44,7 +44,7 @@ def run_git(repository: Path, *arguments: str) -> bytes:
 
 def commit_all(repository: Path, message: str) -> str:
     run_git(repository, "add", "--all")
-    run_git(repository, "commit", "-m", message)
+    run_git(repository, "commit", "--no-gpg-sign", "-m", message)
     return run_git(repository, "rev-parse", "HEAD").decode("ascii").strip()
 
 
@@ -94,6 +94,11 @@ def initialize_release_repository(
     run_git(repository, "init", "--initial-branch=main")
     run_git(repository, "config", "user.name", "Governance Test")
     run_git(repository, "config", "user.email", "governance-test@example.invalid")
+    run_git(repository, "config", "commit.gpgSign", "false")
+    run_git(repository, "config", "tag.gpgSign", "false")
+    disabled_hooks = repository / ".git" / "test-disabled-hooks"
+    disabled_hooks.mkdir()
+    run_git(repository, "config", "core.hooksPath", str(disabled_hooks))
     (repository / "baseline.txt").write_text("baseline\n", encoding="utf-8")
     commit_all(repository, "Create baseline")
     run_git(repository, "switch", "-c", "release")
@@ -102,12 +107,19 @@ def initialize_release_repository(
     )
     accepted_commit = commit_all(repository, "Prepare accepted source")
     if lightweight_tag:
-        run_git(repository, "tag", "governance-v2.0.1", accepted_commit)
+        run_git(
+            repository,
+            "tag",
+            "--no-sign",
+            "governance-v2.0.1",
+            accepted_commit,
+        )
     else:
         run_git(
             repository,
             "tag",
             "--annotate",
+            "--no-sign",
             "governance-v2.0.1",
             "--message",
             "Governance 2.0.1",
@@ -224,6 +236,16 @@ class GovernancePackageTests(unittest.TestCase):
             [],
             validation._validate_repository_orientation_records(records),
         )
+
+        promotion["release_coordinate"]["tag"] = "governance-v2.0.2"
+        node["current_provenance"]["release"] = "governance-v2.0.2"
+        findings = validation._validate_repository_orientation_records(records)
+        self.assertTrue(
+            any("receipt target release" in finding.message for finding in findings),
+            findings,
+        )
+        promotion["release_coordinate"]["tag"] = "governance-v2.0.1"
+        node["current_provenance"]["release"] = "governance-v2.0.1"
 
         promotion["release_coordinate"]["hosted_check_contexts"] = [
             "governance-validation"
@@ -345,6 +367,26 @@ class GovernancePackageTests(unittest.TestCase):
             )
             self.assertEqual(0, command.returncode, command.stderr)
             self.assertEqual("Governance validation passed.\n", command.stdout)
+
+    def test_release_verifier_binds_tag_to_target_release(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            accepted_commit, archive_digest = initialize_release_repository(repository)
+            receipt = release_observation(
+                repository,
+                commit_oid=accepted_commit,
+                archive_digest=archive_digest,
+            )
+            receipt["target_release"] = "governance-v2.0.2"
+            record_release_observation(repository, receipt)
+
+            findings = validation.verify_release_coordinate(
+                repository, Path("promotion-receipt.json")
+            )
+            self.assertTrue(
+                any("target release" in item.message for item in findings),
+                findings,
+            )
 
     def test_release_verifier_identifies_a_different_tag_subject(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

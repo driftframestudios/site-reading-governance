@@ -1559,6 +1559,15 @@ def _validate_repository_orientation_records(
                 )
             )
         if isinstance(release_coordinate, dict):
+            if release_coordinate.get("tag") != promotion_receipt.get(
+                "target_release"
+            ):
+                findings.append(
+                    Finding(
+                        "promotion-receipt.json.release_coordinate.tag",
+                        "observed release tag must equal the receipt target release",
+                    )
+                )
             if not release_coordinate.get("local_proof_receipt"):
                 findings.append(
                     Finding(
@@ -2068,6 +2077,13 @@ def verify_release_coordinate(
         ]
 
     coordinate = receipt["release_coordinate"]
+    if coordinate["tag"] != receipt["target_release"]:
+        findings.append(
+            Finding(
+                "release-coordinate.tag",
+                "observed release tag must equal the receipt target release",
+            )
+        )
     object_format_bytes, object_format_findings = _git_stdout(
         resolved_repository,
         ("rev-parse", "--show-object-format"),
