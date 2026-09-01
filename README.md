@@ -1,15 +1,40 @@
 # Site Reading Governance
 
-This repository is the reusable governance plane for comparative Site Reading
-constellations. It gives planning, implementation, simulation, and evidence
-repositories one versioned contract for decisions, scenarios, receipts,
-acceptance, comparison, and change-triggered invalidation.
+This repository provides the shared schemas, examples, release evidence,
+language rules, and governance guidance used by the five-repository LIMS/ELN
+suite. Planning, implementation, simulation, and comparison repositories use
+its versioned contracts for decisions, scenarios, receipts, acceptance,
+comparison, and change-triggered review.
+
+Repository authorship and maintenance provenance is recorded in
+[`AUTHORS`](AUTHORS). Git history and reviewed pull requests preserve change
+chronology and contribution credit.
+
+## Start here
+
+1. Read [`GOVERNANCE.md`](GOVERNANCE.md) for meaning, decision rights, evidence
+   stages, review, and recovery.
+2. Use [`schemas/README.md`](schemas/README.md) to find the record you need, then
+   keep its stable identifier and release coordinate with each validation.
+3. Run `make check` with Python 3.11 or newer. Use the focused validation
+   command in [Quick start](#quick-start) when checking one downstream record.
+4. Start changes from `develop` using [`BRANCHING.md`](BRANCHING.md). Read
+   [`promotion-receipt.json`](promotion-receipt.json) when the accepted tag,
+   commit, archive digest, or release state affects the work.
+5. Use the repository-local
+   [`governance-schema-release-lineage`](.agents/skills/governance-schema-release-lineage/SKILL.md)
+   skill when one schema needs to be followed from source through release and
+   its byte-identical Pages retrieval copy.
+
+[`first-receipt.json`](first-receipt.json) provides compact re-entry context.
+[`coordination-horizon.json`](coordination-horizon.json) records current work
+and the next evidence-bearing move.
 
 The package is private-repository ready. Its examples use synthetic identifiers,
 its automation uses read-only permissions by default, and its ruleset exports
 can be reviewed before installation through the GitHub Rulesets API.
 
-The current governance schema release is `2.0.0`; stable schema identifiers use
+The current governance schema candidate is `2.1.0`; stable schema identifiers use
 the `/v2.0/` coordinate. It implements **Control Plane Profile v0.3**, the
 Enterprise Human-AI Practitioner Registry-derived capability profile for
 bounded callers, veracity, orientation, coordination, and future-reality
@@ -54,6 +79,42 @@ This posture lets an executable simulation fully close the four substantive
 receipt families through modeled roles and synthetic environments. It makes no
 claim about a separately observed environment or production authorization.
 
+## Database change assurance
+
+Six additive contracts make database evolution inspectable from discovery to
+release:
+
+```text
+data contract
+  -> refactor finding
+  -> migration plan
+  -> migration receipt
+  -> data reconciliation
+  -> database release manifest
+```
+
+The chain preserves logical meaning alongside physical representation. A plan
+records source and target schema digests, immutable script and tool coordinates,
+ordered expand/backfill/validate/cutover/contract phases, lock and statement
+budgets, compatibility, approval, and recovery. Execution receipts and exact
+reconciliation bind observed or simulated results back to that plan. The release
+manifest assembles migration, restore, acceptance, finding, and evidence-bundle
+coordinates into one reviewable promotion surface.
+
+The contracts remain migration-tool neutral. The current synthetic exemplar
+selects Flyway Community 13.0.0 for repository-owned PostgreSQL schema evolution.
+Flyway owns ordering, checksums, schema history, deployment serialization, and
+per-migration transaction handling. Reviewed SQL and acceptance evidence own
+domain constraints, upgrade preconditions, scientific reconciliation, security,
+restore rehearsal, and release disposition. Vendor-owned LIMS and ELN databases
+continue through vendor-supported lifecycle paths, while cross-platform data
+movement produces separate checkpoint and reconciliation receipts.
+
+Native database types preserve instants, civil dates, exact measurements,
+booleans, identifiers, and relational integrity. Interchange documents render
+migration instants as RFC 3339 UTC values while the data contract retains the
+database-native representation.
+
 ## Quick start
 
 Requirements: Python 3.11 or newer. The validation path uses the Python standard
@@ -62,8 +123,22 @@ library and carries zero runtime package dependencies.
 ```bash
 python3 tools/validate_governance.py
 python3 tools/check_language.py
+python3 tools/check_language.py --format sarif
 python3 tools/scan_secret_shapes.py
 python3 -m unittest discover -s tests -v
+```
+
+The standard-library Governance Pages builder prepares a deterministic,
+reviewable retrieval artifact after a release receiver supplies a structured
+proof for the exact accepted source revision. See
+[`docs/GOVERNANCE_PAGES.md`](docs/GOVERNANCE_PAGES.md) for the clean-source,
+two-build, manifest, and optional canonical-origin paths.
+
+After a later receipt records an accepted release subject, verify its annotated
+tag, commit, reproducible archive digest, ancestry, and carrier bytes from Git:
+
+```bash
+python3 tools/validate_governance.py --verify-release-coordinate
 ```
 
 Validate a downstream document against this package:
@@ -80,17 +155,31 @@ python3 tools/validate_governance.py \
   model
 - [`BRANCHING.md`](BRANCHING.md) — GitFlow-like lifecycle and release protocol
 - [`docs/NEGATION_AWARE_LANGUAGE.md`](docs/NEGATION_AWARE_LANGUAGE.md) —
-  affirmative semantic-field guidance
+  affirmative semantic-field guidance and authoritative language policy
+- [`language-policy/`](language-policy/) — digest-pinned policy manifest,
+  89-case union corpus, and exact reviewed exemption inventory
+- [`docs/AUTHOR_FEEDBACK.md`](docs/AUTHOR_FEEDBACK.md) — advisory,
+  structure-aware Vale scope, rule severity, and checksum-verified tool
+  coordinate
+- [`docs/SEMANTIC_SHADOW_REVIEW.md`](docs/SEMANTIC_SHADOW_REVIEW.md) —
+  inactive, bounded contract for qualifying future semantic author feedback
 - [`docs/CONTROL_PLANE_V0_3.md`](docs/CONTROL_PLANE_V0_3.md) — bounded caller,
   Practitioner Probe, Coordination Horizon, Machine Node, veracity, and
   simulated-closure operating model
 - [`docs/MIGRATION_V1_TO_V2.md`](docs/MIGRATION_V1_TO_V2.md) — downstream
   migration sequence and release validation
+- [`docs/MIGRATION_V2_0_0_TO_V2_1_0.md`](docs/MIGRATION_V2_0_0_TO_V2_1_0.md) —
+  additive migration for promotion, language-control, and database-change
+  contracts
+- [`docs/GOVERNANCE_PAGES.md`](docs/GOVERNANCE_PAGES.md) — deterministic
+  Governance 2.1.0 schema retrieval, source proof, authority, and publication
+  handoff
 - [`schemas/`](schemas/) — JSON Schema 2020-12 contracts
 - [`examples/`](examples/) — valid synthetic exemplars for every contract
 - [`machine-node.json`](machine-node.json), [`first-receipt.json`](first-receipt.json),
-  and [`coordination-horizon.json`](coordination-horizon.json) — root orientation
-  records for contracts, campaign markings, and immutable-promotion posture
+  [`coordination-horizon.json`](coordination-horizon.json), and
+  [`promotion-receipt.json`](promotion-receipt.json) — root orientation and
+  executable promotion records
 - [`.github/workflows/`](.github/workflows/) — reusable validation workflows
 - [`rulesets/`](rulesets/) — reviewable GitHub repository ruleset exports
 - [`audits/repository-security-review-2026-07-28.md`](audits/repository-security-review-2026-07-28.md)
@@ -98,8 +187,9 @@ python3 tools/validate_governance.py \
   production receipts
 - [`audits/dependency-automation-review-2026-07-28.md`](audits/dependency-automation-review-2026-07-28.md)
   — five-repository bot-identity, branch grammar, workflow, and follow-up review
-- [`tools/`](tools/) and [`tests/`](tests/) — dependency-free contract, language,
-  secret-shape, and regression validation
+- [`tools/`](tools/) and [`tests/`](tests/) — dependency-free contract,
+  repository-independent language core with a bounded governance wrapper,
+  secret-shape checks, and regression validation
 
 ## Versioning
 
@@ -109,11 +199,16 @@ Schema releases follow semantic versioning:
 - minor: backward-compatible contract capability;
 - patch: clarification, example, or validation repair.
 
-Consumers pin a release tag and digest. Floating branch references support local
-exploration; governed comparisons use immutable release coordinates.
+Consumers pin the annotated release tag, its accepted commit, and the SHA-256
+digest of `git archive --format=tar <commit>`. Floating branch references
+support local exploration; governed comparisons use immutable release
+coordinates.
 
 ## Source posture
 
-The language policy is derived from the Notion field-guide page
-[Semantic Attractor Design — Negation-Aware Instructions](https://app.notion.com/p/abcb29b960a842ce8f1a409408a29257).
-The local guide records the applied interpretation and the automated checks.
+[`docs/NEGATION_AWARE_LANGUAGE.md`](docs/NEGATION_AWARE_LANGUAGE.md) is the
+public authority for this repository's applied language posture. It records the
+desired-state guidance, hard-boundary treatment, automated checks, and exact
+local verification path. Working-source lineage remains with its authorized
+steward while this repository-local guide gives public collaborators the
+complete behavior needed here.

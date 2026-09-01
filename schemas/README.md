@@ -1,7 +1,7 @@
 # Schema Catalog
 
 All contracts use JSON Schema 2020-12 and stable HTTPS identifiers.
-Release `2.0.0` uses the stable `/v2.0/` identifier coordinate and implements
+Release candidate `2.1.0` uses the stable `/v2.0/` identifier coordinate and implements
 Control Plane Profile v0.3.
 
 | Schema | Record |
@@ -20,12 +20,20 @@ Control Plane Profile v0.3.
 | `practitioner-probe.schema.json` | Five-level probe, technical core, review surfaces, scenarios, and instruction yield |
 | `machine-node.schema.json` | Non-authorizing machine orientation, provenance, campaigns, contracts, and consumers |
 | `first-receipt.schema.json` | Compact entry orientation, evidence posture, source permissions, and handoff |
+| `promotion-receipt.schema.json` | Candidate readiness and a later observation of the accepted tagged release subject |
 | `simulated-receipt-closure.schema.json` | Executable future-reality closure of all four substantive receipt families |
 | `simulation-assumption.schema.json` | Time-bounded assumption, basis, owner, and falsifiers |
 | `receipt.schema.json` | Environment-bound assurance evidence |
 | `acceptance.schema.json` | Scientific, Quality, Regulatory, and other accountable decisions |
 | `comparison.schema.json` | Pinned actual/simulation result and adjudication |
 | `invalidation.schema.json` | Change-triggered re-evaluation and successor evidence |
+| `language-control.schema.json` | Typed target, boundary, replacement, verification, ownership, and evidence for high-consequence instructions |
+| `data-contract.schema.json` | Logical and physical database meaning, constraints, compatibility, and invalidation triggers |
+| `database-refactor-finding.schema.json` | Located primitive finding, material effect, target state, disposition, ownership, and migration linkage |
+| `database-migration-plan.schema.json` | Ordered expand-through-contract phases, execution budgets, compatibility window, approval, and recovery |
+| `database-migration-receipt.schema.json` | Plan-bound execution, phase outcomes, environment coordinate, measurements, and recovery evidence |
+| `data-reconciliation.schema.json` | Cohort-bound exact comparisons, scientific invariants, exceptions, and accountable review |
+| `database-release-manifest.schema.json` | Contract, ordered migration, receipt, acceptance, finding, and evidence-bundle release coordinate |
 | `common.schema.json` | Shared identifiers, actors, artifacts, metrics, and boundaries |
 
 ## Contract invariants
@@ -48,6 +56,21 @@ Control Plane Profile v0.3.
 - Governance records close their property surface to make drift visible.
 - Hard safety, privacy, and Regulatory boundaries include protected state,
   explicit constraint, replacement behavior, and verification.
+- Consequential language controls bind an affirmative target and safe replacement
+  to an accountable owner, observable verification, and durable evidence.
+- Data contracts preserve semantic type, physical type, nullability, units,
+  precision, temporal meaning, keys, constraints, retention, and compatibility.
+- Migration plans sequence bounded phases, retain immutable applied checksums,
+  and establish approval and recovery before a destructive contract phase.
+- Migration receipts bind the exact plan, tool, script, environment, source
+  schema, target schema, phase results, reconciliation, and restore evidence.
+- Reconciliation records keep counts and measured values exact, bind the cohort
+  and query digest, and record accountable dispositions for exceptions.
+- Database release manifests bind one contract and evidence chain while keeping
+  simulated authority distinct from environment-observed promotion.
+- Release observations distinguish the accepted annotated tag and source commit
+  from the later commit that carries the receipt, then bind exact Git tar
+  archive bytes with SHA-256.
 
 ## Consumer pinning
 
@@ -56,7 +79,9 @@ reusable contract workflow validates each document with the selected schema from
 that immutable coordinate.
 
 Artifact locators use opaque `governed://` or `evidence://` references. Date-time
-values carry an RFC 3339 timezone, and numeric values remain finite.
+values carry an RFC 3339 timezone, migration evidence serializes instants in
+canonical UTC, and numeric values remain finite. Database contracts express
+native temporal and exact-numeric storage separately from interchange encoding.
 
 ## Evolution
 

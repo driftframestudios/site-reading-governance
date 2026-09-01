@@ -110,33 +110,76 @@ number of temporal buckets. It records current items, entry and completion
 evidence, dependencies, retained effects, consequential questions, and a
 re-entry capsule. Teams can choose labels and cadence that fit the work.
 
-## Governed dependency automation
+## Governed local and bounded hosted proof
 
-Dependency automation follows a bounded-caller posture. An exception to the
-human GitFlow branch families requires three facts together: a complete
-Dependabot or Renovate branch grammar, the exact corresponding pull-request
-author, and a `main` or `develop` target. Ordinary tests, immutable action
-references, CODEOWNER review, and release evidence continue to apply.
+Local governance validation remains the complete source-owned proof path. The
+repository's **100–300 monthly runner-minute** allocation supports one small,
+read-only pull-request job for changes targeting `develop` or `main`. The job
+uses one Python version and standard runner, cancels superseded runs, and has a
+ten-minute ceiling.
 
-The enabled package ecosystem and admitted branch grammar advance in the same
-reviewed change. Dependabot-triggered workflows use read-only repository
-permission and Dependabot-scoped secrets. Security updates may still target the
-default `main` branch, and an accepted repair is reconciled into `develop`.
-The branch-admission gate uses a dedicated, read-only `pull_request_target`
-workflow to read pull-request coordinates while executing the checker from the
-exact base commit in `.branch-policy-base`. Proposed head content enters the
-ordinary `pull_request` validation path and supplies only quoted branch and
-author coordinates to the base-controlled policy.
+The manual `Governance` workflow retains the complete language, secret-shape,
+author-feedback, and regression paths. A named receiver sets
+`ENABLE_GITHUB_ACTIONS=true`, selects `confirm_run`, and dispatches it when the
+wider observation is material. Setting the variable to `false` rests that
+manual path.
 
-The branch-policy workflow and checker become active after their reviewed
-versions exist on the default branch and each protected target branch. The
-introducing pull request continues under the previously released controls, and
-the accepted policy is merged forward before it governs later proposals.
+The two reusable workflows are caller-owned contracts. They activate only
+through `workflow_call`, inherit the caller's event and budget decision, and
+receive execution through a reviewed caller. The caller pins the governance
+commit and owns its repository setting, permissions, inputs, secrets, and
+evidence interpretation.
+
+Monthly dependency scheduling lives in `.github/dependabot.yml`, targets
+`develop`, groups minor and patch updates, and keeps at most two update pull
+requests open. Dependency automation follows a bounded-caller posture: the
+full Dependabot or Renovate branch grammar, exact bot author, and governed
+target agree. Local tests, immutable action references, CODEOWNER review, and
+release evidence remain the substantive proof.
+
+The `main` ruleset export preserves one approval, CODEOWNER review, last-push
+approval, and the release protections for promotion. `develop` remains the
+lean integration branch. Release and hotfix branches remain short-lived and
+advance through the protected `main` pull request.
 
 The behavioral basis is maintained in GitHub's
 [Dependabot options reference](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference)
 and
 [Dependabot on GitHub Actions](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-on-actions).
+
+## Database change lifecycle
+
+```text
+primitive inventory
+  -> approved data contract
+  -> located refactor findings
+  -> expand and backfill
+  -> reconcile and validate
+  -> cut over through a compatibility window
+  -> accountable contract-phase approval
+  -> release manifest
+```
+
+The data contract defines semantic and physical types, units, precision,
+temporal meaning, keys, constraints, classification, retention, and compatible
+application releases. A refactor finding records the current primitive, its
+material effect, the affirmative target, evidence, ownership, recovery route,
+and migration disposition.
+
+Migration plans bind immutable tool and script coordinates to source and target
+schema digests. Each phase carries transaction posture, online behavior, lock
+and statement budgets, durable checkpoints, preconditions, and observable
+success criteria. Destructive contract phases enter through a measured
+compatibility window and scoped approval. The migration workflow binds one
+reviewed writer coordinate, assigns coordination mechanics to a governed owner,
+and records schema-drift and applied-checksum verification.
+
+Execution receipts preserve phase outcomes, operational measurements,
+reconciliation, backup or recovery-point coordinates, restore evidence, and
+accountable review. Reconciliation binds its exact values and scientific
+invariants to a named cohort and query digest. The database release manifest
+assembles the contract, migration graph, supported baselines, receipts,
+acceptance decisions, findings, and immutable evidence bundle.
 
 ## Change and invalidation
 
@@ -173,7 +216,7 @@ tolerances with numerator, denominator, threshold, window, and observed value.
 
 ## Review cadence
 
-- Pull request: schema, language, example, and policy validation.
+- Pull request: local schema, language, example, and policy validation.
 - Weekly: assumption aging and open divergence review.
 - Monthly: substantive receipt ledger review.
 - Release: cross-role governance approval and digest publication.
@@ -185,4 +228,4 @@ Raw credentials, regulated records, personal data, exploitable security findings
 and unredacted tenant evidence stay in approved governed stores; repository
 records contain synthetic examples or redacted, digest-bound locators.
 
-**PRIVACY BOUNDARY:** these materials must not enter Git history; the replacement behavior is storage in the approved evidence system with least-privilege access, retention, and audit.
+**PRIVACY BOUNDARY:** these materials must not enter Git history; the replacement behavior is storage in the approved evidence system with least-privilege access, retention, and audit, and the repository content scan verifies that committed examples contain synthetic data or redacted locators.

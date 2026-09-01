@@ -7,6 +7,10 @@
 | `main` | Production governance releases | `release/*` and `hotfix/*` | Signed semantic-version tag |
 | `develop` | Integrated next release | `feature/*`, `chore/*`, and reconciled release/hotfix changes | Candidate state |
 
+`main` carries the active protected-delivery ruleset. `develop` is the lean
+integration branch; ordinary review and the lightweight pull-request proof
+support fast integration while release promotion receives the protected gate.
+
 ## Short-lived branches
 
 - `feature/<issue>-<slug>` — governance capability or compatible schema addition
@@ -37,9 +41,35 @@ connects each branch to intent.
 2. Stabilize version metadata, changelog, migration notes, and examples.
 3. Run the full validation suite and downstream contract rehearsal.
 4. Merge the release into `main` through an approved pull request.
-5. Create a signed `v<semver>` tag on the merge commit.
-6. Merge the released state back into `develop`.
-7. Publish schema digests and downstream upgrade guidance.
+5. Create a signed `governance-v<semver>` tag on the merge commit.
+6. Reproduce the tagged commit's `git archive --format=tar` SHA-256 digest.
+7. Merge the tagged release forward into `develop`.
+8. Remove the short-lived release branch after its forward merge is settled.
+9. Create an evidence branch that records the tag object, accepted commit,
+   archive digest, and reviewed proof locators in the promotion receipt.
+10. Run `python3 tools/validate_governance.py --verify-release-coordinate` from
+   the receipt-carrier commit, then merge the evidence branch into `develop`.
+11. Publish schema digests and downstream upgrade guidance.
+
+The signed tag identifies the accepted release subject. The later evidence
+commit carries the observation and proves that the subject is its ancestor;
+the receipt therefore expresses both roles while each commit carries only the
+information available when it is created.
+
+### Retrieval artifact handoff
+
+The Governance Pages source remains an ordinary reviewed repository change.
+After an accepted source coordinate exists, a release receiver supplies its
+structured proof and builds twice from a clean worktree into two new local
+artifact directories. Exact schema bytes, full-SHA source links, relative
+visitor links, manifest digests, and generated-artifact safety checks provide
+the review surface.
+
+The builder changes only the selected local artifact directory. A publication
+receiver separately selects a GitHub Pages source and activates hosted settings.
+Canonical metadata and a matching `CNAME` enter the artifact only through
+explicit build inputs; domain ownership and DNS retain their existing human
+authority.
 
 ## Hotfix flow
 
@@ -49,9 +79,25 @@ connects each branch to intent.
 4. Tag the patch release.
 5. Reconcile the released commit into `develop` and active release branches.
 
-## Automated maintenance flow
+## Local proof and bounded hosted maintenance
 
-Automated dependency pull requests use a distinct, bounded coordinate contract.
+The dependency-free validator and regression suite remain the complete
+source-owned proof path. The repository has a monthly **100–300 runner-minute**
+allocation for one small pull-request proof. Pull requests targeting `develop`
+or `main` run the governance aggregate, language and secret-shape checks, and
+repository regression suite on Python 3.13. One standard runner, read-only
+permissions, cancellation of superseded runs, and a ten-minute ceiling keep
+that observation bounded.
+
+The manual `Governance` workflow retains advisory author feedback, language and
+secret-shape passes, and the complete regression proof. A named receiver sets
+`ENABLE_GITHUB_ACTIONS=true`, selects `confirm_run`, and dispatches it when the
+wider evidence is material. The reusable workflows remain available to
+reviewed callers through their bounded inputs.
+
+Monthly dependency updates live in `.github/dependabot.yml`, target `develop`,
+group minor and patch updates, and keep at most two update pull requests open.
+Dependency pull requests use a distinct, bounded coordinate contract.
 Admission requires three aligned facts:
 
 - the complete source branch matches the configured Dependabot or Renovate
@@ -59,29 +105,29 @@ Admission requires three aligned facts:
 - the pull-request author is the corresponding GitHub bot identity;
 - the target is `main` or `develop`.
 
-The current Dependabot configuration monitors GitHub Actions, so its admitted
-branch grammar begins with `dependabot/github_actions/`. A future package
-ecosystem extends the grammar and regression fixtures in the same reviewed
-change that enables that ecosystem. Renovate uses its default `renovate/`
-branch prefix and the hosted-app bot identity. A self-hosted Renovate caller
-adds its exact app identity through a reviewed policy change.
+The active configuration names GitHub Actions, so its admitted branch grammar
+begins with `dependabot/github_actions/`. A future package ecosystem extends
+the configuration, grammar, and regression fixtures in the same reviewed
+change. Renovate uses its default `renovate/` branch prefix and hosted-app bot
+identity. A self-hosted Renovate caller adds its exact app identity through a
+reviewed policy change.
 
-GitHub security updates target the default branch. An accepted automation
-change on `main` is reconciled into `develop` so that the next release retains
-the dependency repair. Required checks, CODEOWNER review, immutable action
-references, and release evidence continue to apply to automated maintenance.
-Dependabot-triggered validation operates with a read-only GitHub token and
-Dependabot-scoped secrets. A dedicated read-only `pull_request_target` gate
-checks out the exact pull-request base commit into `.branch-policy-base` and
-executes its checker. Head content remains in the ordinary `pull_request`
-validation path, while the policy gate receives the head branch and author only
-as quoted event data. Automated changes continue through the same substantive
-tests and review gates as human-authored changes.
+An activated security update may target the default branch. Its standing proof
+is local validation plus human review, immutable action-reference inspection,
+and the ordinary release evidence. An accepted change on `main` is reconciled
+into `develop` so the next release retains the dependency repair. The
+repository-local branch checker remains available to reviewers, and CODEOWNER
+review continues to cover the dependency configuration and workflow contracts.
 
-The gate begins governing later proposals after its reviewed workflow exists on
-the default branch and its checker exists on each target base. The introducing
-pull request uses the previously released branch controls; accepted changes are
-merged forward so `main` and `develop` expose the same admission contract.
+Setting `ENABLE_GITHUB_ACTIONS=false` rests the manual proof. Repository
+settings can rest all hosted execution, and a reviewed return to
+`.github/dependabot.manual.yml` rests dependency scheduling. The `main` ruleset
+export preserves one approving review, CODEOWNER review, stale-review
+dismissal, last-push approval, review-thread resolution, deletion,
+non-fast-forward, and release-signature protection while its hosted
+required-check set remains empty. A later hosted check becomes part of branch
+policy only through a separate reviewed activation state with a stable context
+and a funded execution path.
 
 ## Compatibility policy
 

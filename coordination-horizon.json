@@ -1,7 +1,7 @@
 {
   "horizon_id": "HORIZON-GOVERNANCE-PROMOTION-002",
-  "title": "Governance 2.0 control-plane promotion",
-  "objective": "Settle Governance 2.0, Control Plane Profile 0.3.0, selected-future closure, bounded-caller contracts, and bot-bound dependency automation into one reviewable release.",
+  "title": "Governance 2.1.0 control-plane promotion",
+  "objective": "Settle Governance 2.1.0, Control Plane Profile 0.3.0, selected-future closure, bounded-caller contracts, and bot-bound dependency automation into one reviewable release.",
   "as_of": "2026-07-28T17:30:02Z",
   "current_item_ids": [
     "WORK-GOVERNED-AUTOMATION-002",
@@ -13,7 +13,7 @@
       "horizon_label": "Control-plane contract spine",
       "sequence": 1,
       "state": "complete",
-      "desired_state": "Governance schema release 2.0.0 expresses bounded callers, Practitioner Probes, veracity, orientation, probabilities, and selected-future closure.",
+      "desired_state": "Governance schema release 2.1.0 expresses bounded callers, Practitioner Probes, veracity, orientation, probabilities, and selected-future closure.",
       "entry_evidence": [
         "Enterprise Human-AI Practitioner Registry assessment and approved implementation plan."
       ],
@@ -36,7 +36,7 @@
       ],
       "completion_evidence": [
         "Spoof, malformed-coordinate, wrong-target, partial-coordinate, Dependabot, and Renovate regression tests pass.",
-        "Direct and reusable workflows bind the same pull-request author field.",
+        "The repository-local branch checker binds complete branch grammar, exact bot author, and governed target together.",
         "Dependency configuration and admitted ecosystem grammar advance together."
       ],
       "owner_role": "Repository automation steward",
@@ -49,13 +49,14 @@
       "horizon_label": "Immutable governance promotion",
       "sequence": 3,
       "state": "settling",
-      "desired_state": "The promoted governance release identifies its immutable commit, digest, branch coordinate, schema release, and downstream adoption path.",
+      "desired_state": "The governance release identifies its annotated tag object, accepted commit, reproducible archive digest, schema release, and downstream adoption path.",
       "entry_evidence": [
         "All repository-local governance and automation checks pass."
       ],
       "completion_evidence": [
-        "A governed release branch targets main and records its immutable PR-head or release coordinate.",
-        "The Machine Node replaces candidate zeros with the promoted commit and digest.",
+        "A governed release branch targets main and becomes an accepted, signed, annotated release tag.",
+        "A later evidence commit records the tag object, accepted commit, archive digest, and their ancestry relationship.",
+        "The Machine Node replaces candidate zeros with the accepted commit and archive digest.",
         "Downstream repositories validate against the promoted schema and workflow coordinates."
       ],
       "owner_role": "Constellation release steward",
@@ -65,14 +66,14 @@
     }
   ],
   "reentry_capsule": {
-    "current_state": "Governance 2.0 contracts and the bot-bound branch policy pass locally; release promotion and downstream immutable coordinates are settling.",
+    "current_state": "Governance 2.1.0 contracts and the bot-bound branch policy pass locally; release promotion and downstream immutable coordinates are settling.",
     "recent_decisions": [
       "DECISION-CONTROL-PLANE-PROFILE-003",
       "DECISION-BOT-IDENTITY-BOUND-BRANCHES-001",
       "DECISION-DEFAULT-BRANCH-SECURITY-UPDATES-001"
     ],
-    "next_safe_action": "Run the full validation suite, promote through a release branch, and replace candidate provenance with immutable coordinates.",
-    "verification": "Confirm 2.0.0 schema conformance, 0.3.0 profile binding, selected-future and automation digests, campaign markings, read-only workflow permissions, and passing regression tests."
+    "next_safe_action": "Run the full validation suite, promote through a release branch, tag the accepted source, and record the observation from a later evidence commit.",
+    "verification": "Confirm 2.1.0 schema conformance, 0.3.0 profile binding, selected-future and automation digests, campaign markings, read-only workflow permissions, passing regression tests, and Git-backed release-coordinate verification."
   },
   "retained_effects": [
     "Simulation closure remains definitive only within its selected future reality.",
@@ -85,7 +86,7 @@
     "Which future automation caller provides enough value to justify a new explicit grammar and author binding?"
   ],
   "metadata": {
-    "schema_version": "2.0.0",
+    "schema_version": "2.1.0",
     "created_at": "2026-07-28T17:30:02Z",
     "updated_at": "2026-07-28T17:30:02Z",
     "owner": {

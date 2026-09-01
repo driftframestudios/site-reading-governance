@@ -1,0 +1,9 @@
+extends: existence
+message: "Lead with the observable target state; pair a hard boundary with safe replacement behavior."
+level: warning
+nonword: true
+scope:
+  - paragraph
+  - comment
+raw:
+  - '(?is)\A(?![\s\S]{0,1600}\b(?:replacement behavior|safe path|recovery path)\b)[\s\S]{0,1600}?(?:\A\s*do\s+not\b|\b(?:don[''’]t|must\s+not|should\s+not|avoid|never)\b)'

@@ -51,7 +51,7 @@
     },
     "schema_release": {
       "type": "string",
-      "const": "2.0.0"
+      "const": "2.1.0"
     },
     "repository_role": {
       "type": "string",

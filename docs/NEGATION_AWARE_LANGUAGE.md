@@ -2,9 +2,10 @@
 
 ## Source and application
 
-This repository applies the collaboration pattern documented in
-[Semantic Attractor Design — Negation-Aware Instructions](https://app.notion.com/p/abcb29b960a842ce8f1a409408a29257),
-retrieved July 28, 2026.
+This guide is the public authority for this repository's negation-aware
+language posture. It records the applied collaboration pattern, the exact
+local assurance behavior, and the verification route available to repository
+readers. Working-source lineage remains with its authorized steward.
 
 The governing question is:
 
@@ -66,7 +67,116 @@ state.
 4. Do comments and identifiers reinforce the same invariant?
 5. Does failure language lead into an owned recovery path?
 
-The repository check in `tools/check_language.py` detects common prohibition
-phrases and accepts an explicit safety/privacy boundary when its replacement
-behavior appears on the same logical line.
+## Authoritative language assurance
 
+`tools/language_policy_core.py` implements policy release
+`language-policy-v1.0.0`; `tools/check_language.py` supplies this repository's
+bounded-root wrapper. The standard-library-only reader separates:
+
+- authored Markdown paragraphs from quotations, diagnostic sections, and
+  fenced examples;
+- JSON string values from structural keys;
+- conservative YAML scalar values from keys and comments; and
+- Python comments, docstrings, and identifiers from executable operators.
+
+Lexical signals nominate a paragraph for review. The policy decision then
+examines the complete logical paragraph for an affirmative target, a usable
+replacement route, and—at high-consequence boundaries—observable
+verification. This preserves literal quoted material while keeping authored
+instructions actionable.
+
+Stable rule identifiers support editor, CI, and evidence integrations:
+
+| Rule | Policy meaning |
+| --- | --- |
+| `LANG001_UNPAIRED_PROHIBITION` | A prohibition needs an affirmative target and replacement in the same logical paragraph. |
+| `LANG002_NEGATIVE_IDENTIFIER` | An identifier names the desired capability. |
+| `LANG003_UNVERIFIABLE_TARGET` | A consequential target names its observable verification. |
+| `LANG900_PARSE_FAILURE` | The bounded reader requires fully parseable source. |
+| `LANG901_EXEMPTION_INVALID` | Exemption inventory remains exact, current, and exercised. |
+
+Each finding carries severity, surface kind, source span, and a normalized
+SHA-256 fingerprint. The fingerprint remains stable across line movement and
+canonically equivalent Unicode while changing when the rule, path, surface, or
+material text—including letter case—changes. Fingerprint material uses NFC,
+collapsed whitespace, and preserved case; the policy release stays outside the
+material so a release label alone cannot invalidate an exact finding identity.
+
+## Output and exit contract
+
+```bash
+python3 tools/check_language.py
+python3 tools/check_language.py --format json
+python3 tools/check_language.py --format sarif
+python3 tools/check_language.py docs/SECURITY-OPERATIONS.md
+```
+
+Text serves local review. JSON supplies the versioned status, findings,
+summary, exit result, and applied-exemption receipts. SARIF 2.1.0 supplies rule
+metadata, physical and logical locations, partial fingerprints, invocation
+status, and the same applied receipts for code-scanning integrations.
+
+Exit `0` means the selected surface satisfies policy. Exit `1` means actionable
+language findings remain. Exit `2` means parsing or exemption configuration
+requires repair, so candidate eligibility stays closed.
+
+Repository traversal resolves each candidate beneath the selected root before
+reading it. Every symbolic-link selection produces a typed integrity finding,
+including links whose targets remain inside the root; repository-owned regular
+files provide the scan surface. Missing, unreadable,
+non-regular, invalid-encoding, and out-of-root selections use stable reason
+codes and repository-relative paths or the `<outside-root>` placeholder.
+Text, JSON, and SARIF output therefore remains portable across checkout
+locations and excludes host exception text.
+
+## Reviewed exemptions
+
+The registry at `language-policy/exemptions.json` supports exact, temporary
+exceptions. Each entry binds one rule, one repository-relative path, and one
+finding fingerprint. It also records:
+
+- an accountable `owner_role`;
+- a substantive `rationale`;
+- `reviewed_at` and `expires_at` UTC timestamps; and
+- an exemption identity suitable for review evidence.
+
+Review windows extend at most 180 days and begin no later than evaluation.
+Each exemption matches exactly one occurrence. Expired, future-reviewed,
+overbroad, duplicate, multiply matched, and unused entries produce
+`LANG901_EXEMPTION_INVALID`. One invalid entry keeps the entire registry from
+suppressing findings; valid runs retain an applied receipt containing the
+owner, expiry, path, rule, and fingerprint. The empty default registry
+demonstrates that candidate source currently requires zero exceptions.
+
+## Executable policy corpus
+
+`language-policy/corpus-v1.json` is the versioned behavioral contract. It
+contains 89 `should_flag`, `should_pass`, `exempt`, and
+`exemption_invalid` cases across Markdown, JSON, YAML, and Python. Exact
+expected rule, severity, surface, line, fingerprint, and applied-receipt
+results provide regression evidence for detection, precision, and fail-closed
+exception handling.
+
+`language-policy/manifest.json` is the byte-stable projection contract. It pins
+the canonical core and union corpus, records their governance and downstream
+paths, and carries the rules and severities, formats and surface kinds, exit
+meanings, fingerprint and output-schema contracts, exact exemption
+multiplicity, all-or-nothing registry behavior, and typed repository I/O reason
+codes used for cross-repository conformance.
+
+The typed `language-control.schema.json` contract carries consequential
+instructions as explicit target, boundary, replacement, verification,
+ownership, and evidence fields. Narrative prose remains readable; material
+controls gain a machine-verifiable operational form.
+
+## Semantic expansion boundary
+
+[`SEMANTIC_SHADOW_REVIEW.md`](SEMANTIC_SHADOW_REVIEW.md) defines an inactive,
+documentation-only contract for future statistical or model-assisted review.
+It bounds authority, input, privacy, reproducibility, evaluation, promotion,
+and recovery before such a reviewer can enter offline qualification.
+
+The deterministic checker remains the machine candidate-eligibility control.
+Vale and any future semantic reviewer supply advisory candidates, while
+accountable people retain authorship, repository promotion, and domain
+acceptance.

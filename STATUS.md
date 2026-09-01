@@ -11,7 +11,7 @@
 | Control Plane Profile v0.3 | Reference-ready | Cross-record semantic validation and failure-twin tests |
 | Simulated substantive closure | Reference-ready | Four-family future-reality manifest and executable-check contracts |
 | Reusable workflows | Reference-ready | Static contract tests |
-| Ruleset exports | Review-ready | Structural and status-context checks |
+| Ruleset exports | Review-ready | Structural and resting-state checks |
 | Language guidance | Reference-ready | Repository language check |
 
 ## Receipt boundary
@@ -30,23 +30,28 @@ class.
 
 ## Promotion path
 
-Release `2.0.0` moves through:
+Candidate release `2.1.0` moves through:
 
 1. repository initialization on `main`;
 2. `develop` creation from the baseline;
 3. `feature/constellation-foundation` review into `develop`;
-4. required governance validation on the release coordinate;
-5. `release/2.0.0` review into `main`;
-6. `develop` synchronization to the released commit;
-7. downstream constellation pinning by commit and Git tree digest.
+4. complete local governance proof on the release candidate;
+5. `release/2.1.0` review into `main`;
+6. signed annotated tagging of the accepted `main` commit;
+7. `develop` synchronization to the tagged commit;
+8. a later evidence commit that records and verifies the tag object, accepted
+   commit, and raw Git tar archive digest;
+9. downstream constellation pinning by tag, commit, and archive digest.
 
-Ruleset installation, organization-specific CODEOWNER confirmation, and signed
-tag publication remain accountable adoption receipts for the hosting
-organization.
+The concrete promotion receipt records local proof, the explicit hosted-context
+posture, ruleset installation, resolvable CODEOWNER evidence, immutable
+coordinates, and signed-tag publication. The release tree remains
+`candidate_ready`; a later receipt carrier records `release_observed` and proves
+that the tagged source is its ancestor.
 
 ## Known extension points
 
-- organization-specific CODEOWNER handles;
+- repository-specific CODEOWNER identities and eligible-reviewer capacity;
 - organization and repository IDs in ruleset installation tooling;
 - organization-specific governed-locator resolver registry;
 - retention schedules and jurisdictional overlays;

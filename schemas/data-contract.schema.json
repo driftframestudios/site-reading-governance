@@ -1,0 +1,497 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/data-contract.schema.json",
+  "title": "Database Data Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "data_contract_id",
+    "version",
+    "contract_digest",
+    "title",
+    "purpose",
+    "status",
+    "database",
+    "entities",
+    "compatibility",
+    "invalidation_triggers",
+    "metadata"
+  ],
+  "properties": {
+    "data_contract_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "version": {
+      "$ref": "common.schema.json#/$defs/semver"
+    },
+    "contract_digest": {
+      "$ref": "common.schema.json#/$defs/digest"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 200
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1200
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "approved",
+        "superseded"
+      ]
+    },
+    "database": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine_family",
+        "engine_version",
+        "extensions",
+        "collation",
+        "database_timezone",
+        "settings_digest",
+        "migration_history_table"
+      ],
+      "properties": {
+        "engine_family": {
+          "type": "string",
+          "enum": [
+            "postgresql",
+            "mysql",
+            "mariadb",
+            "oracle",
+            "sqlserver",
+            "sqlite",
+            "other"
+          ]
+        },
+        "engine_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "extensions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "version"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+                "maxLength": 120
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          }
+        },
+        "collation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "database_timezone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "settings_digest": {
+          "$ref": "common.schema.json#/$defs/digest"
+        },
+        "migration_history_table": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)?$",
+          "maxLength": 120
+        }
+      }
+    },
+    "entities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "entity_id",
+          "table_name",
+          "purpose",
+          "data_class",
+          "retention_class",
+          "fields",
+          "primary_key_field_ids",
+          "constraints"
+        ],
+        "properties": {
+          "entity_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "table_name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "maxLength": 120
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 700
+          },
+          "data_class": {
+            "type": "string",
+            "enum": [
+              "synthetic",
+              "public",
+              "internal",
+              "confidential",
+              "regulated"
+            ]
+          },
+          "retention_class": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 96
+          },
+          "fields": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "field_id",
+                "column_name",
+                "semantic_type",
+                "physical_type",
+                "nullable",
+                "source_of_truth",
+                "description"
+              ],
+              "properties": {
+                "field_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "column_name": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "maxLength": 120
+                },
+                "semantic_type": {
+                  "type": "string",
+                  "enum": [
+                    "identifier",
+                    "instant",
+                    "civil_date",
+                    "local_date_time",
+                    "exact_decimal",
+                    "integer",
+                    "boolean",
+                    "text",
+                    "controlled_term",
+                    "json_document",
+                    "binary_reference"
+                  ]
+                },
+                "physical_type": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "nullable": {
+                  "type": "boolean"
+                },
+                "source_of_truth": {
+                  "type": "string",
+                  "enum": [
+                    "database",
+                    "upstream_system",
+                    "derived"
+                  ]
+                },
+                "description": {
+                  "type": "string",
+                  "minLength": 10,
+                  "maxLength": 700
+                },
+                "default_expression_digest": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "generated_expression_digest": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "precision": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000
+                },
+                "scale": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000
+                },
+                "unit": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "temporal_semantics": {
+                  "type": "string",
+                  "enum": [
+                    "absolute_instant",
+                    "civil_date",
+                    "civil_local_date_time"
+                  ]
+                },
+                "controlled_vocabulary_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "semantic_type": {
+                        "const": "exact_decimal"
+                      }
+                    },
+                    "required": [
+                      "semantic_type"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "precision",
+                      "scale",
+                      "unit"
+                    ]
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "semantic_type": {
+                        "const": "instant"
+                      }
+                    },
+                    "required": [
+                      "semantic_type"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "temporal_semantics"
+                    ],
+                    "properties": {
+                      "temporal_semantics": {
+                        "const": "absolute_instant"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "semantic_type": {
+                        "const": "civil_date"
+                      }
+                    },
+                    "required": [
+                      "semantic_type"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "temporal_semantics"
+                    ],
+                    "properties": {
+                      "temporal_semantics": {
+                        "const": "civil_date"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "semantic_type": {
+                        "const": "controlled_term"
+                      }
+                    },
+                    "required": [
+                      "semantic_type"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "controlled_vocabulary_id"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "primary_key_field_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "common.schema.json#/$defs/identifier"
+            }
+          },
+          "constraints": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constraint_id",
+                "constraint_type",
+                "field_ids",
+                "validation_state"
+              ],
+              "properties": {
+                "constraint_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "constraint_type": {
+                  "type": "string",
+                  "enum": [
+                    "unique",
+                    "foreign_key",
+                    "check"
+                  ]
+                },
+                "field_ids": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "$ref": "common.schema.json#/$defs/identifier"
+                  }
+                },
+                "validation_state": {
+                  "type": "string",
+                  "enum": [
+                    "declared",
+                    "enforced",
+                    "validated"
+                  ]
+                },
+                "expression_digest": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "referenced_entity_id": {
+                  "$ref": "common.schema.json#/$defs/identifier"
+                },
+                "referenced_field_ids": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "$ref": "common.schema.json#/$defs/identifier"
+                  }
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "constraint_type": {
+                        "const": "foreign_key"
+                      }
+                    },
+                    "required": [
+                      "constraint_type"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "referenced_entity_id",
+                      "referenced_field_ids"
+                    ]
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "constraint_type": {
+                        "const": "check"
+                      }
+                    },
+                    "required": [
+                      "constraint_type"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "expression_digest"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "compatibility": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "application_release",
+          "minimum_schema_version",
+          "maximum_schema_version",
+          "verification_receipt_ids"
+        ],
+        "properties": {
+          "application_release": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "minimum_schema_version": {
+            "$ref": "common.schema.json#/$defs/semver"
+          },
+          "maximum_schema_version": {
+            "$ref": "common.schema.json#/$defs/semver"
+          },
+          "verification_receipt_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "common.schema.json#/$defs/identifier"
+            }
+          }
+        }
+      }
+    },
+    "invalidation_triggers": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 300
+      }
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "promotion_receipt_id": "RCP-GOVERNANCE-PROMOTION-EXAMPLE-001",
+  "repository": "driftframestudios/site-reading-governance",
+  "target_release": "governance-v2.1.0",
+  "promotion_state": "candidate_ready",
+  "evidence_mode": "planned",
+  "assurance_stage": "specified",
+  "release_coordinate": null,
+  "required_evidence": [
+    "The local governance proof passes before the source is accepted.",
+    "The protected release merge preserves the versioned history and human-review protections.",
+    "A later receipt observes the annotated governance tag, accepted commit, Git archive digest, and signature evidence."
+  ],
+  "accountable_role": "Constellation release steward",
+  "metadata": {
+    "schema_version": "2.1.0",
+    "created_at": "2026-07-28T21:00:00Z",
+    "updated_at": "2026-07-28T21:00:00Z",
+    "owner": {
+      "actor_id": "OWNER-GOVERNANCE-PROMOTION-EXAMPLE-001",
+      "display_name": "Example governance release steward",
+      "role": "Promotion receipt owner"
+    }
+  }
+}

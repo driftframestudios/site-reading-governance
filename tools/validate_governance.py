@@ -9,6 +9,7 @@ from hashlib import sha256
 import json
 import math
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -17,12 +18,28 @@ from urllib.parse import urldefrag, urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
+TOOL_DIRECTORY = Path(__file__).resolve().parent
+if str(TOOL_DIRECTORY) not in sys.path:
+    sys.path.insert(0, str(TOOL_DIRECTORY))
+
+from automation_contract import (
+    MISSING_AUTOMATION_CONTROLS,
+    validate_repository_automation,
+)
+from build_governance_pages import (
+    PUBLIC_SKILL_METADATA,
+    PUBLIC_SKILL_SOURCE_PATH,
+    PagesBuildError,
+    parse_skill_source,
+)
+
+
 SCHEMA_DIR = ROOT / "schemas"
 EXAMPLE_DIR = ROOT / "examples"
 RULESET_DIR = ROOT / "rulesets"
 WORKFLOW_DIR = ROOT / ".github" / "workflows"
 DRAFT = "https://json-schema.org/draft/2020-12/schema"
-SCHEMA_RELEASE = "2.0.0"
+SCHEMA_RELEASE = "2.1.0"
 SCHEMA_ID_PREFIX = "https://schemas.driftframe.org/site-reading-governance/v2.0/"
 SCHEMA_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9-]*\.schema\.json$")
 DOCUMENT_PATH_PATTERN = re.compile(
@@ -49,10 +66,26 @@ SUBSTANTIVE_SIMULATED_RECEIPT_FAMILIES = {
     "production_security_observability",
     "accountable_scientific_quality_regulatory_acceptance",
 }
+DATABASE_EXAMPLE_NAMES = {
+    "data-contract.json",
+    "database-refactor-finding.json",
+    "database-migration-plan.json",
+    "database-migration-receipt.json",
+    "data-reconciliation.json",
+    "database-release-manifest.json",
+}
+DATABASE_ACCEPTANCE_TYPES = {
+    "scientific",
+    "quality",
+    "regulatory",
+    "security_privacy",
+    "operations",
+}
 ROOT_ORIENTATION_SCHEMAS = {
     "machine-node.json": "machine-node.schema.json",
     "first-receipt.json": "first-receipt.schema.json",
     "coordination-horizon.json": "coordination-horizon.schema.json",
+    "promotion-receipt.json": "promotion-receipt.schema.json",
 }
 ROOT_ORIENTATION_CONTRACTS = {
     "CONTRACT-SELECTED-FUTURE-CLOSURE-002": "2.0.0",
@@ -81,6 +114,41 @@ LEGACY_COORDINATOR = re.compile(
     r"\bnow\s*/\s*next\s*/\s*later\s+coordinator\b",
     re.IGNORECASE,
 )
+SUPPORTED_SCHEMA_KEYWORDS = {
+    "$defs",
+    "$id",
+    "$ref",
+    "$schema",
+    "additionalProperties",
+    "allOf",
+    "anyOf",
+    "const",
+    "description",
+    "else",
+    "enum",
+    "exclusiveMaximum",
+    "exclusiveMinimum",
+    "format",
+    "if",
+    "items",
+    "maxItems",
+    "maxLength",
+    "maximum",
+    "minItems",
+    "minLength",
+    "minimum",
+    "oneOf",
+    "pattern",
+    "properties",
+    "required",
+    "then",
+    "title",
+    "type",
+    "uniqueItems",
+}
+SCHEMA_MAP_KEYWORDS = {"$defs", "properties"}
+SCHEMA_ARRAY_KEYWORDS = {"allOf", "anyOf", "oneOf"}
+SCHEMA_VALUE_KEYWORDS = {"additionalProperties", "else", "if", "items", "then"}
 
 
 @dataclass(frozen=True)
@@ -409,7 +477,8 @@ def validate_schema_catalog() -> list[Finding]:
             findings.append(
                 Finding(
                     relative,
-                    f"schema $id must use the {SCHEMA_RELEASE} release coordinate",
+                    "schema $id must use the stable /v2.0/ identifier family "
+                    "for this 2.x release line",
                 )
             )
         elif schema_id in ids:
@@ -418,7 +487,50 @@ def validate_schema_catalog() -> list[Finding]:
             ids.add(schema_id)
         if path.name != "common.schema.json" and schema.get("type") != "object":
             findings.append(Finding(relative, "governance record root must be an object"))
+        findings.extend(_validate_schema_keywords(schema, relative))
         findings.extend(_walk_references(schema, path, relative))
+    return findings
+
+
+def _validate_schema_keywords(
+    schema: Any,
+    location: str,
+) -> list[Finding]:
+    """Reject schema vocabulary that the dependency-free evaluator cannot enforce."""
+    if isinstance(schema, bool):
+        return []
+    if not isinstance(schema, dict):
+        return [Finding(location, "schema position must contain an object or boolean")]
+
+    findings: list[Finding] = []
+    unsupported = set(schema) - SUPPORTED_SCHEMA_KEYWORDS
+    for keyword in sorted(unsupported):
+        findings.append(
+            Finding(
+                location,
+                f"schema keyword {keyword!r} is outside the supported evaluator vocabulary",
+            )
+        )
+    for keyword in SCHEMA_MAP_KEYWORDS:
+        value = schema.get(keyword, {})
+        if isinstance(value, dict):
+            for name, child in value.items():
+                findings.extend(
+                    _validate_schema_keywords(child, f"{location}/{keyword}/{name}")
+                )
+    for keyword in SCHEMA_ARRAY_KEYWORDS:
+        value = schema.get(keyword, [])
+        if isinstance(value, list):
+            for index, child in enumerate(value):
+                findings.extend(
+                    _validate_schema_keywords(child, f"{location}/{keyword}/{index}")
+                )
+    for keyword in SCHEMA_VALUE_KEYWORDS:
+        value = schema.get(keyword)
+        if isinstance(value, (dict, bool)):
+            findings.extend(
+                _validate_schema_keywords(value, f"{location}/{keyword}")
+            )
     return findings
 
 
@@ -514,6 +626,7 @@ def validate_examples() -> list[Finding]:
             )
         )
     findings.extend(_validate_control_plane_examples(records))
+    findings.extend(_validate_database_examples(records))
     return findings
 
 
@@ -721,9 +834,484 @@ def _validate_control_plane_examples(records: dict[str, Any]) -> list[Finding]:
     return findings
 
 
+def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
+    """Prove the database contract, plan, evidence, and release chain agrees."""
+    if not DATABASE_EXAMPLE_NAMES.issubset(records):
+        return []
+
+    findings: list[Finding] = []
+    contract = records["data-contract.json"]
+    finding = records["database-refactor-finding.json"]
+    plan = records["database-migration-plan.json"]
+    receipt = records["database-migration-receipt.json"]
+    reconciliation = records["data-reconciliation.json"]
+    manifest = records["database-release-manifest.json"]
+
+    contract_id = contract.get("data_contract_id")
+    plan_id = plan.get("migration_plan_id")
+    receipt_id = receipt.get("migration_receipt_id")
+    reconciliation_id = reconciliation.get("reconciliation_id")
+
+    for label, record in (
+        ("examples/database-refactor-finding.json", finding),
+        ("examples/database-migration-plan.json", plan),
+        ("examples/database-migration-receipt.json", receipt),
+        ("examples/data-reconciliation.json", reconciliation),
+    ):
+        if record.get("data_contract_id") != contract_id:
+            findings.append(
+                Finding(label, "data-contract identifier must resolve to the contract example")
+            )
+
+    entity_ids = [entity.get("entity_id") for entity in contract.get("entities", [])]
+    if len(entity_ids) != len(set(entity_ids)):
+        findings.append(
+            Finding("examples/data-contract.json.entities", "entity identifiers must be unique")
+        )
+    entities = {
+        entity.get("entity_id"): entity for entity in contract.get("entities", [])
+    }
+    engine_family = contract.get("database", {}).get("engine_family")
+    for entity_index, entity in enumerate(contract.get("entities", [])):
+        field_ids = [field.get("field_id") for field in entity.get("fields", [])]
+        field_id_set = set(field_ids)
+        if len(field_ids) != len(field_id_set):
+            findings.append(
+                Finding(
+                    f"examples/data-contract.json.entities[{entity_index}].fields",
+                    "field identifiers must be unique within one entity",
+                )
+            )
+        if not set(entity.get("primary_key_field_ids", [])).issubset(field_id_set):
+            findings.append(
+                Finding(
+                    f"examples/data-contract.json.entities[{entity_index}].primary_key_field_ids",
+                    "every primary-key field must resolve within its entity",
+                )
+            )
+        for field_index, field in enumerate(entity.get("fields", [])):
+            physical_type = str(field.get("physical_type", "")).lower()
+            semantic_type = field.get("semantic_type")
+            expected_postgresql_type = {
+                "instant": "timestamptz",
+                "civil_date": "date",
+                "boolean": "boolean",
+            }.get(semantic_type)
+            if (
+                engine_family == "postgresql"
+                and expected_postgresql_type is not None
+                and physical_type != expected_postgresql_type
+            ):
+                findings.append(
+                    Finding(
+                        f"examples/data-contract.json.entities[{entity_index}]"
+                        f".fields[{field_index}].physical_type",
+                        f"PostgreSQL {semantic_type} fields use {expected_postgresql_type}",
+                    )
+                )
+            if (
+                engine_family == "postgresql"
+                and semantic_type == "exact_decimal"
+                and re.fullmatch(r"(?:numeric|decimal)\([1-9][0-9]*,[0-9]+\)", physical_type)
+                is None
+            ):
+                findings.append(
+                    Finding(
+                        f"examples/data-contract.json.entities[{entity_index}]"
+                        f".fields[{field_index}].physical_type",
+                        "PostgreSQL exact-decimal fields use declared numeric precision and scale",
+                    )
+                )
+        for constraint_index, constraint in enumerate(entity.get("constraints", [])):
+            if not set(constraint.get("field_ids", [])).issubset(field_id_set):
+                findings.append(
+                    Finding(
+                        f"examples/data-contract.json.entities[{entity_index}]"
+                        f".constraints[{constraint_index}].field_ids",
+                        "every constrained field must resolve within its entity",
+                    )
+                )
+            if constraint.get("constraint_type") == "foreign_key":
+                target = entities.get(constraint.get("referenced_entity_id"))
+                if target is None:
+                    findings.append(
+                        Finding(
+                            f"examples/data-contract.json.entities[{entity_index}]"
+                            f".constraints[{constraint_index}].referenced_entity_id",
+                            "foreign-key target entity must resolve",
+                        )
+                    )
+                else:
+                    target_field_ids = {
+                        field.get("field_id") for field in target.get("fields", [])
+                    }
+                    if not set(constraint.get("referenced_field_ids", [])).issubset(
+                        target_field_ids
+                    ):
+                        findings.append(
+                            Finding(
+                                f"examples/data-contract.json.entities[{entity_index}]"
+                                f".constraints[{constraint_index}].referenced_field_ids",
+                                "every foreign-key target field must resolve",
+                            )
+                        )
+
+    if plan_id not in finding.get("target_migration_ids", []):
+        findings.append(
+            Finding(
+                "examples/database-refactor-finding.json.target_migration_ids",
+                "planned finding must reference the migration-plan example",
+            )
+        )
+
+    phases = plan.get("phase_sequence", [])
+    phase_ids = [phase.get("phase_id") for phase in phases]
+    phase_sequences = [phase.get("sequence") for phase in phases]
+    if len(phase_ids) != len(set(phase_ids)):
+        findings.append(
+            Finding(
+                "examples/database-migration-plan.json.phase_sequence",
+                "migration phase identifiers must be unique",
+            )
+        )
+    if len(phase_sequences) != len(set(phase_sequences)):
+        findings.append(
+            Finding(
+                "examples/database-migration-plan.json.phase_sequence",
+                "migration phase sequence values must be unique",
+            )
+        )
+    phase_sequence_by_id = {
+        phase.get("phase_id"): phase.get("sequence") for phase in phases
+    }
+    for index, phase in enumerate(phases):
+        for dependency_id in phase.get("dependency_phase_ids", []):
+            dependency_sequence = phase_sequence_by_id.get(dependency_id)
+            if dependency_sequence is None:
+                findings.append(
+                    Finding(
+                        f"examples/database-migration-plan.json.phase_sequence[{index}]"
+                        ".dependency_phase_ids",
+                        "every phase dependency must resolve",
+                    )
+                )
+            elif dependency_sequence >= phase.get("sequence", 0):
+                findings.append(
+                    Finding(
+                        f"examples/database-migration-plan.json.phase_sequence[{index}]"
+                        ".dependency_phase_ids",
+                        "each phase dependency must precede its dependent phase",
+                    )
+                )
+    if plan.get("recovery", {}).get("rollback_boundary_phase_id") not in set(phase_ids):
+        findings.append(
+            Finding(
+                "examples/database-migration-plan.json.recovery.rollback_boundary_phase_id",
+                "rollback boundary must resolve to one migration phase",
+            )
+        )
+
+    receipt_matches = {
+        "migration_plan_id": plan_id,
+        "source_schema_digest": plan.get("source_schema_digest"),
+        "target_schema_digest": plan.get("target_schema_digest"),
+        "script_digest": plan.get("script", {}).get("digest"),
+    }
+    for field, expected in receipt_matches.items():
+        if receipt.get(field) != expected:
+            findings.append(
+                Finding(
+                    f"examples/database-migration-receipt.json.{field}",
+                    f"{field.replace('_', ' ')} must match the migration plan",
+                )
+            )
+    if receipt.get("tool_binding") != plan.get("tool_binding"):
+        findings.append(
+            Finding(
+                "examples/database-migration-receipt.json.tool_binding",
+                "execution tool coordinate must match the migration plan",
+            )
+        )
+    phase_results = receipt.get("phase_results", [])
+    receipt_phase_ids = [result.get("phase_id") for result in phase_results]
+    receipt_phase_sequences = [result.get("sequence") for result in phase_results]
+    if set(receipt_phase_ids) != set(phase_ids) or len(receipt_phase_ids) != len(phase_ids):
+        findings.append(
+            Finding(
+                "examples/database-migration-receipt.json.phase_results",
+                "execution receipt must cover every planned phase exactly once",
+            )
+        )
+    if receipt_phase_sequences != phase_sequences:
+        findings.append(
+            Finding(
+                "examples/database-migration-receipt.json.phase_results",
+                "execution receipt phase order must match the migration plan",
+            )
+        )
+    maximum_planned_lock = max(
+        (phase.get("lock_budget_milliseconds", 0) for phase in phases),
+        default=0,
+    )
+    observed_lock = receipt.get("execution_metrics", {}).get(
+        "maximum_lock_held_milliseconds",
+        0,
+    )
+    if observed_lock > maximum_planned_lock:
+        findings.append(
+            Finding(
+                "examples/database-migration-receipt.json.execution_metrics"
+                ".maximum_lock_held_milliseconds",
+                "observed lock duration must remain within the planned phase budget",
+            )
+        )
+    if receipt.get("outcome") == "passed" and any(
+        result.get("outcome") != "passed" for result in phase_results
+    ):
+        findings.append(
+            Finding(
+                "examples/database-migration-receipt.json.outcome",
+                "passing execution requires a passing result for every phase",
+            )
+        )
+
+    reconciliation_links = {
+        "migration_receipt_id": receipt_id,
+        "migration_plan_id": plan_id,
+        "data_contract_id": contract_id,
+    }
+    for field, expected in reconciliation_links.items():
+        if reconciliation.get(field) != expected:
+            findings.append(
+                Finding(
+                    f"examples/data-reconciliation.json.{field}",
+                    f"{field.replace('_', ' ')} must resolve to the evidence chain",
+                )
+            )
+    if reconciliation_id not in receipt.get("reconciliation_ids", []):
+        findings.append(
+            Finding(
+                "examples/database-migration-receipt.json.reconciliation_ids",
+                "migration receipt must reference the reconciliation example",
+            )
+        )
+    criteria = reconciliation.get("criteria", [])
+    criterion_ids = [criterion.get("criterion_id") for criterion in criteria]
+    if len(criterion_ids) != len(set(criterion_ids)):
+        findings.append(
+            Finding(
+                "examples/data-reconciliation.json.criteria",
+                "reconciliation criterion identifiers must be unique",
+            )
+        )
+    if set(criterion_ids) != set(plan.get("verification_criteria", [])):
+        findings.append(
+            Finding(
+                "examples/data-reconciliation.json.criteria",
+                "reconciliation must implement every planned verification criterion",
+            )
+        )
+    if reconciliation.get("overall_outcome") == "passed" and any(
+        criterion.get("outcome") != "passed" for criterion in criteria
+    ):
+        findings.append(
+            Finding(
+                "examples/data-reconciliation.json.overall_outcome",
+                "passing reconciliation requires a passing result for every criterion",
+            )
+        )
+    for index, exception in enumerate(reconciliation.get("exceptions", [])):
+        if exception.get("criterion_id") not in set(criterion_ids):
+            findings.append(
+                Finding(
+                    f"examples/data-reconciliation.json.exceptions[{index}].criterion_id",
+                    "exception criterion must resolve within the reconciliation",
+                )
+            )
+
+    manifest_contract = manifest.get("data_contract", {})
+    contract_matches = {
+        "data_contract_id": contract_id,
+        "version": contract.get("version"),
+        "digest": contract.get("contract_digest"),
+    }
+    for field, expected in contract_matches.items():
+        if manifest_contract.get(field) != expected:
+            findings.append(
+                Finding(
+                    f"examples/database-release-manifest.json.data_contract.{field}",
+                    "release manifest data-contract coordinate must match the contract example",
+                )
+            )
+    migrations = manifest.get("ordered_migrations", [])
+    migration_sequences = [item.get("sequence") for item in migrations]
+    if len(migration_sequences) != len(set(migration_sequences)):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.ordered_migrations",
+                "release migration sequence values must be unique",
+            )
+        )
+    expected_sequences = list(range(1, len(migrations) + 1))
+    if migration_sequences != expected_sequences:
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.ordered_migrations",
+                "release migrations must form one contiguous ordered chain",
+            )
+        )
+    for previous, current in zip(migrations, migrations[1:]):
+        if current.get("source_schema_digest") != previous.get(
+            "applied_schema_digest"
+        ):
+            findings.append(
+                Finding(
+                    "examples/database-release-manifest.json.ordered_migrations",
+                    "each migration source must equal the preceding applied schema",
+                )
+            )
+    plan_entries = [item for item in migrations if item.get("migration_plan_id") == plan_id]
+    if len(plan_entries) != 1:
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.ordered_migrations",
+                "release manifest must reference the migration plan exactly once",
+            )
+        )
+    else:
+        entry = plan_entries[0]
+        entry_matches = {
+            "migration_version": plan.get("version"),
+            "script_digest": plan.get("script", {}).get("digest"),
+            "source_schema_digest": plan.get("source_schema_digest"),
+            "applied_schema_digest": plan.get("target_schema_digest"),
+            "migration_receipt_id": receipt_id,
+        }
+        for field, expected in entry_matches.items():
+            if entry.get(field) != expected:
+                findings.append(
+                    Finding(
+                        f"examples/database-release-manifest.json.ordered_migrations.{field}",
+                        f"manifest {field.replace('_', ' ')} must match the evidence chain",
+                    )
+                )
+        if reconciliation_id not in entry.get("reconciliation_ids", []):
+            findings.append(
+                Finding(
+                    "examples/database-release-manifest.json.ordered_migrations.reconciliation_ids",
+                    "manifest migration must reference the reconciliation example",
+                )
+            )
+    if manifest.get("current_schema_digest") != plan.get("target_schema_digest"):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.current_schema_digest",
+                "release schema digest must equal the planned target schema digest",
+            )
+        )
+    if migrations and manifest.get("current_schema_digest") != migrations[-1].get(
+        "applied_schema_digest"
+    ):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.current_schema_digest",
+                "release schema digest must equal the final applied migration schema",
+            )
+        )
+    baseline_support = [
+        baseline
+        for baseline in manifest.get("supported_upgrade_baselines", [])
+        if baseline.get("schema_digest") == plan.get("source_schema_digest")
+        and receipt_id in baseline.get("convergence_receipt_ids", [])
+    ]
+    if not baseline_support:
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.supported_upgrade_baselines",
+                "planned source schema must have a convergence receipt in the supported baselines",
+            )
+        )
+    if receipt_id not in manifest.get("required_receipt_ids", []):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.required_receipt_ids",
+                "release manifest must require the migration receipt",
+            )
+        )
+    restore_ids = set(receipt.get("recovery_evidence", {}).get("restore_receipt_ids", []))
+    if not restore_ids.issubset(set(manifest.get("required_receipt_ids", []))):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.required_receipt_ids",
+                "release manifest must require every restore receipt",
+            )
+        )
+    acceptance_bindings = manifest.get("acceptance_bindings", [])
+    acceptance_types = [item.get("acceptance_type") for item in acceptance_bindings]
+    if set(acceptance_types) != DATABASE_ACCEPTANCE_TYPES:
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.acceptance_bindings",
+                "database release must represent Scientific, Quality, Regulatory, Security, and Operations acceptance",
+            )
+        )
+    if len(acceptance_types) != len(set(acceptance_types)):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.acceptance_bindings",
+                "database release acceptance types must be unique",
+            )
+        )
+    if manifest.get("evidence_mode") == "simulated" and any(
+        binding.get("evidence_mode") != "simulated"
+        or binding.get("status") != "projected"
+        for binding in acceptance_bindings
+    ):
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.acceptance_bindings",
+                "simulated release acceptance remains projected with simulated evidence",
+            )
+        )
+    unresolved_ids = set(manifest.get("unresolved_finding_ids", []))
+    finding_status = finding.get("disposition", {}).get("status")
+    finding_id = finding.get("finding_id")
+    if finding_status in {"open", "planned"} and finding_id not in unresolved_ids:
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.unresolved_finding_ids",
+                "open and planned database findings must remain visible in the manifest",
+            )
+        )
+    if finding_status in {"remediated", "accepted_by_design"} and finding_id in unresolved_ids:
+        findings.append(
+            Finding(
+                "examples/database-release-manifest.json.unresolved_finding_ids",
+                "settled database findings move out of the unresolved set",
+            )
+        )
+    return findings
+
+
 def validate_repository_orientation() -> list[Finding]:
     """Validate root orientation records and their cross-record contract."""
     findings: list[Finding] = []
+    authors_path = ROOT / "AUTHORS"
+    if not authors_path.is_file():
+        findings.append(
+            Finding("AUTHORS", "repository provenance requires its source-local carrier")
+        )
+    else:
+        authors = authors_path.read_text(encoding="utf-8")
+        if not authors.startswith("# General provenance\n"):
+            findings.append(
+                Finding("AUTHORS", "repository provenance requires its named carrier")
+            )
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    if "[`AUTHORS`](AUTHORS)" not in readme:
+        findings.append(
+            Finding("README.md", "repository orientation requires the AUTHORS route")
+        )
     records: dict[str, Any] = {}
     for document_name, schema_name in ROOT_ORIENTATION_SCHEMAS.items():
         document_path = ROOT / document_name
@@ -748,14 +1336,77 @@ def validate_repository_orientation() -> list[Finding]:
     return findings
 
 
+def validate_public_ready_skills() -> list[Finding]:
+    """Validate the exact repository-local skill accepted for public projection."""
+    findings: list[Finding] = []
+    skills_root = ROOT / ".agents" / "skills"
+    public_paths: list[str] = []
+    for path in sorted(skills_root.glob("*/SKILL.md")):
+        relative = path.relative_to(ROOT).as_posix()
+        try:
+            metadata, content = parse_skill_source(path)
+        except PagesBuildError as exc:
+            findings.append(Finding(relative, str(exc)))
+            continue
+        if metadata.get("source_band") == "public_ready":
+            public_paths.append(relative)
+            normalized_content = " ".join(content.split())
+            if metadata != PUBLIC_SKILL_METADATA:
+                findings.append(
+                    Finding(
+                        relative,
+                        "public-ready skill identity and upstream lineage must match "
+                        "the accepted Governance collaboration guide",
+                    )
+                )
+            if (
+                "authorized resolver" not in normalized_content
+                or "https://github.com/" in content
+            ):
+                findings.append(
+                    Finding(
+                        relative,
+                        "public adaptation lineage must use its operator-blind key "
+                        "and authorized resolver without a gated GitHub locator",
+                    )
+                )
+
+    if public_paths != [PUBLIC_SKILL_SOURCE_PATH]:
+        findings.append(
+            Finding(
+                ".agents/skills",
+                "public-ready skill inventory must contain exactly "
+                f"{PUBLIC_SKILL_SOURCE_PATH}",
+            )
+        )
+
+    expected_route = f"[`{PUBLIC_SKILL_METADATA['name']}`]({PUBLIC_SKILL_SOURCE_PATH})"
+    for orientation_path in ("README.md", "AGENTS.md"):
+        path = ROOT / orientation_path
+        try:
+            content = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            findings.append(Finding(orientation_path, str(exc)))
+            continue
+        if expected_route not in content:
+            findings.append(
+                Finding(
+                    orientation_path,
+                    "repository orientation must link the exact public-ready skill path",
+                )
+            )
+    return findings
+
+
 def _validate_repository_orientation_records(
     records: dict[str, Any],
 ) -> list[Finding]:
-    """Check relationships across the three root orientation records."""
+    """Check relationships across the root orientation and promotion records."""
     findings: list[Finding] = []
     node = records["machine-node.json"]
     first_receipt = records["first-receipt.json"]
     horizon = records["coordination-horizon.json"]
+    promotion_receipt = records["promotion-receipt.json"]
 
     if node.get("machine_node_id") != first_receipt.get("machine_node_id"):
         findings.append(
@@ -831,6 +1482,21 @@ def _validate_repository_orientation_records(
             Finding(
                 "first-receipt.json.open_receipts",
                 "open receipts must equal the Machine Node receipt set",
+            )
+        )
+    promotion_receipt_id = promotion_receipt.get("promotion_receipt_id")
+    if promotion_receipt_id != "RCP-GOVERNANCE-PROMOTION-002":
+        findings.append(
+            Finding(
+                "promotion-receipt.json.promotion_receipt_id",
+                "promotion receipt must use the governed repository receipt identity",
+            )
+        )
+    if promotion_receipt.get("target_release") != "governance-v2.1.0":
+        findings.append(
+            Finding(
+                "promotion-receipt.json.target_release",
+                "promotion receipt must bind the canonical governance-v2.1.0 tag",
             )
         )
 
@@ -933,6 +1599,107 @@ def _validate_repository_orientation_records(
                     "candidate provenance placeholders require an open promotion receipt",
                 )
             )
+        if promotion_receipt_id not in node.get("open_receipts", []):
+            findings.append(
+                Finding(
+                    "machine-node.json.open_receipts",
+                    "candidate provenance requires the concrete promotion receipt",
+                )
+            )
+        if (
+            promotion_receipt.get("promotion_state") != "candidate_ready"
+            or promotion_receipt.get("release_coordinate") is not None
+        ):
+            findings.append(
+                Finding(
+                    "promotion-receipt.json",
+                    "candidate provenance requires a ready promotion receipt",
+                )
+            )
+    elif not zero_commit and not zero_digest:
+        release_coordinate = promotion_receipt.get("release_coordinate")
+        if node.get("lifecycle_state") not in {"reference_ready", "active"}:
+            findings.append(
+                Finding(
+                    "machine-node.json.lifecycle_state",
+                    "observed release provenance requires a reference-ready or active lifecycle",
+                )
+            )
+        if promotion_receipt_id in node.get("open_receipts", []):
+            findings.append(
+                Finding(
+                    "machine-node.json.open_receipts",
+                    "observed release provenance requires the promotion receipt to be closed",
+                )
+            )
+        if (
+            promotion_receipt.get("promotion_state") != "release_observed"
+            or not isinstance(release_coordinate, dict)
+        ):
+            findings.append(
+                Finding(
+                    "promotion-receipt.json",
+                    "observed release provenance requires a release observation",
+                )
+            )
+        elif (
+            release_coordinate.get("commit_oid") != provenance.get("commit")
+            or release_coordinate.get("archive_digest") != provenance.get("digest")
+            or release_coordinate.get("tag") != provenance.get("release")
+        ):
+            findings.append(
+                Finding(
+                    "promotion-receipt.json.release_coordinate",
+                    "release evidence must equal Machine Node provenance",
+                )
+            )
+        if isinstance(release_coordinate, dict):
+            if release_coordinate.get("tag") != promotion_receipt.get(
+                "target_release"
+            ):
+                findings.append(
+                    Finding(
+                        "promotion-receipt.json.release_coordinate.tag",
+                        "observed release tag must equal the receipt target release",
+                    )
+                )
+            if not release_coordinate.get("local_proof_receipt"):
+                findings.append(
+                    Finding(
+                        "promotion-receipt.json.release_coordinate.local_proof_receipt",
+                        "observed release provenance requires the local proof receipt",
+                    )
+                )
+            hosted_contexts = release_coordinate.get("hosted_check_contexts")
+            if (
+                isinstance(hosted_contexts, list)
+                and hosted_contexts
+                and not release_coordinate.get("hosted_automation_receipt")
+            ):
+                findings.append(
+                    Finding(
+                        "promotion-receipt.json.release_coordinate.hosted_automation_receipt",
+                        "hosted proof contexts require a reviewed automation receipt",
+                    )
+                )
+        promotion_items = [
+            item
+            for item in work_items
+            if "promotion"
+            in " ".join(
+                str(item.get(field, ""))
+                for field in ("item_id", "horizon_label", "desired_state")
+            ).lower()
+        ]
+        if not promotion_items or not all(
+            item.get("state") == "complete" for item in promotion_items
+        ):
+            findings.append(
+                Finding(
+                    "coordination-horizon.json.work_items",
+                    "observed release provenance requires completed promotion work",
+                )
+            )
     return findings
 
 
@@ -961,14 +1728,9 @@ def validate_coordination_vocabulary() -> list[Finding]:
 
 
 def validate_rulesets() -> list[Finding]:
-    """Check exported protections for the shared branch and release invariants."""
+    """Check exported protections for main promotion and release tags."""
     findings: list[Finding] = []
-    expected = {
-        "main.json",
-        "develop.json",
-        "release-hotfix.json",
-        "release-tags.json",
-    }
+    expected = {"main.json", "release-tags.json"}
     available = {path.name for path in RULESET_DIR.glob("*.json")}
     if available != expected:
         findings.append(
@@ -1003,35 +1765,65 @@ def validate_rulesets() -> list[Finding]:
                     Finding(relative, f"ruleset requires {required_type!r} protection")
                 )
         if ruleset.get("target") == "branch":
-            for required_type in ("pull_request", "required_status_checks"):
-                if required_type not in rule_types:
-                    findings.append(
-                        Finding(
-                            relative,
-                            f"branch ruleset requires {required_type!r} protection",
-                        )
-                    )
-            status_rules = [
-                rule for rule in rules if rule.get("type") == "required_status_checks"
-            ]
-            contexts = {
-                item.get("context")
-                for rule in status_rules
-                for item in rule.get("parameters", {}).get(
-                    "required_status_checks", []
-                )
-            }
-            if "governance-validation" not in contexts:
+            if "pull_request" not in rule_types:
                 findings.append(
                     Finding(
                         relative,
-                        "branch ruleset requires governance-validation status",
+                        "branch ruleset requires 'pull_request' protection",
                     )
+                )
+            if "required_status_checks" in rule_types:
+                findings.append(
+                    Finding(
+                        relative,
+                        "branch ruleset resting state keeps hosted status checks empty",
+                    )
+                )
+            pull_request_rules = [
+                rule
+                for rule in rules
+                if isinstance(rule, dict) and rule.get("type") == "pull_request"
+            ]
+            if len(pull_request_rules) == 1:
+                parameters = pull_request_rules[0].get("parameters", {})
+                expected_review_parameters = {
+                    "required_approving_review_count": 1,
+                    "dismiss_stale_reviews_on_push": True,
+                    "require_code_owner_review": True,
+                    "require_last_push_approval": True,
+                    "required_review_thread_resolution": True,
+                    "allowed_merge_methods": ["merge", "squash"],
+                }
+                if parameters != expected_review_parameters:
+                    findings.append(
+                        Finding(
+                            relative,
+                            "pull-request protection must preserve one approval, "
+                            "stale-review dismissal, CODEOWNER review, last-push "
+                            "approval, thread resolution, and reviewed merge methods",
+                        )
+                    )
+            elif pull_request_rules:
+                findings.append(
+                    Finding(relative, "branch ruleset requires one pull-request rule")
                 )
         if path.name in {"main.json", "release-tags.json"}:
             if "required_signatures" not in rule_types:
                 findings.append(
                     Finding(relative, "production coordinates require signatures")
+                )
+        if path.name == "main.json":
+            includes = set(
+                ruleset.get("conditions", {})
+                .get("ref_name", {})
+                .get("include", [])
+            )
+            if includes != {"refs/heads/main"}:
+                findings.append(
+                    Finding(
+                        relative,
+                        "main promotion protection requires the main branch coordinate",
+                    )
                 )
         if path.name == "release-tags.json":
             includes = set(
@@ -1051,108 +1843,206 @@ def validate_rulesets() -> list[Finding]:
     return findings
 
 
+def workflow_trigger_keys(workflow: str) -> set[str]:
+    """Read exact top-level workflow triggers without adding a YAML dependency."""
+    lines = workflow.splitlines()
+    if "on:" not in lines:
+        return set()
+    start = lines.index("on:") + 1
+    triggers: set[str] = set()
+    for line in lines[start:]:
+        if line and not line.startswith(" "):
+            break
+        match = re.fullmatch(r"""  ["']?([A-Za-z0-9_-]+)["']?:.*""", line)
+        if match:
+            triggers.add(match.group(1))
+    return triggers
+
+
+def runner_job_blocks(workflow: str) -> dict[str, str]:
+    """Return every workflow job that allocates a hosted runner."""
+    lines = workflow.splitlines()
+    if "jobs:" not in lines:
+        return {}
+    start = lines.index("jobs:") + 1
+    job_starts = [
+        (index, match.group(1))
+        for index in range(start, len(lines))
+        if (match := re.fullmatch(r"  ([A-Za-z0-9_-]+):", lines[index]))
+    ]
+    blocks: dict[str, str] = {}
+    for position, (index, name) in enumerate(job_starts):
+        end = (
+            job_starts[position + 1][0]
+            if position + 1 < len(job_starts)
+            else len(lines)
+        )
+        block = "\n".join(lines[index:end])
+        if re.search(r"(?m)^    runs-on:", block):
+            blocks[name] = block
+    return blocks
+
+
 def validate_workflows() -> list[Finding]:
-    """Check workflow permissions and immutable third-party action coordinates."""
+    """Check semantic automation contracts and immutable action coordinates."""
     findings: list[Finding] = []
-    expected = {
-        "branch-policy.yml",
-        "validate.yml",
-        "reusable-governance-validation.yml",
-        "reusable-contract-validation.yml",
+    expected_triggers = {
+        "pull-request.yml": {"pull_request"},
+        "validate.yml": {"workflow_dispatch"},
+        "reusable-governance-validation.yml": {"workflow_call"},
+        "reusable-contract-validation.yml": {"workflow_call"},
     }
-    available = {path.name for path in WORKFLOW_DIR.glob("*.yml")}
-    if available != expected:
+    workflow_paths = sorted(
+        [*WORKFLOW_DIR.glob("*.yml"), *WORKFLOW_DIR.glob("*.yaml")]
+    )
+    available = {path.name for path in workflow_paths}
+    if available != set(expected_triggers):
         findings.append(
             Finding(
                 ".github/workflows",
-                f"workflow catalog differs: expected {sorted(expected)}, "
+                f"workflow catalog differs: expected {sorted(expected_triggers)}, "
                 f"available {sorted(available)}",
             )
         )
+
+    dependency_config = ROOT / ".github" / "dependabot.yml"
+    dependency_content: str | None = None
+    if not dependency_config.exists():
+        findings.append(
+            Finding(
+                ".github/dependabot.yml",
+                "monthly dependency upkeep requires its active configuration",
+            )
+        )
+    else:
+        dependency_content = dependency_config.read_text(encoding="utf-8")
+    if (ROOT / ".github" / "dependabot.manual.yml").exists():
+        findings.append(
+            Finding(
+                ".github/dependabot.manual.yml",
+                "monthly dependency upkeep uses the active dependabot.yml source",
+            )
+        )
+
+    automation_controls_path = ROOT / ".github" / "automation-controls.json"
+    declared_controls: Any = MISSING_AUTOMATION_CONTROLS
+    try:
+        declared_controls = load_json(automation_controls_path)
+    except (
+        OSError,
+        json.JSONDecodeError,
+        DuplicateKeyError,
+        NonFiniteNumberError,
+    ) as exc:
+        findings.append(Finding(".github/automation-controls.json", str(exc)))
+
+    pull_request_path = WORKFLOW_DIR / "pull-request.yml"
+    if dependency_content is not None and pull_request_path.exists():
+        for message in validate_repository_automation(
+            pull_request_path.read_text(encoding="utf-8"),
+            dependency_content,
+            declared_controls,
+        ):
+            findings.append(Finding(".github/workflows/pull-request.yml", message))
+
+    codeowners_path = ROOT / ".github" / "CODEOWNERS"
+    codeowners = (
+        codeowners_path.read_text(encoding="utf-8")
+        if codeowners_path.exists()
+        else ""
+    )
+    if "/tools/automation_contract.py @driftframestudios" not in codeowners:
+        findings.append(
+            Finding(
+                ".github/CODEOWNERS",
+                "the semantic automation contract requires its source owner",
+            )
+        )
+    if "/.github/automation-controls.json @driftframestudios" not in codeowners:
+        findings.append(
+            Finding(
+                ".github/CODEOWNERS",
+                "the automation controls projection requires its source owner",
+            )
+        )
+
     action_reference = re.compile(r"^\s*uses:\s*([^#\s]+)", re.MULTILINE)
     immutable_action = re.compile(r"^[^@]+@[a-f0-9]{40}$")
-    for path in sorted(WORKFLOW_DIR.glob("*.yml")):
+    for path in workflow_paths:
         relative = str(path.relative_to(ROOT))
         content = path.read_text(encoding="utf-8")
         if "permissions:\n  contents: read" not in content:
             findings.append(
                 Finding(relative, "workflow should declare read-only contents permission")
             )
-        if path.name == "branch-policy.yml":
-            required_policy_fragments = {
-                "pull_request_target:": "branch policy requires base-context activation",
-                "repository: ${{ github.repository }}": (
-                    "branch policy checkout requires the base repository"
-                ),
-                "ref: ${{ github.event.pull_request.base.sha }}": (
-                    "branch policy checkout requires the immutable pull-request base"
-                ),
-                "path: .branch-policy-base": (
-                    "branch policy checkout requires its bounded static path"
-                ),
-                "sparse-checkout: tools/check_branch_flow.py": (
-                    "branch policy checkout requires only the released checker"
-                ),
-                "sparse-checkout-cone-mode: false": (
-                    "branch policy sparse checkout requires file-level selection"
-                ),
-                "working-directory: .branch-policy-base": (
-                    "branch policy execution requires the bounded base checkout"
-                ),
-                "BASE_REF: ${{ github.event.pull_request.base.ref }}": (
-                    "branch policy requires the event base branch"
-                ),
-                "HEAD_REF: ${{ github.event.pull_request.head.ref }}": (
-                    "branch policy requires the event head branch as quoted data"
-                ),
-                "PR_AUTHOR: ${{ github.event.pull_request.user.login }}": (
-                    "branch policy requires the event pull-request author"
-                ),
-                '--author "$PR_AUTHOR"': (
-                    "branch policy requires quoted author binding"
-                ),
-            }
-            for fragment, message in required_policy_fragments.items():
-                if fragment not in content:
-                    findings.append(Finding(relative, message))
-            if content.count("actions/checkout@") != 1:
-                findings.append(
-                    Finding(
-                        relative,
-                        "branch policy requires exactly one base-controlled checkout",
-                    )
-                )
-            if content.count(
-                "${{ github.event.pull_request.head.ref }}"
-            ) != 1:
-                findings.append(
-                    Finding(
-                        relative,
-                        "head branch data belongs only in the quoted checker argument",
-                    )
-                )
-            for fragment in (
-                "github.event.pull_request.head.sha",
-                "git fetch ",
-                "git checkout ",
-                "gh pr checkout",
-                "curl ",
-                "wget ",
-            ):
-                if fragment in content:
-                    findings.append(
-                        Finding(
-                            relative,
-                            f"branch policy contains head-retrieval surface {fragment!r}",
-                        )
-                    )
-        elif "pull_request_target:" in content:
+        triggers = workflow_trigger_keys(content)
+        expected = expected_triggers.get(path.name, set())
+        if triggers != expected:
             findings.append(
                 Finding(
                     relative,
-                    "pull_request_target authority belongs only to branch-policy.yml",
+                    "workflow trigger allowlist differs: "
+                    f"expected {sorted(expected)}, available {sorted(triggers)}",
                 )
             )
+        if path.name == "reusable-contract-validation.yml":
+            required_contract_fragments = {
+                "driftframestudios/site-reading-governance)":
+                    "governance repository requires an explicit allowlist",
+                r"^[0-9a-f]{40}$":
+                    "governance ref requires an immutable commit grammar",
+                '"$GOVERNANCE_REF" == "0000000000000000000000000000000000000000"':
+                    "governance ref requires explicit zero-placeholder rejection",
+                "GOVERNANCE_REPOSITORY: ${{ inputs.governance_repository }}":
+                    "repository input requires quoted environment projection",
+                "GOVERNANCE_REF: ${{ inputs.governance_ref }}":
+                    "ref input requires quoted environment projection",
+            }
+            for fragment, message in required_contract_fragments.items():
+                if fragment not in content:
+                    findings.append(Finding(relative, message))
+        if path.name == "validate.yml":
+            required_activation_fragments = {
+                "workflow_dispatch:": (
+                    "manual governance proof requires workflow_dispatch activation"
+                ),
+                "confirm_run:": (
+                    "manual governance proof requires explicit human confirmation"
+                ),
+                "vars.ENABLE_GITHUB_ACTIONS == 'true'": (
+                    "manual governance proof requires the repository-variable gate"
+                ),
+                "inputs.confirm_run": (
+                    "manual governance proof requires the dispatch confirmation gate"
+                ),
+                "timeout-minutes: 10": (
+                    "manual governance proof requires its bounded runner interval"
+                ),
+            }
+            for fragment, message in required_activation_fragments.items():
+                if fragment not in content:
+                    findings.append(Finding(relative, message))
+            runner_jobs = runner_job_blocks(content)
+            if not runner_jobs:
+                findings.append(
+                    Finding(relative, "manual governance proof requires a runner job")
+                )
+            for name, block in runner_jobs.items():
+                gate = re.search(r"(?m)^    if:\s*(.+)$", block)
+                if gate is None or not all(
+                    fragment in gate.group(1)
+                    for fragment in (
+                        "vars.ENABLE_GITHUB_ACTIONS == 'true'",
+                        "inputs.confirm_run",
+                    )
+                ):
+                    findings.append(
+                        Finding(
+                            relative,
+                            f"manual workflow runner job {name!r} requires the "
+                            "variable and confirmation gate",
+                        )
+                    )
         for reference in action_reference.findall(content):
             if reference.startswith("./"):
                 continue
@@ -1170,6 +2060,28 @@ def validate_workflows() -> list[Finding]:
                 Finding(
                     relative,
                     "each checkout should preserve credentials in runner memory only",
+                )
+            )
+
+    automation_note = (ROOT / ".github" / "AUTOMATION.md").read_text(
+        encoding="utf-8"
+    )
+    required_automation_fragments = (
+        "100–300 GitHub Actions runner\nminutes per month",
+        "Pull requests targeting `develop` or `main`",
+        "Superseded runs cancel",
+        "## Deliberate full proof",
+        "`ENABLE_GITHUB_ACTIONS=true`",
+        "## Recovery",
+        "`.github/dependabot.manual.yml` returns dependency scheduling",
+    )
+    for fragment in required_automation_fragments:
+        if fragment not in automation_note:
+            findings.append(
+                Finding(
+                    ".github/AUTOMATION.md",
+                    "automation orientation requires the funded proof and recovery route: "
+                    f"{fragment!r}",
                 )
             )
     return findings
@@ -1234,6 +2146,257 @@ def validate_contract_request(
     return validate_pair(schema_path, resolved_document)
 
 
+def _run_git(repository_root: Path, *arguments: str) -> subprocess.CompletedProcess[bytes]:
+    """Run one bounded Git observation without a shell."""
+    return subprocess.run(
+        ["git", "-C", str(repository_root), *arguments],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+
+def _git_stdout(
+    repository_root: Path,
+    arguments: tuple[str, ...],
+    finding_path: str,
+    failure_message: str,
+) -> tuple[bytes | None, list[Finding]]:
+    """Return Git output or one public-safe observation finding."""
+    try:
+        result = _run_git(repository_root, *arguments)
+    except OSError:
+        return None, [Finding(finding_path, "Git is unavailable for this observation")]
+    if result.returncode != 0:
+        return None, [Finding(finding_path, failure_message)]
+    return result.stdout, []
+
+
+def verify_release_coordinate(
+    repository_root: Path,
+    promotion_receipt_path: Path,
+    carrier_ref: str = "HEAD",
+) -> list[Finding]:
+    """Verify an observed release subject from the later receipt carrier."""
+    findings: list[Finding] = []
+    try:
+        resolved_repository = repository_root.resolve(strict=True)
+        candidate_receipt = (
+            promotion_receipt_path
+            if promotion_receipt_path.is_absolute()
+            else resolved_repository / promotion_receipt_path
+        )
+        resolved_receipt = candidate_receipt.resolve(strict=True)
+        resolved_receipt.relative_to(resolved_repository)
+        if not resolved_receipt.is_file():
+            raise ContractInputError("promotion receipt resolves to a non-file path")
+    except (OSError, ValueError, ContractInputError):
+        return [
+            Finding(
+                "release-coordinate",
+                "promotion receipt must be a readable file inside the Git repository",
+            )
+        ]
+
+    if (
+        re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]{0,199}", carrier_ref) is None
+        or ".." in carrier_ref
+        or "//" in carrier_ref
+        or "@{" in carrier_ref
+    ):
+        return [
+            Finding(
+                "release-coordinate.carrier_ref",
+                "carrier ref must use a bounded Git ref or object identifier",
+            )
+        ]
+
+    try:
+        receipt = load_json(resolved_receipt)
+    except (
+        OSError,
+        json.JSONDecodeError,
+        DuplicateKeyError,
+        NonFiniteNumberError,
+    ) as exc:
+        return [Finding("release-coordinate.receipt", str(exc))]
+
+    schema_findings = SchemaValidator(
+        SCHEMA_DIR / "promotion-receipt.schema.json"
+    ).validate(receipt)
+    if schema_findings:
+        return [
+            Finding(f"promotion-receipt.json{item.path[1:]}", item.message)
+            for item in schema_findings
+        ]
+    if receipt.get("promotion_state") != "release_observed":
+        return [
+            Finding(
+                "promotion-receipt.json.promotion_state",
+                "Git-backed verification begins after the release observation is recorded",
+            )
+        ]
+
+    coordinate = receipt["release_coordinate"]
+    if coordinate["tag"] != receipt["target_release"]:
+        findings.append(
+            Finding(
+                "release-coordinate.tag",
+                "observed release tag must equal the receipt target release",
+            )
+        )
+    object_format_bytes, object_format_findings = _git_stdout(
+        resolved_repository,
+        ("rev-parse", "--show-object-format"),
+        "release-coordinate.git_object_format",
+        "Git object format could not be observed",
+    )
+    findings.extend(object_format_findings)
+    if object_format_bytes is not None:
+        observed_format = object_format_bytes.decode("ascii", errors="replace").strip()
+        if coordinate["git_object_format"] != observed_format:
+            findings.append(
+                Finding(
+                    "release-coordinate.git_object_format",
+                    "recorded Git object format differs from the repository",
+                )
+            )
+
+    tag_ref = f"refs/tags/{coordinate['tag']}"
+    tag_type_bytes, tag_type_findings = _git_stdout(
+        resolved_repository,
+        ("cat-file", "-t", tag_ref),
+        "release-coordinate.tag",
+        "recorded release tag is unavailable",
+    )
+    findings.extend(tag_type_findings)
+    if tag_type_bytes is not None and tag_type_bytes.strip() != b"tag":
+        findings.append(
+            Finding(
+                "release-coordinate.tag",
+                "release tag must be an annotated tag object",
+            )
+        )
+
+    tag_oid_bytes, tag_oid_findings = _git_stdout(
+        resolved_repository,
+        ("rev-parse", "--verify", tag_ref),
+        "release-coordinate.tag_object_oid",
+        "release tag object identifier could not be resolved",
+    )
+    findings.extend(tag_oid_findings)
+    if tag_oid_bytes is not None:
+        observed_tag_oid = tag_oid_bytes.decode("ascii", errors="replace").strip()
+        if coordinate["tag_object_oid"] != observed_tag_oid:
+            findings.append(
+                Finding(
+                    "release-coordinate.tag_object_oid",
+                    "recorded tag object identifier differs from the annotated tag",
+                )
+            )
+
+    tag_commit_bytes, tag_commit_findings = _git_stdout(
+        resolved_repository,
+        ("rev-parse", "--verify", f"{tag_ref}^{{commit}}"),
+        "release-coordinate.commit_oid",
+        "release tag could not be dereferenced to a commit",
+    )
+    findings.extend(tag_commit_findings)
+    if tag_commit_bytes is not None:
+        observed_commit_oid = tag_commit_bytes.decode("ascii", errors="replace").strip()
+        if coordinate["commit_oid"] != observed_commit_oid:
+            findings.append(
+                Finding(
+                    "release-coordinate.commit_oid",
+                    "recorded commit differs from the annotated tag subject",
+                )
+            )
+
+    archive_bytes, archive_findings = _git_stdout(
+        resolved_repository,
+        ("archive", "--format=tar", coordinate["commit_oid"]),
+        "release-coordinate.archive_digest",
+        "accepted source could not be rendered as a Git tar archive",
+    )
+    findings.extend(archive_findings)
+    if archive_bytes is not None:
+        observed_digest = f"sha256:{sha256(archive_bytes).hexdigest()}"
+        if coordinate["archive_digest"] != observed_digest:
+            findings.append(
+                Finding(
+                    "release-coordinate.archive_digest",
+                    "recorded archive digest differs from git archive --format=tar",
+                )
+            )
+
+    carrier_oid_bytes, carrier_oid_findings = _git_stdout(
+        resolved_repository,
+        ("rev-parse", "--verify", f"{carrier_ref}^{{commit}}"),
+        "release-coordinate.carrier_ref",
+        "receipt carrier commit could not be resolved",
+    )
+    findings.extend(carrier_oid_findings)
+    if carrier_oid_bytes is not None:
+        carrier_oid = carrier_oid_bytes.decode("ascii", errors="replace").strip()
+        if carrier_oid == coordinate["commit_oid"]:
+            findings.append(
+                Finding(
+                    "release-coordinate.carrier_ref",
+                    "receipt carrier must follow the tagged release subject",
+                )
+            )
+        try:
+            ancestry = _run_git(
+                resolved_repository,
+                "merge-base",
+                "--is-ancestor",
+                coordinate["commit_oid"],
+                carrier_oid,
+            )
+        except OSError:
+            findings.append(
+                Finding(
+                    "release-coordinate.carrier_ref",
+                    "Git is unavailable for the ancestry observation",
+                )
+            )
+        else:
+            if ancestry.returncode == 1:
+                findings.append(
+                    Finding(
+                        "release-coordinate.carrier_ref",
+                        "tagged release subject must be an ancestor of the receipt carrier",
+                    )
+                )
+            elif ancestry.returncode != 0:
+                findings.append(
+                    Finding(
+                        "release-coordinate.carrier_ref",
+                        "release-subject ancestry could not be observed",
+                    )
+                )
+
+        relative_receipt = resolved_receipt.relative_to(resolved_repository).as_posix()
+        carrier_receipt_bytes, carrier_receipt_findings = _git_stdout(
+            resolved_repository,
+            ("show", f"{carrier_oid}:{relative_receipt}"),
+            "release-coordinate.carrier_ref",
+            "receipt carrier does not contain the selected promotion receipt",
+        )
+        findings.extend(carrier_receipt_findings)
+        if (
+            carrier_receipt_bytes is not None
+            and carrier_receipt_bytes != resolved_receipt.read_bytes()
+        ):
+            findings.append(
+                Finding(
+                    "release-coordinate.carrier_ref",
+                    "working receipt bytes differ from the receipt carrier",
+                )
+            )
+    return findings
+
+
 def report(findings: Iterable[Finding]) -> int:
     """Render stable output for local and continuous-integration use."""
     materialized = list(findings)
@@ -1254,6 +2417,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--source-root", type=Path)
     parser.add_argument("--schema-name")
     parser.add_argument("--document-path")
+    parser.add_argument("--verify-release-coordinate", action="store_true")
+    parser.add_argument("--release-repository", type=Path)
+    parser.add_argument("--promotion-receipt", type=Path)
+    parser.add_argument("--carrier-ref", default="HEAD")
     args = parser.parse_args(argv)
     if (args.schema is None) != (args.document is None):
         parser.error("--schema and --document travel together")
@@ -1272,11 +2439,32 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         )
     if args.schema is not None and args.schema_name is not None:
         parser.error("select either direct paths or a bounded contract request")
+    if args.verify_release_coordinate and (
+        args.schema is not None or args.schema_name is not None
+    ):
+        parser.error("select release-coordinate verification as its own observation")
+    if not args.verify_release_coordinate and (
+        args.release_repository is not None
+        or args.promotion_receipt is not None
+        or args.carrier_ref != "HEAD"
+    ):
+        parser.error(
+            "--release-repository, --promotion-receipt, and --carrier-ref "
+            "belong to --verify-release-coordinate"
+        )
     return args
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
+    if args.verify_release_coordinate:
+        return report(
+            verify_release_coordinate(
+                args.release_repository or ROOT,
+                args.promotion_receipt or Path("promotion-receipt.json"),
+                args.carrier_ref,
+            )
+        )
     if args.schema:
         return report(validate_pair(args.schema, args.document))
     if args.schema_name:
@@ -1293,6 +2481,7 @@ def main(argv: list[str] | None = None) -> int:
             *validate_schema_catalog(),
             *validate_examples(),
             *validate_repository_orientation(),
+            *validate_public_ready_skills(),
             *validate_rulesets(),
             *validate_workflows(),
             *validate_coordination_vocabulary(),
