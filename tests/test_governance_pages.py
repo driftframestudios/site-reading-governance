@@ -415,6 +415,27 @@ class GovernancePagesTests(unittest.TestCase):
             page = (output / pages.PUBLIC_SKILL_PAGE_PATH).read_text(encoding="utf-8")
             self.assertIn('href="SKILL.md"', page)
             self.assertIn(pages.PUBLIC_SKILL_METADATA["lineage_key"], page)
+            public_possible = {
+                path.parent.name
+                for path in (ROOT / ".agents" / "skills").glob("*/SKILL.md")
+                if pages.parse_skill_source(path)[0].get("source_band")
+                == "public_possible"
+            }
+            self.assertEqual(
+                {
+                    "contextual-jargon-scan",
+                    "repository-reentry",
+                    "source-authority-mapping",
+                },
+                public_possible,
+            )
+            self.assertTrue(
+                public_possible.isdisjoint(
+                    {record["name"] for record in manifest["skills"]}
+                )
+            )
+            for skill_name in public_possible:
+                self.assertFalse((output / "skills" / skill_name).exists())
 
     def test_projected_skill_has_no_unpublished_relative_markdown_links(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

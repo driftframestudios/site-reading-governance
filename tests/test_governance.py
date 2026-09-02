@@ -637,6 +637,28 @@ class GovernancePackageTests(unittest.TestCase):
         self.assertIn("authorized resolver", " ".join(content.split()))
         self.assertNotIn("https://github.com/", content)
 
+    def test_public_possible_skill_workbench_has_copy_local_lineage(self) -> None:
+        self.assertEqual([], validation.validate_public_possible_skills())
+        for relative, expected in validation.PUBLIC_POSSIBLE_SKILL_METADATA.items():
+            metadata, content = validation.parse_skill_source(ROOT / relative)
+            for key, value in expected.items():
+                self.assertEqual(value, metadata[key])
+            self.assertEqual(Path(relative).parent.name, metadata["name"])
+            self.assertIn("independently usable", " ".join(content.split()))
+
+    def test_public_possible_lineage_drift_is_visible(self) -> None:
+        relative = ".agents/skills/repository-reentry/SKILL.md"
+        expected = validation.PUBLIC_POSSIBLE_SKILL_METADATA[relative]
+        with patch.dict(expected, {"upstream_revision": "0" * 40}):
+            findings = validation.validate_public_possible_skills()
+        self.assertTrue(
+            any(
+                "upstream source coordinates" in finding.message
+                for finding in findings
+            ),
+            findings,
+        )
+
     def test_public_language_route_is_complete_and_locator_safe(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         guide = (ROOT / "docs" / "NEGATION_AWARE_LANGUAGE.md").read_text(

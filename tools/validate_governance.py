@@ -104,6 +104,47 @@ ROOT_ORIENTATION_CAMPAIGNS = {
 }
 ZERO_COMMIT = "0" * 40
 ZERO_DIGEST = "sha256:" + ("0" * 64)
+PUBLIC_POSSIBLE_SKILL_METADATA = {
+    ".agents/skills/contextual-jargon-scan/SKILL.md": {
+        "name": "contextual-jargon-scan",
+        "source_band": "public_possible",
+        "skill_version": "0.1.0",
+        "upstream_repository": "driftframestudios/human-ai-systems-exemplars",
+        "upstream_path": ".agents/skills/contextual-jargon-scan/SKILL.md",
+        "upstream_revision": "0c023343e46cd9b1333a63c2d509787352fbad14",
+        "upstream_blob_sha1": "3c3a94db99152385253e0281c8afa8fea8208ac5",
+        "upstream_sha256": (
+            "da383f99eaff364d7e17c3bff93d8da618ec95894a45ff78a9620d8d7fc81523"
+        ),
+        "adaptation_relation": "repository_local_derivative",
+    },
+    ".agents/skills/repository-reentry/SKILL.md": {
+        "name": "repository-reentry",
+        "source_band": "public_possible",
+        "skill_version": "0.1.0",
+        "upstream_repository": "driftframestudios/human-ai-systems-exemplars",
+        "upstream_path": ".agents/skills/repository-reentry/SKILL.md",
+        "upstream_revision": "0c023343e46cd9b1333a63c2d509787352fbad14",
+        "upstream_blob_sha1": "ac2c3732826c515b236598af10e0a204dbe14ace",
+        "upstream_sha256": (
+            "c60bb1bac3a993c78d94b1d05aaa7a97761b99275fc9acdc8285acba6f688f02"
+        ),
+        "adaptation_relation": "repository_local_derivative",
+    },
+    ".agents/skills/source-authority-mapping/SKILL.md": {
+        "name": "source-authority-mapping",
+        "source_band": "public_possible",
+        "skill_version": "0.1.0",
+        "upstream_repository": "driftframestudios/human-ai-systems-exemplars",
+        "upstream_path": ".agents/skills/source-authority-mapping/SKILL.md",
+        "upstream_revision": "0c023343e46cd9b1333a63c2d509787352fbad14",
+        "upstream_blob_sha1": "112830e9b70540b0bc9a8535ab77c7a04c1a5926",
+        "upstream_sha256": (
+            "1420eaee7f6d58805c29eaff23644d4982fdf1f12d2f6ce3cc39c65791939aff"
+        ),
+        "adaptation_relation": "repository_local_derivative",
+    },
+}
 EFFECT_CLASS_RANK = {
     "read": 0,
     "narrow_write": 1,
@@ -1398,6 +1439,64 @@ def validate_public_ready_skills() -> list[Finding]:
     return findings
 
 
+def validate_public_possible_skills() -> list[Finding]:
+    """Validate the complete copy-local skill workbench kept off Pages."""
+    findings: list[Finding] = []
+    skills_root = ROOT / ".agents" / "skills"
+    observed: dict[str, dict[str, str]] = {}
+    for path in sorted(skills_root.glob("*/SKILL.md")):
+        relative = path.relative_to(ROOT).as_posix()
+        try:
+            metadata, _ = parse_skill_source(path)
+        except PagesBuildError as exc:
+            findings.append(Finding(relative, str(exc)))
+            continue
+        if metadata.get("source_band") == "public_possible":
+            observed[relative] = metadata
+
+    expected_paths = set(PUBLIC_POSSIBLE_SKILL_METADATA)
+    if set(observed) != expected_paths:
+        findings.append(
+            Finding(
+                ".agents/skills",
+                "public-possible skill inventory must contain exactly "
+                f"{sorted(expected_paths)}",
+            )
+        )
+
+    for relative, expected in PUBLIC_POSSIBLE_SKILL_METADATA.items():
+        metadata = observed.get(relative)
+        if metadata is None:
+            continue
+        if any(metadata.get(key) != value for key, value in expected.items()):
+            findings.append(
+                Finding(
+                    relative,
+                    "public-possible skill metadata must preserve its copy-local "
+                    "identity and upstream source coordinates",
+                )
+            )
+
+    for orientation_path in ("README.md", "AGENTS.md"):
+        path = ROOT / orientation_path
+        try:
+            content = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            findings.append(Finding(orientation_path, str(exc)))
+            continue
+        for relative, expected in PUBLIC_POSSIBLE_SKILL_METADATA.items():
+            route = f"[`{expected['name']}`]({relative})"
+            if route not in content:
+                findings.append(
+                    Finding(
+                        orientation_path,
+                        "repository orientation must link every public-possible "
+                        "skill path",
+                    )
+                )
+    return findings
+
+
 def _validate_repository_orientation_records(
     records: dict[str, Any],
 ) -> list[Finding]:
@@ -2482,6 +2581,7 @@ def main(argv: list[str] | None = None) -> int:
             *validate_examples(),
             *validate_repository_orientation(),
             *validate_public_ready_skills(),
+            *validate_public_possible_skills(),
             *validate_rulesets(),
             *validate_workflows(),
             *validate_coordination_vocabulary(),

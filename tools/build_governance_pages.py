@@ -74,7 +74,7 @@ PUBLIC_SKILL_METADATA = {
         "or downstream use needs a verifiable source and receiver."
     ),
     "name": PUBLIC_SKILL_SLUG,
-    "skill_version": "0.1.0",
+    "skill_version": "0.1.1",
     "source_band": "public_ready",
     "lineage_key": "lims-src-006",
 }

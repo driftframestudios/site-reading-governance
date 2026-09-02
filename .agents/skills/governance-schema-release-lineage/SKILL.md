@@ -2,7 +2,7 @@
 name: governance-schema-release-lineage
 description: Traces one Site Reading Governance schema from tracked source through an accepted release coordinate to its byte-identical Pages retrieval copy. Applies when schema meaning, release identity, public projection, or downstream use needs a verifiable source and receiver.
 source_band: public_ready
-skill_version: 0.1.0
+skill_version: 0.1.1
 lineage_key: lims-src-006
 adaptation_relation: repository_local_derivative
 ---
@@ -104,7 +104,8 @@ Reopen when:
 
 ### Scenario: An accepted schema reaches a downstream validation record
 
-Given one tracked Governance 2.0.1 schema retains its stable `/v2.0/` identifier<br>
+Given one schema in the current accepted Governance release retains its stable
+`/v2.0/` identifier<br>
 And an observed promotion receipt binds the annotated release tag, accepted
 commit, and reproducible archive digest<br>
 When Governance Pages copies that schema to its versioned retrieval path and
@@ -117,7 +118,7 @@ consumer requirement reopens the map from the changed source
 ## Adaptation lineage
 
 This repository-local derivative narrows a shared method for tracing source and
-authority to one Governance schema, the 2.0.1 promotion receipt, its
+authority to one Governance schema, the accepted promotion receipt, its
 byte-identical Pages retrieval copy, and the downstream receiver. Public
 lineage key `lims-src-006` identifies the selected source within its authorized
 resolver. The public guide carries the relation, purpose, and evidence standing
