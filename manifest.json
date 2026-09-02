@@ -17,7 +17,7 @@
     }
   },
   "digests": {
-    "content": "sha256:3ef7c831906e5cc503fa8130de1885e38896e139ea3e1b9358df46ac2ff88bf2",
+    "content": "sha256:67886fe33ec06fb972ae3785b776d52f63b5b59bbddc4d6e6970cf84056ad427",
     "schemas": "sha256:f4890d3a6043b4e340dec699bd908939b0f0024ab85b0371392efeb771e0f418"
   },
   "inventory": {
@@ -32,24 +32,29 @@
         "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       {
+        "bytes": 17,
+        "path": "CNAME",
+        "sha256": "sha256:ee2a5cacc3e4601546aaa86e020eb9af8487545f2875847d79df0f696c5975df"
+      },
+      {
         "bytes": 6221,
         "path": "assets/site.css",
         "sha256": "sha256:145b2664587ae37e61cd500443ff9fff07ec499fd946cce405cf4f083b66ee18"
       },
       {
-        "bytes": 5875,
+        "bytes": 5985,
         "path": "guidance/index.html",
-        "sha256": "sha256:2d79f144c1c0ef17f7ec4623f12925c686b698c55d2f9a59cea45d582b05f8dd"
+        "sha256": "sha256:60d18fbb29cf4f6e1e14c9cd32a71201881fc883123891df72255f9b6153a4ea"
       },
       {
-        "bytes": 5341,
+        "bytes": 5433,
         "path": "index.html",
-        "sha256": "sha256:956cdae583bb9d303c656bbc364f4c9dd51002a2456c822efc8f084c31b7875b"
+        "sha256": "sha256:cc64472edcdaab03e9fb80309cdd6aa99c7017dc6667545e0627d677c58e35ad"
       },
       {
-        "bytes": 3876,
+        "bytes": 3984,
         "path": "schemas/index.html",
-        "sha256": "sha256:4164626990293c26a2dda4a841d728c345a37d8d79622e9b76fd45017575f37c"
+        "sha256": "sha256:f12133c250dcc91bee6bbe49032ba074680ac053ecf8fd1ad6227df623dfb917"
       },
       {
         "bytes": 4332,
@@ -142,9 +147,9 @@
         "sha256": "sha256:6457169c37de220fa54a90a92695c11beb48a63e473378f66bf2def7e1940cb3"
       },
       {
-        "bytes": 18822,
+        "bytes": 18940,
         "path": "schemas/v2.0/index.html",
-        "sha256": "sha256:b14a8d8ba0b7c9804b29333b0b8820b0e977b3d34990dd35c87bd41257d792ff"
+        "sha256": "sha256:873699d726c1c12c718ce9d641e6f09c1abbd0658297bafe66819e5b982687f3"
       },
       {
         "bytes": 3763,
@@ -207,45 +212,52 @@
         "sha256": "sha256:9c5dd630a26b20d997c18de771d0cae7af9f936fd5f1185d52cc56a5e823b588"
       },
       {
-        "bytes": 11817,
+        "bytes": 11991,
         "path": "skills/governance-schema-release-lineage/index.html",
-        "sha256": "sha256:5ed73dc614002cfeca51d64886c68b088eafed44180735d34dc41e083d58aa54"
+        "sha256": "sha256:15a741ee54d575f87d1f02b76559be2a25cffbfcee23e46ee2aa82515c3003e9"
       },
       {
-        "bytes": 4199,
+        "bytes": 4305,
         "path": "skills/index.html",
-        "sha256": "sha256:810a9160feede002c776a1f5d6373f394490dabee83adebc46c8261957c1b2f0"
+        "sha256": "sha256:0a63490ffc016d53797100ea37cbe51b8c149b6c911008833611c8e09783a564"
       }
     ]
   },
   "manifestVersion": "1.0.0",
   "publication": {
-    "canonicalHtmlPaths": [],
-    "canonicalOrigin": null,
-    "cname": null,
+    "canonicalHtmlPaths": [
+      "guidance/index.html",
+      "index.html",
+      "schemas/index.html",
+      "schemas/v2.0/index.html",
+      "skills/governance-schema-release-lineage/index.html",
+      "skills/index.html"
+    ],
+    "canonicalOrigin": "https://fieldformlab.org",
+    "cname": "fieldformlab.org",
     "html": [
       {
-        "canonicalUrl": null,
+        "canonicalUrl": "https://fieldformlab.org/guidance/",
         "path": "guidance/index.html"
       },
       {
-        "canonicalUrl": null,
+        "canonicalUrl": "https://fieldformlab.org/",
         "path": "index.html"
       },
       {
-        "canonicalUrl": null,
+        "canonicalUrl": "https://fieldformlab.org/schemas/",
         "path": "schemas/index.html"
       },
       {
-        "canonicalUrl": null,
+        "canonicalUrl": "https://fieldformlab.org/schemas/v2.0/",
         "path": "schemas/v2.0/index.html"
       },
       {
-        "canonicalUrl": null,
+        "canonicalUrl": "https://fieldformlab.org/skills/governance-schema-release-lineage/",
         "path": "skills/governance-schema-release-lineage/index.html"
       },
       {
-        "canonicalUrl": null,
+        "canonicalUrl": "https://fieldformlab.org/skills/",
         "path": "skills/index.html"
       }
     ],
