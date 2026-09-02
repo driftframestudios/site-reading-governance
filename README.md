@@ -30,6 +30,29 @@ chronology and contribution credit.
 [`coordination-horizon.json`](coordination-horizon.json) records current work
 and the next evidence-bearing move.
 
+## Repository-local collaboration guides
+
+Four self-contained guides support work when this is the only suite repository
+available:
+
+- [`governance-schema-release-lineage`](.agents/skills/governance-schema-release-lineage/SKILL.md)
+  follows one schema through tracked source, accepted release, byte-identical
+  Pages retrieval, and downstream use;
+- [`repository-reentry`](.agents/skills/repository-reentry/SKILL.md)
+  reconstructs current branch, release, root orientation, and live
+  collaboration state;
+- [`source-authority-mapping`](.agents/skills/source-authority-mapping/SKILL.md)
+  separates meaning, structure, executable checks, release acceptance,
+  delivery, and downstream use for a material Governance object; and
+- [`contextual-jargon-scan`](.agents/skills/contextual-jargon-scan/SKILL.md)
+  reviews a bounded prose change for useful precision and replaceable local
+  shorthand.
+
+The schema-release guide is public-ready and appears in Governance Pages. The
+other three remain public-possible while natural use tests their repository
+fit. They stay in the repository source workbench; the current public
+projection continues to carry the reviewed schema-release guide.
+
 The package is private-repository ready. Its examples use synthetic identifiers,
 its automation uses read-only permissions by default, and its ruleset exports
 can be reviewed before installation through the GitHub Rulesets API.

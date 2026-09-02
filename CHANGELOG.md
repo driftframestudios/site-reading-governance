@@ -6,6 +6,14 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+- Added public-possible, repository-local guides for Governance re-entry,
+  broader source-authority mapping, and contextual jargon scanning. Root
+  orientation now routes to the complete local workbench while Governance
+  Pages retains its single reviewed public-ready schema-release guide.
+- Advanced the public schema-release-lineage guide to 0.1.1 and described its
+  accepted release and promotion receipt without embedding an earlier package
+  version in the reusable route.
+
 ## [2.1.0] — 2026-09-01
 
 - Added a root collaboration guide, an ordinary-language README entry path,
