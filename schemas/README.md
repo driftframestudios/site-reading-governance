@@ -83,6 +83,15 @@ values carry an RFC 3339 timezone, migration evidence serializes instants in
 canonical UTC, and numeric values remain finite. Database contracts express
 native temporal and exact-numeric storage separately from interchange encoding.
 
+## Candidate projection family
+
+The promotion-receipt pilot adds a deterministic YAML 1.2 semantic twin and a
+bounded GraphQL SDL while keeping
+`schemas/promotion-receipt.schema.json` as the validation authority. The exact
+constraint coverage ledger makes every directly mapped and JSON-retained rule
+inspectable. See [`../schema-projections/README.md`](../schema-projections/README.md)
+for the source layout and focused proof.
+
 ## Evolution
 
 Compatible fields arrive in minor releases. Consumer-shaping changes arrive in

@@ -110,6 +110,10 @@ class GovernancePagesTests(unittest.TestCase):
             source = temporary_root / "source"
             source.mkdir()
             shutil.copytree(ROOT / "schemas", source / "schemas")
+            shutil.copytree(
+                ROOT / "schema-projections",
+                source / "schema-projections",
+            )
             shutil.copytree(ROOT / ".agents", source / ".agents")
             shutil.copy2(ROOT / "GOVERNANCE.md", source / "GOVERNANCE.md")
             run_git(source, "init", "--initial-branch=develop")
@@ -341,6 +345,7 @@ class GovernancePagesTests(unittest.TestCase):
                 manifest["source"]["sourceRevision"],
             )
             self.assertEqual(["manifest.json"], manifest["inventory"]["excludes"])
+            self.assertEqual("1.1.0", manifest["manifestVersion"])
             declared = {item["path"] for item in manifest["inventory"]["files"]}
             actual = {
                 path.relative_to(output).as_posix()
@@ -356,6 +361,72 @@ class GovernancePagesTests(unittest.TestCase):
                     FIXTURE_PROOF,
                     allow_fixture_standing=True,
                 ),
+            )
+
+    def test_candidate_projection_family_keeps_json_authority_visible(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output, manifest = self.build_fixture(Path(temporary))
+            self.assertEqual(1, len(manifest["schemaFamilies"]))
+            family = manifest["schemaFamilies"][0]
+            self.assertEqual("promotion-receipt", family["family"])
+            self.assertEqual("candidate", family["projectionStatus"])
+            self.assertEqual(
+                pages.SCHEMA_ID_PREFIX
+                + "projections/promotion-receipt/v1.0.0/",
+                family["familyIdentifier"],
+            )
+            self.assertEqual(
+                {
+                    "format": "json-schema-2020-12",
+                    "identifier": pages.SCHEMA_ID_PREFIX
+                    + "promotion-receipt.schema.json",
+                    "outputPath": "schemas/v2.0/promotion-receipt.schema.json",
+                    "sourcePath": "schemas/promotion-receipt.schema.json",
+                },
+                family["validationAuthority"],
+            )
+            representations = {
+                record["format"]: record for record in family["representations"]
+            }
+            self.assertEqual(
+                {
+                    "constraint-coverage-ledger",
+                    "graphql-sdl",
+                    "yaml-1.2",
+                },
+                set(representations),
+            )
+            self.assertEqual(
+                "text/plain; charset=utf-8",
+                representations["graphql-sdl"]["mediaType"],
+            )
+            self.assertEqual(
+                "application/yaml",
+                representations["yaml-1.2"]["mediaType"],
+            )
+            for record in representations.values():
+                self.assertTrue(
+                    record["outputPath"].startswith(
+                        "schemas/v2.0/projections/promotion-receipt/v1.0.0/"
+                    )
+                )
+                self.assertEqual(
+                    pages.SCHEMA_ID_PREFIX
+                    + record["outputPath"].removeprefix("schemas/v2.0/"),
+                    record["identifier"],
+                )
+                self.assertEqual(
+                    record["bytes"],
+                    len((output / record["outputPath"]).read_bytes()),
+                )
+                self.assertIn(f"/{'f' * 40}/", record["sourceUrl"])
+
+            accepted_names = sorted(
+                path.name for path in (ROOT / "schemas").glob("*.schema.json")
+            )
+            self.assertEqual(
+                accepted_names,
+                sorted(Path(item["outputPath"]).name for item in manifest["schemas"]),
             )
 
     def test_every_schema_is_an_exact_source_copy_with_a_full_sha_link(self) -> None:
@@ -535,6 +606,25 @@ class GovernancePagesTests(unittest.TestCase):
             skill_path.write_bytes(skill_path.read_bytes() + b"\n")
             refresh_inventory(output)
             with self.assertRaisesRegex(pages.PagesBuildError, "published skill bytes"):
+                pages.validate_site(
+                    output,
+                    ROOT,
+                    FIXTURE_PROOF,
+                    allow_fixture_standing=True,
+                )
+
+    def test_projection_byte_mutation_fails_after_inventory_is_refreshed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output, manifest = self.build_fixture(Path(temporary))
+            projection_path = output / manifest["schemaFamilies"][0][
+                "representations"
+            ][0]["outputPath"]
+            projection_path.write_bytes(projection_path.read_bytes() + b"\n")
+            refresh_inventory(output)
+            with self.assertRaisesRegex(
+                pages.PagesBuildError,
+                "schema projection bytes differ",
+            ):
                 pages.validate_site(
                     output,
                     ROOT,

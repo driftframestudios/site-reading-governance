@@ -16,8 +16,9 @@ chronology and contribution credit.
    stages, review, and recovery.
 2. Use [`schemas/README.md`](schemas/README.md) to find the record you need, then
    keep its stable identifier and release coordinate with each validation.
-3. Run `make check` with Python 3.11 or newer. Use the focused validation
-   command in [Quick start](#quick-start) when checking one downstream record.
+3. Install the locked projection parsers, then run `make check` with Python
+   3.11 or newer. The focused JSON validation command in
+   [Quick start](#quick-start) remains dependency-free for downstream records.
 4. Start changes from `develop` using [`BRANCHING.md`](BRANCHING.md). Read
    [`promotion-receipt.json`](promotion-receipt.json) when the accepted tag,
    commit, archive digest, or release state affects the work.
@@ -140,20 +141,25 @@ database-native representation.
 
 ## Quick start
 
-Requirements: Python 3.11 or newer. The validation path uses the Python standard
-library and carries zero runtime package dependencies.
+Requirements: Python 3.11 or newer. The JSON contract validator and downstream
+reusable contract workflow use the Python standard library. The full repository
+proof also checks the YAML and GraphQL candidate projections with two exact,
+hash-locked parser versions.
 
 ```bash
+python3 -m pip install --disable-pip-version-check --require-hashes \
+  -r requirements-projections.txt
 python3 tools/validate_governance.py
+python3 tools/schema_projections.py
 python3 tools/check_language.py
 python3 tools/check_language.py --format sarif
 python3 tools/scan_secret_shapes.py
 python3 -m unittest discover -s tests -v
 ```
 
-The standard-library Governance Pages builder prepares a deterministic,
-reviewable retrieval artifact after a release receiver supplies a structured
-proof for the exact accepted source revision. See
+The Governance Pages builder uses those locked parsers to prepare a
+deterministic, reviewable retrieval artifact after a release receiver supplies
+a structured proof for the exact accepted source revision. See
 [`docs/GOVERNANCE_PAGES.md`](docs/GOVERNANCE_PAGES.md) for the clean-source,
 two-build, manifest, and optional canonical-origin paths.
 
@@ -198,6 +204,8 @@ python3 tools/validate_governance.py \
   Governance 2.1.0 schema retrieval, source proof, authority, and publication
   handoff
 - [`schemas/`](schemas/) — JSON Schema 2020-12 contracts
+- [`schema-projections/`](schema-projections/) — candidate YAML 1.2 and GraphQL
+  forms with exact constraint coverage evidence
 - [`examples/`](examples/) — valid synthetic exemplars for every contract
 - [`machine-node.json`](machine-node.json), [`first-receipt.json`](first-receipt.json),
   [`coordination-horizon.json`](coordination-horizon.json), and
@@ -210,9 +218,9 @@ python3 tools/validate_governance.py \
   production receipts
 - [`audits/dependency-automation-review-2026-07-28.md`](audits/dependency-automation-review-2026-07-28.md)
   — five-repository bot-identity, branch grammar, workflow, and follow-up review
-- [`tools/`](tools/) and [`tests/`](tests/) — dependency-free contract,
-  repository-independent language core with a bounded governance wrapper,
-  secret-shape checks, and regression validation
+- [`tools/`](tools/) and [`tests/`](tests/) — dependency-free JSON contract and
+  language checks, locked projection checks, secret-shape checks, and focused
+  regression validation
 
 ## Versioning
 

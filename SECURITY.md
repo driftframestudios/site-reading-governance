@@ -24,10 +24,11 @@ URLs remain in the approved evidence system.
 
 ## Dependency posture
 
-The local validator uses the Python standard library. GitHub Actions references
-are pinned to immutable commit SHAs in production releases. Maintainers review
-action updates through ordinary pull requests with provenance and permission
-analysis.
+The local JSON validator uses the Python standard library. The full projection
+proof installs exact hash-locked YAML and GraphQL parser versions. GitHub
+Actions references are pinned to immutable commit SHAs in production releases.
+Maintainers review action and parser updates through ordinary pull requests
+with provenance and permission analysis.
 
 The dependency-free secret-shape scan reports file, line, rule, and redacted
 length. Protected values remain absent from scanner output.

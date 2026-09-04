@@ -26,7 +26,7 @@ _SAFE_AUTOMATION_PATH = (
     rf"(?!.*\.\.)(?!.*@\{{){_SAFE_AUTOMATION_SEGMENT}"
     rf"(?:/{_SAFE_AUTOMATION_SEGMENT})*"
 )
-DEPENDABOT_BRANCH_ECOSYSTEMS = frozenset({"github_actions"})
+DEPENDABOT_BRANCH_ECOSYSTEMS = frozenset({"github_actions", "pip"})
 
 
 @dataclass(frozen=True)

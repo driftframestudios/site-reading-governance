@@ -95,6 +95,7 @@ MANIFEST_FIELDS = {
     "manifestVersion",
     "publication",
     "release",
+    "schemaFamilies",
     "schemas",
     "skills",
     "source",
@@ -183,6 +184,66 @@ class SkillRecord:
             "skillVersion": self.version,
             "sourcePath": self.source_path,
             "sourceUrl": self.source_url,
+        }
+
+
+@dataclass(frozen=True)
+class ProjectionRecord:
+    """One bounded representation in the promotion-receipt pilot family."""
+
+    source_path: str
+    output_path: str
+    identifier: str
+    format: str
+    media_type: str
+    relation: str
+    byte_length: int
+    digest: str
+    source_url: str
+
+    def manifest_record(self) -> dict[str, Any]:
+        return {
+            "bytes": self.byte_length,
+            "format": self.format,
+            "identifier": self.identifier,
+            "mediaType": self.media_type,
+            "outputPath": self.output_path,
+            "relation": self.relation,
+            "sha256": self.digest,
+            "sourcePath": self.source_path,
+            "sourceUrl": self.source_url,
+        }
+
+
+@dataclass(frozen=True)
+class SchemaFamilyRecord:
+    """Bind one candidate projection family to its accepted JSON authority."""
+
+    family: str
+    family_identifier: str
+    projection_version: str
+    status: str
+    authority_identifier: str
+    authority_source_path: str
+    authority_output_path: str
+    representations: tuple[ProjectionRecord, ...]
+
+    def manifest_record(self) -> dict[str, Any]:
+        return {
+            "validationAuthority": {
+                "format": "json-schema-2020-12",
+                "identifier": self.authority_identifier,
+                "outputPath": self.authority_output_path,
+                "sourcePath": self.authority_source_path,
+            },
+            "family": self.family,
+            "familyIdentifier": self.family_identifier,
+            "projectionVersion": self.projection_version,
+            "representations": [
+                representation.manifest_record()
+                for representation in self.representations
+            ],
+            "projectionStatus": self.status,
         }
 
 
@@ -709,6 +770,104 @@ def collect_schemas(source_root: Path, proof: SourceProof) -> list[SchemaRecord]
     return records
 
 
+def _projection_tool() -> Any:
+    """Load optional projection dependencies only for the full Pages proof."""
+    tool_directory = str(Path(__file__).resolve().parent)
+    if tool_directory not in sys.path:
+        sys.path.insert(0, tool_directory)
+    try:
+        import schema_projections
+    except SystemExit as exc:
+        raise PagesBuildError(
+            "Pages projection dependencies are unavailable; install the locked "
+            "requirements-projections.txt set"
+        ) from exc
+    return schema_projections
+
+
+def collect_schema_families(
+    source_root: Path,
+    proof: SourceProof,
+) -> tuple[list[SchemaFamilyRecord], dict[str, bytes]]:
+    """Build the one bounded candidate family and its exact artifact bytes."""
+    projection_tool = _projection_tool()
+    try:
+        artifacts = projection_tool.projection_artifacts(source_root)
+    except (OSError, projection_tool.ProjectionError) as exc:
+        raise PagesBuildError(f"candidate schema projection differs: {exc}") from exc
+
+    expected_paths = {
+        projection_tool.YAML_OUTPUT_PATH,
+        projection_tool.GRAPHQL_OUTPUT_PATH,
+        projection_tool.COVERAGE_OUTPUT_PATH,
+    }
+    if set(artifacts) != expected_paths:
+        raise PagesBuildError("candidate schema projection artifact paths differ")
+
+    source_details = (
+        (
+            projection_tool.SOURCE_SCHEMA_PATH,
+            projection_tool.YAML_OUTPUT_PATH,
+            "yaml-1.2",
+            "application/yaml",
+            "semantic_twin",
+        ),
+        (
+            projection_tool.GRAPHQL_SOURCE_PATH,
+            projection_tool.GRAPHQL_OUTPUT_PATH,
+            "graphql-sdl",
+            "text/plain; charset=utf-8",
+            "interface_projection",
+        ),
+        (
+            projection_tool.COVERAGE_SOURCE_PATH,
+            projection_tool.COVERAGE_OUTPUT_PATH,
+            "constraint-coverage-ledger",
+            "application/json",
+            "coverage_proof",
+        ),
+    )
+    representations = tuple(
+        ProjectionRecord(
+            source_path=source_path,
+            output_path=output_path,
+            identifier=(
+                SCHEMA_ID_PREFIX
+                + PurePosixPath(output_path)
+                .relative_to(PurePosixPath("schemas") / SCHEMA_COORDINATE)
+                .as_posix()
+            ),
+            format=format_name,
+            media_type=media_type,
+            relation=relation,
+            byte_length=len(artifacts[output_path]),
+            digest=sha256_bytes(artifacts[output_path]),
+            source_url=source_url(proof.source_revision, source_path),
+        )
+        for source_path, output_path, format_name, media_type, relation in source_details
+    )
+    return (
+        [
+            SchemaFamilyRecord(
+                family="promotion-receipt",
+                family_identifier=(
+                    f"{SCHEMA_ID_PREFIX}projections/promotion-receipt/"
+                    f"v{projection_tool.PROJECTION_VERSION}/"
+                ),
+                projection_version=projection_tool.PROJECTION_VERSION,
+                status="candidate",
+                authority_identifier=projection_tool.SOURCE_SCHEMA_ID,
+                authority_source_path=projection_tool.SOURCE_SCHEMA_PATH,
+                authority_output_path=(
+                    f"schemas/{SCHEMA_COORDINATE}/promotion-receipt.schema.json"
+                ),
+                representations=representations,
+            )
+        ],
+        artifacts,
+    )
+
+
 def normalize_canonical_origin(value: str | None) -> str | None:
     if value is None:
         return None
@@ -884,11 +1043,32 @@ def render_pages(
     proof: SourceProof,
     schemas: Sequence[SchemaRecord],
     skills: Sequence[SkillRecord],
+    schema_families: Sequence[SchemaFamilyRecord],
     canonical_origin: str | None,
 ) -> dict[str, str]:
     if len(skills) != 1:
         raise PagesBuildError("the accepted Pages source requires one public-ready skill")
     skill = skills[0]
+    if len(schema_families) != 1:
+        raise PagesBuildError("the Pages source requires one candidate schema family")
+    family = schema_families[0]
+    representations = {item.format: item for item in family.representations}
+    if set(representations) != {
+        "constraint-coverage-ledger",
+        "graphql-sdl",
+        "yaml-1.2",
+    }:
+        raise PagesBuildError("the candidate schema family representations differ")
+
+    def projection_link(format_name: str, *, from_catalog: bool = False) -> str:
+        path = PurePosixPath(representations[format_name].output_path)
+        parent = (
+            PurePosixPath("schemas") / SCHEMA_COORDINATE
+            if from_catalog
+            else PurePosixPath("schemas")
+        )
+        return path.relative_to(parent).as_posix()
+
     governance_link = source_url(proof.source_revision, "GOVERNANCE.md")
     catalog_link = source_url(proof.source_revision, "schemas/README.md")
     promotion_link = source_url(proof.source_revision, "promotion-receipt.json")
@@ -977,6 +1157,11 @@ def render_pages(
       <div><p class="eyebrow">Authority</p><h2 id="schema-authority-heading">Exact bytes support exact checks</h2></div>
       <p>The versioned files preserve each accepted <code>$id</code> and source byte. The <a href="../guidance/index.html">use and authority guide</a> shows how a structural result travels with the human decision it supports.</p>
     </section>
+    <section aria-labelledby="projection-heading">
+      <p class="eyebrow">Candidate projection family</p>
+      <h2 id="projection-heading">Promotion receipt in three supporting forms</h2>
+      <p>The accepted JSON Schema remains the validation authority. A deterministic <a href="{projection_link('yaml-1.2')}">YAML 1.2 semantic twin</a>, bounded <a href="{projection_link('graphql-sdl')}">GraphQL SDL</a>, and exact <a href="{projection_link('constraint-coverage-ledger')}">constraint coverage ledger</a> make the pilot available for review before a later release decision.</p>
+    </section>
 """
 
     rows: list[str] = []
@@ -1006,6 +1191,16 @@ def render_pages(
     <section class="note" aria-labelledby="validation-heading">
       <h2 id="validation-heading">Keep the result proportionate</h2>
       <p>A passing validator establishes agreement with the selected machine-readable structure. Read the <a href="../../guidance/index.html">use and authority guide</a> when the record also carries acceptance, authorization, or another accountable decision.</p>
+    </section>
+    <section aria-labelledby="candidate-heading">
+      <p class="eyebrow">Candidate · projection {html.escape(family.projection_version)}</p>
+      <h2 id="candidate-heading">Promotion-receipt projection pilot</h2>
+      <p>The JSON Schema file above keeps machine-validation authority. The supporting representations are available for semantic comparison and interface review:</p>
+      <ul class="prose-list">
+        <li><a href="{projection_link('yaml-1.2', from_catalog=True)}">YAML 1.2 semantic twin</a> — generated deterministically and checked against the JSON data model.</li>
+        <li><a href="{projection_link('graphql-sdl', from_catalog=True)}">GraphQL SDL</a> — an authored interface shape whose scalar and cross-field constraints remain with JSON Schema.</li>
+        <li><a href="{projection_link('constraint-coverage-ledger', from_catalog=True)}">Constraint coverage ledger</a> — one exact tuple for every reachable source constraint, with its GraphQL disposition.</li>
+      </ul>
     </section>
 """
 
@@ -1348,6 +1543,7 @@ def _manifest(
     proof: SourceProof,
     schemas: Sequence[SchemaRecord],
     skills: Sequence[SkillRecord],
+    schema_families: Sequence[SchemaFamilyRecord],
     canonical_origin: str | None,
     cname: str | None,
 ) -> dict[str, Any]:
@@ -1373,7 +1569,7 @@ def _manifest(
             "excludes": ["manifest.json"],
             "files": inventory,
         },
-        "manifestVersion": "1.0.0",
+        "manifestVersion": "1.1.0",
         "publication": {
             "canonicalHtmlPaths": [
                 record["path"] for record in html_records if record["canonicalUrl"]
@@ -1390,6 +1586,9 @@ def _manifest(
             "status": proof.release_status,
             "version": proof.release_version,
         },
+        "schemaFamilies": [
+            family.manifest_record() for family in schema_families
+        ],
         "schemas": [schema.manifest_record() for schema in schemas],
         "skills": [skill.manifest_record() for skill in skills],
         "source": {
@@ -1568,7 +1767,7 @@ def validate_site(
     manifest = load_json(manifest_path)
     if not isinstance(manifest, dict) or set(manifest) != MANIFEST_FIELDS:
         raise PagesBuildError("manifest fields differ from the closed artifact contract")
-    if manifest.get("manifestVersion") != "1.0.0":
+    if manifest.get("manifestVersion") != "1.1.0":
         raise PagesBuildError("manifest version differs from the builder contract")
 
     expected_release = {
@@ -1629,6 +1828,7 @@ def validate_site(
 
     schemas = collect_schemas(source_root, proof)
     skills = collect_public_skills(source_root, proof)
+    schema_families, projection_artifacts = collect_schema_families(source_root, proof)
     if manifest.get("schemas") != [schema.manifest_record() for schema in schemas]:
         raise PagesBuildError("manifest schema records differ from accepted source")
     for schema in schemas:
@@ -1644,6 +1844,21 @@ def validate_site(
         if output_bytes != source_bytes:
             raise PagesBuildError(
                 f"published skill bytes differ for {skill.output_path}"
+            )
+    if manifest.get("schemaFamilies") != [
+        family.manifest_record() for family in schema_families
+    ]:
+        raise PagesBuildError("manifest schema family records differ from the candidate source")
+    for output_path, expected_bytes in projection_artifacts.items():
+        try:
+            output_bytes = (output_root / output_path).read_bytes()
+        except OSError as exc:
+            raise PagesBuildError(
+                f"published schema projection is unavailable: {output_path}"
+            ) from exc
+        if output_bytes != expected_bytes:
+            raise PagesBuildError(
+                f"published schema projection bytes differ for {output_path}"
             )
 
     actual_inventory = inventory_records(output_root)
@@ -1721,6 +1936,7 @@ def build_site(
     normalized_cname = normalize_cname(cname, origin)
     schemas = collect_schemas(source_root, proof)
     skills = collect_public_skills(source_root, proof)
+    schema_families, projection_artifacts = collect_schema_families(source_root, proof)
 
     output_root.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(
@@ -1729,7 +1945,7 @@ def build_site(
         staging = Path(temporary)
         (staging / ".nojekyll").write_bytes(b"")
         _write_text(staging / "assets" / "site.css", SITE_CSS)
-        pages = render_pages(proof, schemas, skills, origin)
+        pages = render_pages(proof, schemas, skills, schema_families, origin)
         for relative_path, content in pages.items():
             _write_text(staging / relative_path, content)
         for schema in schemas:
@@ -1740,6 +1956,10 @@ def build_site(
             destination = staging / skill.output_path
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source_root / skill.source_path, destination)
+        for relative_path, content in projection_artifacts.items():
+            destination = staging / relative_path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(content)
         if normalized_cname is not None:
             _write_text(staging / "CNAME", f"{normalized_cname}\n")
         manifest = _manifest(
@@ -1747,6 +1967,7 @@ def build_site(
             proof,
             schemas,
             skills,
+            schema_families,
             origin,
             normalized_cname,
         )

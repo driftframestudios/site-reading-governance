@@ -18,13 +18,15 @@
       "step_names": [
         "Check out the proposed source",
         "Select Python",
+        "Install projection proof dependencies",
         "Validate repository-owned governance"
       ],
       "checkout_action": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
       "setup_python_action": "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
-      "install_command": null,
+      "install_command": "python3 -m pip install --disable-pip-version-check --require-hashes -r requirements-projections.txt",
       "validation_commands": [
         "python3 tools/validate_governance.py",
+        "python3 tools/schema_projections.py",
         "python3 tools/check_language.py",
         "python3 tools/scan_secret_shapes.py",
         "python3 -m unittest discover -s tests -v"
@@ -43,6 +45,19 @@
         "open-pull-requests-limit": 2,
         "groups": {
           "github-actions-minor-patch": {
+            "patterns": ["*"],
+            "update-types": ["minor", "patch"]
+          }
+        }
+      },
+      {
+        "package-ecosystem": "pip",
+        "directory": "/",
+        "target-branch": "develop",
+        "schedule": {"interval": "monthly"},
+        "open-pull-requests-limit": 2,
+        "groups": {
+          "pip-minor-patch": {
             "patterns": ["*"],
             "update-types": ["minor", "patch"]
           }

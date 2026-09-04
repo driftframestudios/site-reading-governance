@@ -572,18 +572,32 @@ class GovernancePackageTests(unittest.TestCase):
             )
 
     def test_root_contract_digest_binds_material_contract_file(self) -> None:
-        records = {
-            name: json.loads((ROOT / name).read_text(encoding="utf-8"))
-            for name in validation.ROOT_ORIENTATION_SCHEMAS
-        }
-        records["machine-node.json"]["contracts"][0]["digest"] = (
-            "sha256:" + ("f" * 64)
+        cases = (
+            (0, "schemas/simulated-receipt-closure.schema.json"),
+            (1, "tools/check_branch_flow.py"),
         )
-        findings = validation._validate_repository_orientation_records(records)
-        self.assertTrue(
-            any("must bind" in finding.message for finding in findings),
-            findings,
-        )
+        for index, expected_material in cases:
+            with self.subTest(contract=index):
+                records = {
+                    name: json.loads((ROOT / name).read_text(encoding="utf-8"))
+                    for name in validation.ROOT_ORIENTATION_SCHEMAS
+                }
+                records["machine-node.json"]["contracts"][index]["digest"] = (
+                    "sha256:" + ("f" * 64)
+                )
+                records["first-receipt.json"]["contract_state"] = records[
+                    "machine-node.json"
+                ]["contracts"]
+                findings = validation._validate_repository_orientation_records(records)
+                self.assertTrue(
+                    any(
+                        finding.path
+                        == f"machine-node.json.contracts[{index}].digest"
+                        and expected_material in finding.message
+                        for finding in findings
+                    ),
+                    findings,
+                )
 
     def test_ruleset_exports_preserve_governed_flow(self) -> None:
         self.assertEqual([], validation.validate_rulesets())

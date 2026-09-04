@@ -17,7 +17,10 @@ concordance. A schema change travels with:
 ## Local verification
 
 ```bash
+python3 -m pip install --disable-pip-version-check --require-hashes \
+  -r requirements-projections.txt
 python3 tools/validate_governance.py
+python3 tools/schema_projections.py
 python3 tools/check_language.py
 python3 -m unittest discover -s tests -v
 ```
@@ -33,6 +36,9 @@ candidate-eligibility controls.
 - Close governance records with `additionalProperties: false`.
 - Reuse definitions from `common.schema.json`.
 - Represent important distinctions as enums or conditional contracts.
+- Keep JSON Schema as the validation authority for projection families. Pair a
+  candidate GraphQL form with exact source-constraint coverage and generate a
+  YAML semantic twin through the reviewed deterministic profile.
 - Require provenance, evidence mode, assurance stage, and ownership where the
   record makes an assurance claim.
 - Pair each hard safety or privacy boundary with its replacement behavior and
