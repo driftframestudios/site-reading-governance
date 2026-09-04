@@ -650,6 +650,7 @@ class GovernancePackageTests(unittest.TestCase):
         )
         self.assertIn("authorized resolver", " ".join(content.split()))
         self.assertNotIn("https://github.com/", content)
+        self.assertIsNone(validation.HTML_LINE_BREAK.search(content))
 
     def test_public_possible_skill_workbench_has_copy_local_lineage(self) -> None:
         self.assertEqual([], validation.validate_public_possible_skills())

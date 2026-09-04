@@ -516,6 +516,41 @@ class GovernancePagesTests(unittest.TestCase):
             )
             self.assertEqual((), pages.markdown_relative_targets(content))
 
+    def test_public_ready_skill_refuses_html_line_breaks(self) -> None:
+        for marker in (
+            "<br>",
+            "<BR>",
+            "<br/>",
+            "<br />",
+            '<br class="scenario-break">',
+            '<br data-kind="scenario"/>',
+            '<br\nclass="scenario-break">',
+        ):
+            with self.subTest(marker=marker):
+                with tempfile.TemporaryDirectory() as temporary:
+                    source = Path(temporary) / "source"
+                    shutil.copytree(ROOT / ".agents", source / ".agents")
+                    skill = source / pages.PUBLIC_SKILL_SOURCE_PATH
+                    skill.write_text(
+                        skill.read_text(encoding="utf-8") + f"\n{marker}\n",
+                        encoding="utf-8",
+                    )
+                    proof = pages.load_source_proof(
+                        FIXTURE_PROOF,
+                        source,
+                        allow_fixture_standing=True,
+                    )
+                    with self.assertRaisesRegex(
+                        pages.PagesBuildError,
+                        "HTML line-break element",
+                    ):
+                        pages.collect_public_skills(source, proof)
+
+    def test_html_line_break_guard_preserves_nearby_tag_names(self) -> None:
+        for marker in ("<break>", "<bracket>", "<broom>"):
+            with self.subTest(marker=marker):
+                self.assertIsNone(pages.HTML_LINE_BREAK.search(marker))
+
     def test_public_ready_skill_inventory_is_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             source = Path(temporary) / "source"
