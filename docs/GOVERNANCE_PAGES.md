@@ -1,9 +1,11 @@
 # Governance Pages source
 
-The Governance Pages builder creates one reviewable retrieval artifact for the
-accepted Governance 2.1.0 JSON Schemas. A visitor can find the right contract,
-read its authority boundary in ordinary language, download the accepted bytes,
-and recover the exact full-SHA source from every schema row.
+The Governance Pages builder is prepared to create one reviewable retrieval
+artifact for Governance 2.2.0 after the source is accepted. A visitor can find
+the right contract, read its authority boundary in ordinary language, download
+the accepted bytes, and recover the exact full-SHA source from every schema
+row. The published Governance 2.1.0 artifact remains the accepted retrieval
+surface until a publication receiver completes that 2.2.0 handoff.
 
 The builder uses the standard library for artifact assembly and the exact
 hash-locked YAML and GraphQL parsers in `requirements-projections.txt` for the
@@ -21,7 +23,7 @@ Every build begins with a structured proof supplied by the release receiver:
   "contractVersion": "1.0.0",
   "releaseAuthority": "Constellation release steward",
   "releaseStatus": "accepted",
-  "releaseVersion": "2.1.0",
+  "releaseVersion": "2.2.0",
   "repository": "driftframestudios/site-reading-governance",
   "schemaCoordinate": "v2.0",
   "sourceRevision": "<accepted 40-character lowercase Git SHA>",
@@ -61,13 +63,13 @@ python3 -m pip install --disable-pip-version-check --require-hashes \
 
 python3 tools/build_governance_pages.py build \
   --source-root /path/to/accepted-governance-source \
-  --source-proof /path/to/governance-2.1.0-source-proof.json \
-  --output /tmp/governance-pages-2.1.0
+  --source-proof /path/to/governance-2.2.0-source-proof.json \
+  --output /tmp/governance-pages-2.2.0
 
 python3 tools/build_governance_pages.py verify \
   --source-root /path/to/accepted-governance-source \
-  --source-proof /path/to/governance-2.1.0-source-proof.json \
-  --output /tmp/governance-pages-2.1.0
+  --source-proof /path/to/governance-2.2.0-source-proof.json \
+  --output /tmp/governance-pages-2.2.0
 ```
 
 The output path must be new. This keeps cleanup an explicit artifact-owner
@@ -79,12 +81,12 @@ compare every path and byte:
 ```bash
 python3 tools/build_governance_pages.py build \
   --source-root /path/to/accepted-governance-source \
-  --source-proof /path/to/governance-2.1.0-source-proof.json \
+  --source-proof /path/to/governance-2.2.0-source-proof.json \
   --output /tmp/governance-pages-first
 
 python3 tools/build_governance_pages.py build \
   --source-root /path/to/accepted-governance-source \
-  --source-proof /path/to/governance-2.1.0-source-proof.json \
+  --source-proof /path/to/governance-2.2.0-source-proof.json \
   --output /tmp/governance-pages-second
 
 diff -qr /tmp/governance-pages-first /tmp/governance-pages-second
@@ -137,7 +139,7 @@ change qualifies them.
 
 Human-readable governance explains meaning, decision rights, evidence stages,
 review, and recovery. The published JSON Schema bytes define machine-checkable
-structure for Governance 2.1.0. A passing validation establishes structural
+structure for Governance 2.2.0. A passing validation establishes structural
 agreement with the selected schema. Scientific suitability, Quality or
 Regulatory acceptance, environment qualification, and production authorization
 receive their own evidence and accountable decision.
@@ -176,7 +178,7 @@ explicit HTTPS origin adds canonical metadata to every HTML page:
 ```bash
 python3 tools/build_governance_pages.py build \
   --source-root /path/to/accepted-governance-source \
-  --source-proof /path/to/governance-2.1.0-source-proof.json \
+  --source-proof /path/to/governance-2.2.0-source-proof.json \
   --output /tmp/governance-pages-canonical \
   --canonical-origin https://governance.example.org/contracts
 ```
@@ -187,7 +189,7 @@ canonical HTTPS hostname:
 ```bash
 python3 tools/build_governance_pages.py build \
   --source-root /path/to/accepted-governance-source \
-  --source-proof /path/to/governance-2.1.0-source-proof.json \
+  --source-proof /path/to/governance-2.2.0-source-proof.json \
   --output /tmp/governance-pages-domain \
   --canonical-origin https://governance.example.org/contracts \
   --cname governance.example.org
@@ -202,7 +204,7 @@ The repository secret-shape scanner includes HTML, CSS, JSON, YAML, Markdown,
 and GraphQL SDL, so it can observe the complete generated text surface:
 
 ```bash
-python3 tools/scan_secret_shapes.py --root /tmp/governance-pages-2.1.0
+python3 tools/scan_secret_shapes.py --root /tmp/governance-pages-2.2.0
 ```
 
 A clean scan establishes zero detector matches in the named artifact. Service

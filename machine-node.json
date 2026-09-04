@@ -2,9 +2,9 @@
   "machine_node_id": "NODE-SITE-READING-GOVERNANCE-002",
   "canonical_identity": "driftframestudios/site-reading-governance",
   "title": "Site Reading governance control plane",
-  "purpose": "Orient collaborators to governance schema release 2.1.0, Control Plane Profile 0.3.0, the selected-future closure contract, governed dependency automation, and current promotion posture.",
+  "purpose": "Orient collaborators to the accepted Governance 2.1.0 release, the Governance 2.2.0 multiformat candidate, Control Plane Profile 0.3.0, and the current promotion posture.",
   "control_plane_profile": "0.3.0",
-  "schema_release": "2.1.0",
+  "schema_release": "2.2.0",
   "repository_role": "site_reading_governance",
   "authority": {
     "mode": "orientation_only",
@@ -15,8 +15,8 @@
       "Authenticated runtime identity and scoped approval"
     ]
   },
-  "lifecycle_state": "reference_ready",
-  "coordination_horizon_id": "HORIZON-GOVERNANCE-PROMOTION-002",
+  "lifecycle_state": "settling",
+  "coordination_horizon_id": "HORIZON-GOVERNANCE-PROMOTION-003",
   "contracts": [
     {
       "contract_id": "CONTRACT-SELECTED-FUTURE-CLOSURE-002",
@@ -32,17 +32,17 @@
   "campaigns": [
     {
       "campaign_id": "LIMS-ELN-OPEN-RECEIPTS",
-      "marking_schema_version": "2.1.0",
+      "marking_schema_version": "2.2.0",
       "status": "settling"
     },
     {
       "campaign_id": "COMPARATIVE-LITERACY-COLLABORATION",
-      "marking_schema_version": "2.1.0",
+      "marking_schema_version": "2.2.0",
       "status": "active"
     },
     {
       "campaign_id": "SITE-READING-SYSTEM",
-      "marking_schema_version": "2.1.0",
+      "marking_schema_version": "2.2.0",
       "status": "active"
     }
   ],
@@ -52,16 +52,18 @@
     "digest": "sha256:0843bd8d9a46475c1f27e3cac68a0d947289e42495befeedc3181912197a182d"
   },
   "current_provenance": {
-    "release": "governance-v2.1.0",
-    "commit": "8469c2a6b2c7f4445523cee262b961ffe3d2523b",
-    "digest": "sha256:469ae49fca7d5ad6e1766080b3c39d76c46a840366b217f3839b9d34f2e77d32"
+    "release": "candidate-governance-v2.2.0",
+    "commit": "0000000000000000000000000000000000000000",
+    "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
   },
   "first_receipt_contract_id": "FIRST-RCP-SITE-READING-GOVERNANCE-002",
-  "open_receipts": [],
+  "open_receipts": [
+    "RCP-GOVERNANCE-PROMOTION-003"
+  ],
   "invalidation_conditions": [
     "The governance schema release, Control Plane Profile, or selected-future closure contract changes.",
     "The configured dependency ecosystem, automation branch grammar, bot author, or allowed target changes.",
-    "A later accepted governance release supersedes the current tag, commit, or reproducible archive digest."
+    "An observed Governance 2.2.0 tag, accepted commit, and reproducible archive digest replace the candidate placeholders."
   ],
   "downstream_consumers": [
     "driftframestudios/lims-eln-program-specification",
@@ -92,9 +94,9 @@
     }
   ],
   "metadata": {
-    "schema_version": "2.1.0",
+    "schema_version": "2.2.0",
     "created_at": "2026-07-28T17:30:02Z",
-    "updated_at": "2026-09-04T07:09:00Z",
+    "updated_at": "2026-09-04T08:36:56Z",
     "owner": {
       "actor_id": "OWNER-GOVERNANCE-ORIENTATION-002",
       "display_name": "Site Reading governance stewardship role",
