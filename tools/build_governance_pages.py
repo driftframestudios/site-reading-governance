@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and verify the deterministic Governance 2.1.0 retrieval site."""
+"""Build and verify the deterministic Governance 2.2.0 retrieval site."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from urllib.parse import quote, urlsplit, urlunsplit
 
 REPOSITORY = "driftframestudios/site-reading-governance"
 REPOSITORY_URL = f"https://github.com/{REPOSITORY}"
-RELEASE_VERSION = "2.1.0"
+RELEASE_VERSION = "2.2.0"
 RELEASE_STATUS = "accepted"
 RELEASE_AUTHORITY = "Constellation release steward"
 SCHEMA_COORDINATE = "v2.0"
@@ -581,7 +581,7 @@ def load_source_proof(
         "schemaCoordinate": proof.schema_coordinate,
     }
     if actual != expected:
-        raise PagesBuildError("source proof release authority does not match Governance 2.1.0")
+        raise PagesBuildError("source proof release authority does not match Governance 2.2.0")
     if not SHA_PATTERN.fullmatch(proof.source_revision):
         raise PagesBuildError("sourceRevision must be one lowercase full Git SHA")
 
@@ -732,7 +732,7 @@ def _catalog_descriptions(source_root: Path) -> dict[str, str]:
 
 
 def collect_schemas(source_root: Path, proof: SourceProof) -> list[SchemaRecord]:
-    """Read and validate the complete source-owned Governance 2.1.0 schema set."""
+    """Read and validate the complete source-owned Governance 2.2.0 schema set."""
     schema_root = source_root / "schemas"
     schema_paths = sorted(schema_root.glob("*.schema.json"), key=lambda item: item.name)
     descriptions = _catalog_descriptions(source_root)
@@ -1148,7 +1148,7 @@ def render_pages(
     schemas_body = f"""
     <section class="hero hero--compact">
       <p class="eyebrow">Schema discovery</p>
-      <h1>Governance 2.1.0 schema retrieval</h1>
+      <h1>Governance 2.2.0 schema retrieval</h1>
       <p class="lede">Choose the accepted release coordinate first, then select the JSON Schema that matches the record you need to validate.</p>
       {_release_coordinate(proof)}
     </section>
@@ -1262,8 +1262,8 @@ def render_pages(
 
     content = {
         "index.html": _page(
-            title="Site Reading Governance 2.1.0",
-            description="Accepted Governance 2.1.0 JSON Schema retrieval and ordinary-language orientation.",
+            title="Site Reading Governance 2.2.0",
+            description="Accepted Governance 2.2.0 JSON Schema retrieval and ordinary-language orientation.",
             stylesheet="assets/site.css",
             canonical=canonical_url(canonical_origin, "index.html"),
             prefix="",
@@ -1281,7 +1281,7 @@ def render_pages(
         ),
         "schemas/index.html": _page(
             title="Schema retrieval · Site Reading Governance",
-            description="Discover the accepted Governance 2.1.0 JSON Schema release.",
+            description="Discover the accepted Governance 2.2.0 JSON Schema release.",
             stylesheet="../assets/site.css",
             canonical=canonical_url(canonical_origin, "schemas/index.html"),
             prefix="../",
@@ -1289,8 +1289,8 @@ def render_pages(
             body=schemas_body,
         ),
         "schemas/v2.0/index.html": _page(
-            title="Governance 2.1.0 JSON Schema catalog",
-            description="Versioned, byte-identical Governance 2.1.0 JSON Schema downloads.",
+            title="Governance 2.2.0 JSON Schema catalog",
+            description="Versioned, byte-identical Governance 2.2.0 JSON Schema downloads.",
             stylesheet="../../assets/site.css",
             canonical=canonical_url(canonical_origin, "schemas/v2.0/index.html"),
             prefix="../../",
@@ -1534,7 +1534,7 @@ def _authority(proof: SourceProof) -> dict[str, Any]:
         "machineValidation": {
             "dialect": SCHEMA_DIALECT,
             "identifierPrefix": SCHEMA_ID_PREFIX,
-            "role": "structural validation authority for Governance 2.1.0 documents",
+            "role": "structural validation authority for Governance 2.2.0 documents",
         },
         "publication": {
             "role": "byte-identical retrieval projection",
@@ -1998,7 +1998,7 @@ def _common_arguments(parser: argparse.ArgumentParser) -> None:
         "--source-root",
         type=Path,
         required=True,
-        help="Clean worktree containing the accepted Governance 2.1.0 source.",
+        help="Clean worktree containing the accepted Governance 2.2.0 source.",
     )
     parser.add_argument(
         "--source-proof",

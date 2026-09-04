@@ -6,6 +6,12 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+## [2.2.0] — 2026-09-04
+
+- Prepared the Governance 2.2.0 candidate with a fresh promotion receipt,
+  release horizon, migration guidance, and current-release metadata while the
+  accepted Governance 2.1.0 coordinate remains available as a historical
+  release receipt.
 - Advanced the public schema-release-lineage guide to 0.1.2, expressed its
   representative scenario as ordinary Markdown, and added a public-boundary
   check that keeps HTML line-break elements out of published skill sources.

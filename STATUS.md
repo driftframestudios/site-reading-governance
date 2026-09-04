@@ -29,6 +29,19 @@ production authorization effect. This lets the collaboration finish a coherent
 simulated reality while keeping later observed evidence as a separate evidence
 class.
 
+## Release candidate
+
+Governance `2.2.0` is the current release candidate. It keeps JSON Schema as
+the validation authority and adds deterministic YAML 1.2 and read-only GraphQL
+projections for the promotion-receipt family. Exact source-constraint coverage,
+semantic binding checks, focused mutation tests, and Pages inventory checks
+make the relationship among the three formats inspectable.
+
+The candidate carries a fresh promotion receipt with an open release
+coordinate. Downstream rehearsal and protected `main` review are the next
+receivers. The signed tag, accepted commit, and reproducible Git archive digest
+enter the later evidence record after those observations exist.
+
 ## Accepted release
 
 Governance `2.1.0` has completed its source release path:
@@ -48,8 +61,10 @@ archive digest, subject ancestry, and exact receipt-carrier bytes. The tag's
 cryptographic signature verifies locally, and GitHub recognizes the matching
 registered signing key.
 
-The next receivers pin the immutable release coordinate in downstream
-repositories and publish the inspected deterministic schema-retrieval artifact.
+The observed 2.1 receipt remains available at
+[`release-receipts/governance-v2.1.0.json`](release-receipts/governance-v2.1.0.json).
+Its immutable coordinate remains the accepted downstream reference while the
+2.2 candidate completes rehearsal, review, tagging, and release observation.
 
 ## Known extension points
 

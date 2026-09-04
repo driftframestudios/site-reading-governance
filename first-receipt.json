@@ -1,7 +1,7 @@
 {
   "first_receipt_id": "FIRST-RCP-SITE-READING-GOVERNANCE-002",
   "machine_node_id": "NODE-SITE-READING-GOVERNANCE-002",
-  "as_of": "2026-09-04T07:09:00Z",
+  "as_of": "2026-09-04T08:36:56Z",
   "orientation_purpose": "Give each entering collaborator a compact, non-authorizing account of governance contracts, campaign markings, branch automation, validation evidence, coordination, and promotion posture.",
   "authority_posture": {
     "mode": "orientation_only",
@@ -33,7 +33,13 @@
       "status": "active"
     },
     {
-      "claim": "The annotated release tag resolves to the accepted source commit, and its Git tar archive reproduces the recorded SHA-256 digest.",
+      "claim": "The Governance 2.1.0 annotated release tag resolves to its accepted source commit, and its Git tar archive reproduces the recorded SHA-256 digest.",
+      "mode": "observed",
+      "assurance_stage": "verified",
+      "status": "active"
+    },
+    {
+      "claim": "The Governance 2.2.0 candidate keeps JSON Schema as validation authority while its YAML and GraphQL projections pass exact source-binding checks.",
       "mode": "observed",
       "assurance_stage": "verified",
       "status": "active"
@@ -45,12 +51,14 @@
       "status": "active"
     }
   ],
-  "coordination_horizon_id": "HORIZON-GOVERNANCE-PROMOTION-002",
-  "current_horizon_summary": "Governance 2.1.0 is accepted and its immutable release coordinates are recorded; downstream pinning and Pages publication are ready for their receivers.",
-  "open_receipts": [],
+  "coordination_horizon_id": "HORIZON-GOVERNANCE-PROMOTION-003",
+  "current_horizon_summary": "Governance 2.1.0 remains accepted while the 2.2.0 multiformat candidate enters downstream rehearsal and protected promotion.",
+  "open_receipts": [
+    "RCP-GOVERNANCE-PROMOTION-003"
+  ],
   "invalidation_conditions": [
     "A contract, schema, automation grammar, workflow authority, campaign marking, or validation result changes.",
-    "A later accepted governance release supersedes the current tag, commit, or reproducible archive digest."
+    "The accepted Governance 2.2.0 tag, commit, and reproducible archive digest replace the candidate placeholders after release observation."
   ],
   "source_permissions": [
     {
@@ -71,13 +79,13 @@
   ],
   "handoff": {
     "recipient_role": "Constellation release steward",
-    "next_safe_action": "Pin the accepted release in downstream repositories and publish the inspected deterministic retrieval artifact through its receiving route.",
-    "success_evidence": "The observed release retains schema release 2.1.0, Control Plane Profile 0.3.0, selected-future closure and automation contract digests, passing repository checks, and a reproducible Git tar archive digest."
+    "next_safe_action": "Run the full candidate proof and downstream contract rehearsal, then promote the reviewed release through main and record its signed tag from a later evidence commit.",
+    "success_evidence": "The Governance 2.2.0 candidate passes repository and downstream checks while Governance 2.1.0 remains the accepted coordinate until protected promotion supplies the new tag, commit, and archive digest."
   },
   "metadata": {
-    "schema_version": "2.1.0",
+    "schema_version": "2.2.0",
     "created_at": "2026-07-28T17:30:02Z",
-    "updated_at": "2026-09-04T07:09:00Z",
+    "updated_at": "2026-09-04T08:36:56Z",
     "owner": {
       "actor_id": "OWNER-GOVERNANCE-RECEIPT-002",
       "display_name": "Site Reading governance stewardship role",

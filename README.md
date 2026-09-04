@@ -58,11 +58,12 @@ The package is private-repository ready. Its examples use synthetic identifiers,
 its automation uses read-only permissions by default, and its ruleset exports
 can be reviewed before installation through the GitHub Rulesets API.
 
-The current accepted governance schema release is `2.1.0`; stable schema
-identifiers use the `/v2.0/` coordinate. It implements **Control Plane Profile v0.3**, the
-Enterprise Human-AI Practitioner Registry-derived capability profile for
-bounded callers, veracity, orientation, coordination, and future-reality
-simulation.
+Governance `2.1.0` remains the accepted release. Candidate `2.2.0` keeps the
+stable `/v2.0/` schema identifiers and adds deterministic YAML and bounded
+GraphQL retrieval projections for promotion receipts. The accepted release and
+the candidate both implement **Control Plane Profile v0.3**, the Enterprise
+Human-AI Practitioner Registry-derived capability profile for bounded callers,
+veracity, orientation, coordination, and future-reality simulation.
 
 ## Constellation
 
@@ -200,8 +201,11 @@ python3 tools/validate_governance.py \
 - [`docs/MIGRATION_V2_0_0_TO_V2_1_0.md`](docs/MIGRATION_V2_0_0_TO_V2_1_0.md) —
   additive migration for promotion, language-control, and database-change
   contracts
+- [`docs/MIGRATION_V2_1_0_TO_V2_2_0.md`](docs/MIGRATION_V2_1_0_TO_V2_2_0.md) —
+  additive adoption of YAML and GraphQL promotion-receipt projections while
+  JSON Schema retains validation authority
 - [`docs/GOVERNANCE_PAGES.md`](docs/GOVERNANCE_PAGES.md) — deterministic
-  Governance 2.1.0 schema retrieval, source proof, authority, and publication
+  Governance 2.2.0 schema retrieval, source proof, authority, and publication
   handoff
 - [`schemas/`](schemas/) — JSON Schema 2020-12 contracts
 - [`schema-projections/`](schema-projections/) — candidate YAML 1.2 and GraphQL
@@ -211,6 +215,8 @@ python3 tools/validate_governance.py \
   [`coordination-horizon.json`](coordination-horizon.json), and
   [`promotion-receipt.json`](promotion-receipt.json) — root orientation and
   executable promotion records
+- [`release-receipts/`](release-receipts/) — observed receipts retained by
+  immutable release identity as each new candidate becomes current
 - [`.github/workflows/`](.github/workflows/) — reusable validation workflows
 - [`rulesets/`](rulesets/) — reviewable GitHub repository ruleset exports
 - [`audits/repository-security-review-2026-07-28.md`](audits/repository-security-review-2026-07-28.md)
@@ -226,8 +232,10 @@ python3 tools/validate_governance.py \
 
 Schema releases follow semantic versioning:
 
-- major: downstream documents require an intentional migration;
-- minor: backward-compatible contract capability;
+- major: accepted documents require an intentional migration before the new
+  contracts validate them;
+- minor: accepted documents continue to validate while new contract capability
+  becomes available;
 - patch: clarification, example, or validation repair.
 
 Consumers pin the annotated release tag, its accepted commit, and the SHA-256
