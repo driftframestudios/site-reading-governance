@@ -61,9 +61,10 @@ intended use remain visible.
 
 ## Release and publication sequence
 
-The release tree carries `promotion_state: candidate_ready`, planned evidence,
-specified assurance, a null `release_coordinate`, and an open `-003` promotion
-receipt. Protected acceptance and later observation proceed in this order:
+The tagged release tree records `promotion_state: candidate_ready`, planned
+evidence, specified assurance, a null `release_coordinate`, and the open `-003`
+promotion receipt that existed at acceptance. This later evidence carrier
+records the observed coordinate after the following release sequence:
 
 1. run the complete candidate proof and downstream contract rehearsal;
 2. merge the approved `release/2.2.0` branch into `main`;
@@ -80,7 +81,8 @@ receipt. Protected acceptance and later observation proceed in this order:
 
 The observed Governance 2.1.0 receipt remains in
 `release-receipts/governance-v2.1.0.json`. The root promotion receipt describes
-the active 2.2.0 cycle.
+the observed 2.2.0 coordinate, and the current horizon routes the verified
+artifact to its Pages publication receiver.
 
 ## Recovery and compatibility
 

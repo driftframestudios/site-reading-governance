@@ -29,42 +29,40 @@ production authorization effect. This lets the collaboration finish a coherent
 simulated reality while keeping later observed evidence as a separate evidence
 class.
 
-## Release candidate
-
-Governance `2.2.0` is the current release candidate. It keeps JSON Schema as
-the validation authority and adds deterministic YAML 1.2 and read-only GraphQL
-projections for the promotion-receipt family. Exact source-constraint coverage,
-semantic binding checks, focused mutation tests, and Pages inventory checks
-make the relationship among the three formats inspectable.
-
-The candidate carries a fresh promotion receipt with an open release
-coordinate. Downstream rehearsal and protected `main` review are the next
-receivers. The signed tag, accepted commit, and reproducible Git archive digest
-enter the later evidence record after those observations exist.
-
 ## Accepted release
 
-Governance `2.1.0` has completed its source release path:
+Governance `2.2.0` has completed its source release path:
 
-1. the full local governance proof passed on the release candidate;
-2. `release/2.1.0` entered `main` through its protected pull-request route;
-3. the signed annotated `governance-v2.1.0` tag identifies the accepted merge
-   commit;
-4. two accepted-source Governance Pages builds produced the same inventory and
-   bytes;
-5. the tagged release was merged forward into `develop`; and
+1. the complete local proof passed, and the twelve-record downstream rehearsal
+   confirmed compatibility across the release change while keeping established
+   repository-local extension findings visible;
+2. the release branch passed hosted validation and entered `main` through the
+   expressly delegated protected-delivery resolution while GitHub retained its
+   `REVIEW_REQUIRED` status;
+3. the signed annotated `governance-v2.2.0` tag identifies accepted commit
+   `c8d7150b8c4e6277bc504a7c69289cb5b949b0ee`;
+4. two accepted-source Governance Pages builds produced the same 43-file tree
+   and manifest identity;
+5. the tagged release ancestry was merged forward into `develop`; and
 6. this later evidence record captures the tag object, accepted commit, raw Git
-   tar archive digest, hosted check results, and signature verification.
+   tar archive digest, hosted check result, delegated review resolution, and
+   signature verification.
 
 The Git-backed verifier establishes tag type, tag object, accepted subject,
 archive digest, subject ancestry, and exact receipt-carrier bytes. The tag's
 cryptographic signature verifies locally, and GitHub recognizes the matching
 registered signing key.
 
-The observed 2.1 receipt remains available at
+Independent release review passed before the merge. The evidence record uses
+the authorized delegated resolution as its review carrier; GitHub exposes no
+hosted approval object for this merge. JSON Schema is the accepted validation
+authority; the YAML and GraphQL projection family remains a candidate interface
+whose exact 195-tuple coverage is available for inspection.
+
+The observed 2.1 receipt remains available as historical release evidence at
 [`release-receipts/governance-v2.1.0.json`](release-receipts/governance-v2.1.0.json).
-Its immutable coordinate remains the accepted downstream reference while the
-2.2 candidate completes rehearsal, review, tagging, and release observation.
+The current receivers can publish the inspected 2.2 Pages artifact and let each
+downstream repository adopt the 2.2 coordinate through its own review.
 
 ## Known extension points
 
