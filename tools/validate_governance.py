@@ -27,6 +27,7 @@ from automation_contract import (
     validate_repository_automation,
 )
 from build_governance_pages import (
+    HTML_LINE_BREAK,
     PUBLIC_SKILL_METADATA,
     PUBLIC_SKILL_SOURCE_PATH,
     PagesBuildError,
@@ -38,8 +39,9 @@ SCHEMA_DIR = ROOT / "schemas"
 EXAMPLE_DIR = ROOT / "examples"
 RULESET_DIR = ROOT / "rulesets"
 WORKFLOW_DIR = ROOT / ".github" / "workflows"
+RELEASE_RECEIPT_DIR = ROOT / "release-receipts"
 DRAFT = "https://json-schema.org/draft/2020-12/schema"
-SCHEMA_RELEASE = "2.1.0"
+SCHEMA_RELEASE = "2.2.0"
 SCHEMA_ID_PREFIX = "https://schemas.driftframe.org/site-reading-governance/v2.0/"
 SCHEMA_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9-]*\.schema\.json$")
 DOCUMENT_PATH_PATTERN = re.compile(
@@ -102,8 +104,67 @@ ROOT_ORIENTATION_CAMPAIGNS = {
     "COMPARATIVE-LITERACY-COLLABORATION",
     "SITE-READING-SYSTEM",
 }
+HISTORICAL_RELEASE_RECEIPTS = {
+    "governance-v2.1.0.json": {
+        "document_digest": (
+            "sha256:0f440ea5c0ca94bb63193891a0ac9f735"
+            "2883dcf6309efa742d8d94a148c105d"
+        ),
+        "identity": {
+            "promotion_receipt_id": "RCP-GOVERNANCE-PROMOTION-002",
+            "target_release": "governance-v2.1.0",
+            "tag_object_oid": "1c77396e44b71719ccab138fecd02e525089e39d",
+            "commit_oid": "8469c2a6b2c7f4445523cee262b961ffe3d2523b",
+            "archive_digest": (
+                "sha256:469ae49fca7d5ad6e1766080b3c39d76"
+                "c46a840366b217f3839b9d34f2e77d32"
+            ),
+        },
+    }
+}
 ZERO_COMMIT = "0" * 40
 ZERO_DIGEST = "sha256:" + ("0" * 64)
+PUBLIC_POSSIBLE_SKILL_METADATA = {
+    ".agents/skills/contextual-jargon-scan/SKILL.md": {
+        "name": "contextual-jargon-scan",
+        "source_band": "public_possible",
+        "skill_version": "0.1.0",
+        "upstream_repository": "driftframestudios/human-ai-systems-exemplars",
+        "upstream_path": ".agents/skills/contextual-jargon-scan/SKILL.md",
+        "upstream_revision": "0c023343e46cd9b1333a63c2d509787352fbad14",
+        "upstream_blob_sha1": "3c3a94db99152385253e0281c8afa8fea8208ac5",
+        "upstream_sha256": (
+            "da383f99eaff364d7e17c3bff93d8da618ec95894a45ff78a9620d8d7fc81523"
+        ),
+        "adaptation_relation": "repository_local_derivative",
+    },
+    ".agents/skills/repository-reentry/SKILL.md": {
+        "name": "repository-reentry",
+        "source_band": "public_possible",
+        "skill_version": "0.1.0",
+        "upstream_repository": "driftframestudios/human-ai-systems-exemplars",
+        "upstream_path": ".agents/skills/repository-reentry/SKILL.md",
+        "upstream_revision": "0c023343e46cd9b1333a63c2d509787352fbad14",
+        "upstream_blob_sha1": "ac2c3732826c515b236598af10e0a204dbe14ace",
+        "upstream_sha256": (
+            "c60bb1bac3a993c78d94b1d05aaa7a97761b99275fc9acdc8285acba6f688f02"
+        ),
+        "adaptation_relation": "repository_local_derivative",
+    },
+    ".agents/skills/source-authority-mapping/SKILL.md": {
+        "name": "source-authority-mapping",
+        "source_band": "public_possible",
+        "skill_version": "0.1.0",
+        "upstream_repository": "driftframestudios/human-ai-systems-exemplars",
+        "upstream_path": ".agents/skills/source-authority-mapping/SKILL.md",
+        "upstream_revision": "0c023343e46cd9b1333a63c2d509787352fbad14",
+        "upstream_blob_sha1": "112830e9b70540b0bc9a8535ab77c7a04c1a5926",
+        "upstream_sha256": (
+            "1420eaee7f6d58805c29eaff23644d4982fdf1f12d2f6ce3cc39c65791939aff"
+        ),
+        "adaptation_relation": "repository_local_derivative",
+    },
+}
 EFFECT_CLASS_RANK = {
     "read": 0,
     "narrow_write": 1,
@@ -207,6 +268,16 @@ def load_json(path: Path) -> Any:
             parse_constant=_reject_non_finite,
             parse_float=_parse_finite_float,
         )
+
+
+def load_json_bytes(payload: bytes) -> Any:
+    """Load one already-observed UTF-8 JSON byte snapshot strictly."""
+    return json.loads(
+        payload.decode("utf-8"),
+        object_pairs_hook=_object_with_unique_keys,
+        parse_constant=_reject_non_finite,
+        parse_float=_parse_finite_float,
+    )
 
 
 class SchemaValidator:
@@ -602,6 +673,15 @@ def validate_examples() -> list[Finding]:
             NonFiniteNumberError,
         ) as exc:
             findings.append(Finding(f"examples/{example_name}", str(exc)))
+
+    machine_node = records.get("machine-node.json", {})
+    if machine_node.get("schema_release") != SCHEMA_RELEASE:
+        findings.append(
+            Finding(
+                "examples/machine-node.json.schema_release",
+                f"current example must select schema release {SCHEMA_RELEASE}",
+            )
+        )
 
     constellation = records.get("constellation.json", {})
     roles = [item["role"] for item in constellation.get("repositories", [])]
@@ -1336,6 +1416,105 @@ def validate_repository_orientation() -> list[Finding]:
     return findings
 
 
+def validate_historical_release_receipts() -> list[Finding]:
+    """Keep observed release coordinates available after a new cycle begins."""
+    findings: list[Finding] = []
+    observed_paths = {
+        path.name: path for path in sorted(RELEASE_RECEIPT_DIR.glob("*.json"))
+    }
+    if set(observed_paths) != set(HISTORICAL_RELEASE_RECEIPTS):
+        findings.append(
+            Finding(
+                "release-receipts",
+                "historical release receipt inventory must contain exactly "
+                f"{sorted(HISTORICAL_RELEASE_RECEIPTS)}",
+            )
+        )
+
+    schema = SchemaValidator(SCHEMA_DIR / "promotion-receipt.schema.json")
+    for filename, expected in HISTORICAL_RELEASE_RECEIPTS.items():
+        path = observed_paths.get(filename)
+        if path is None:
+            continue
+        relative = f"release-receipts/{path.name}"
+        try:
+            receipt_bytes = path.read_bytes()
+        except OSError as exc:
+            findings.append(Finding(relative, str(exc)))
+            continue
+
+        document_digest = f"sha256:{sha256(receipt_bytes).hexdigest()}"
+        if document_digest != expected["document_digest"]:
+            findings.append(
+                Finding(
+                    relative,
+                    "historical receipt bytes must preserve their whole-file "
+                    "SHA-256 identity",
+                )
+            )
+
+        try:
+            receipt = load_json_bytes(receipt_bytes)
+        except (
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            DuplicateKeyError,
+            NonFiniteNumberError,
+        ) as exc:
+            findings.append(Finding(relative, str(exc)))
+            continue
+
+        for finding in schema.validate(receipt):
+            findings.append(Finding(f"{relative}{finding.path[1:]}", finding.message))
+
+        coordinate = receipt.get("release_coordinate")
+        observed = {
+            "promotion_receipt_id": receipt.get("promotion_receipt_id"),
+            "target_release": receipt.get("target_release"),
+            "tag_object_oid": (
+                coordinate.get("tag_object_oid")
+                if isinstance(coordinate, dict)
+                else None
+            ),
+            "commit_oid": (
+                coordinate.get("commit_oid")
+                if isinstance(coordinate, dict)
+                else None
+            ),
+            "archive_digest": (
+                coordinate.get("archive_digest")
+                if isinstance(coordinate, dict)
+                else None
+            ),
+        }
+        if observed != expected["identity"]:
+            findings.append(
+                Finding(
+                    relative,
+                    "historical receipt must preserve its observed release identity",
+                )
+            )
+        if (
+            receipt.get("promotion_state") != "release_observed"
+            or receipt.get("evidence_mode") != "observed"
+            or receipt.get("assurance_stage") != "verified"
+        ):
+            findings.append(
+                Finding(
+                    relative,
+                    "historical receipt must retain its observed verification posture",
+                )
+            )
+        if isinstance(coordinate, dict) and coordinate.get("tag") != path.stem:
+            findings.append(
+                Finding(
+                    f"{relative}.release_coordinate.tag",
+                    "historical receipt filename must match its release tag",
+                )
+            )
+    return findings
+
+
 def validate_public_ready_skills() -> list[Finding]:
     """Validate the exact repository-local skill accepted for public projection."""
     findings: list[Finding] = []
@@ -1370,6 +1549,14 @@ def validate_public_ready_skills() -> list[Finding]:
                         "and authorized resolver without a gated GitHub locator",
                     )
                 )
+            if HTML_LINE_BREAK.search(content):
+                findings.append(
+                    Finding(
+                        relative,
+                        "public-ready skill uses an HTML line-break element; "
+                        "use native Markdown structure",
+                    )
+                )
 
     if public_paths != [PUBLIC_SKILL_SOURCE_PATH]:
         findings.append(
@@ -1398,6 +1585,64 @@ def validate_public_ready_skills() -> list[Finding]:
     return findings
 
 
+def validate_public_possible_skills() -> list[Finding]:
+    """Validate the complete copy-local skill workbench kept off Pages."""
+    findings: list[Finding] = []
+    skills_root = ROOT / ".agents" / "skills"
+    observed: dict[str, dict[str, str]] = {}
+    for path in sorted(skills_root.glob("*/SKILL.md")):
+        relative = path.relative_to(ROOT).as_posix()
+        try:
+            metadata, _ = parse_skill_source(path)
+        except PagesBuildError as exc:
+            findings.append(Finding(relative, str(exc)))
+            continue
+        if metadata.get("source_band") == "public_possible":
+            observed[relative] = metadata
+
+    expected_paths = set(PUBLIC_POSSIBLE_SKILL_METADATA)
+    if set(observed) != expected_paths:
+        findings.append(
+            Finding(
+                ".agents/skills",
+                "public-possible skill inventory must contain exactly "
+                f"{sorted(expected_paths)}",
+            )
+        )
+
+    for relative, expected in PUBLIC_POSSIBLE_SKILL_METADATA.items():
+        metadata = observed.get(relative)
+        if metadata is None:
+            continue
+        if any(metadata.get(key) != value for key, value in expected.items()):
+            findings.append(
+                Finding(
+                    relative,
+                    "public-possible skill metadata must preserve its copy-local "
+                    "identity and upstream source coordinates",
+                )
+            )
+
+    for orientation_path in ("README.md", "AGENTS.md"):
+        path = ROOT / orientation_path
+        try:
+            content = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            findings.append(Finding(orientation_path, str(exc)))
+            continue
+        for relative, expected in PUBLIC_POSSIBLE_SKILL_METADATA.items():
+            route = f"[`{expected['name']}`]({relative})"
+            if route not in content:
+                findings.append(
+                    Finding(
+                        orientation_path,
+                        "repository orientation must link every public-possible "
+                        "skill path",
+                    )
+                )
+    return findings
+
+
 def _validate_repository_orientation_records(
     records: dict[str, Any],
 ) -> list[Finding]:
@@ -1407,6 +1652,14 @@ def _validate_repository_orientation_records(
     first_receipt = records["first-receipt.json"]
     horizon = records["coordination-horizon.json"]
     promotion_receipt = records["promotion-receipt.json"]
+
+    if node.get("schema_release") != SCHEMA_RELEASE:
+        findings.append(
+            Finding(
+                "machine-node.json.schema_release",
+                f"root orientation must select schema release {SCHEMA_RELEASE}",
+            )
+        )
 
     if node.get("machine_node_id") != first_receipt.get("machine_node_id"):
         findings.append(
@@ -1485,18 +1738,18 @@ def _validate_repository_orientation_records(
             )
         )
     promotion_receipt_id = promotion_receipt.get("promotion_receipt_id")
-    if promotion_receipt_id != "RCP-GOVERNANCE-PROMOTION-002":
+    if promotion_receipt_id != "RCP-GOVERNANCE-PROMOTION-003":
         findings.append(
             Finding(
                 "promotion-receipt.json.promotion_receipt_id",
                 "promotion receipt must use the governed repository receipt identity",
             )
         )
-    if promotion_receipt.get("target_release") != "governance-v2.1.0":
+    if promotion_receipt.get("target_release") != "governance-v2.2.0":
         findings.append(
             Finding(
                 "promotion-receipt.json.target_release",
-                "promotion receipt must bind the canonical governance-v2.1.0 tag",
+                "promotion receipt must bind the canonical governance-v2.2.0 tag",
             )
         )
 
@@ -1521,9 +1774,12 @@ def _validate_repository_orientation_records(
             )
 
     work_items = horizon.get("work_items", [])
-    work_ids = {
-        item.get("item_id") for item in work_items if isinstance(item, dict)
+    work_items_by_id = {
+        item.get("item_id"): (index, item)
+        for index, item in enumerate(work_items)
+        if isinstance(item, dict)
     }
+    work_ids = set(work_items_by_id)
     current_ids = set(horizon.get("current_item_ids", []))
     if not current_ids.issubset(work_ids):
         findings.append(
@@ -1700,6 +1956,30 @@ def _validate_repository_orientation_records(
                     "observed release provenance requires completed promotion work",
                 )
             )
+        dependency_stack = [
+            dependency_id
+            for item in promotion_items
+            for dependency_id in item.get("dependency_ids", [])
+        ]
+        visited_dependencies: set[str] = set()
+        while dependency_stack:
+            dependency_id = dependency_stack.pop()
+            if dependency_id in visited_dependencies:
+                continue
+            visited_dependencies.add(dependency_id)
+            indexed_item = work_items_by_id.get(dependency_id)
+            if indexed_item is None:
+                continue
+            index, dependency = indexed_item
+            if dependency.get("state") != "complete":
+                findings.append(
+                    Finding(
+                        f"coordination-horizon.json.work_items[{index}].state",
+                        "observed release provenance requires a complete "
+                        "promotion dependency closure",
+                    )
+                )
+            dependency_stack.extend(dependency.get("dependency_ids", []))
     return findings
 
 
@@ -2481,7 +2761,9 @@ def main(argv: list[str] | None = None) -> int:
             *validate_schema_catalog(),
             *validate_examples(),
             *validate_repository_orientation(),
+            *validate_historical_release_receipts(),
             *validate_public_ready_skills(),
+            *validate_public_possible_skills(),
             *validate_rulesets(),
             *validate_workflows(),
             *validate_coordination_vocabulary(),

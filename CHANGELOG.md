@@ -6,6 +6,32 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+## [2.2.0] — 2026-09-04
+
+- Prepared the Governance 2.2.0 candidate with a fresh promotion receipt,
+  release horizon, migration guidance, and current-release metadata while the
+  accepted Governance 2.1.0 coordinate remains available as a historical
+  release receipt.
+- Advanced the public schema-release-lineage guide to 0.1.2, expressed its
+  representative scenario as ordinary Markdown, and added a public-boundary
+  check that keeps HTML line-break elements out of published skill sources.
+- Added a candidate promotion-receipt projection family: deterministic YAML
+  1.2 semantic-twin generation, bounded GraphQL SDL, exact extracted
+  constraint-tuple coverage, focused mutation tests, and additive Pages
+  manifest records with version-bearing retrieval identities that keep
+  accepted JSON Schema authority visible.
+- Added hash-locked YAML and GraphQL parser requirements to the pull-request,
+  manual, and full reusable Governance proofs, with monthly grouped Python
+  dependency updates and matching branch grammar. The downstream JSON-only
+  contract workflow remains dependency-free.
+- Added public-possible, repository-local guides for Governance re-entry,
+  broader source-authority mapping, and contextual jargon scanning. Root
+  orientation now routes to the complete local workbench while Governance
+  Pages retains its single reviewed public-ready schema-release guide.
+- Advanced the public schema-release-lineage guide to 0.1.1 and described its
+  accepted release and promotion receipt without embedding an earlier package
+  version in the reusable route.
+
 ## [2.1.0] — 2026-09-01
 
 - Added a root collaboration guide, an ordinary-language README entry path,

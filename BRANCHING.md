@@ -81,11 +81,13 @@ authority.
 
 ## Local proof and bounded hosted maintenance
 
-The dependency-free validator and regression suite remain the complete
-source-owned proof path. The repository has a monthly **100–300 runner-minute**
-allocation for one small pull-request proof. Pull requests targeting `develop`
-or `main` run the governance aggregate, language and secret-shape checks, and
-repository regression suite on Python 3.13. One standard runner, read-only
+The dependency-free JSON validator remains available to downstream consumers.
+The complete source-owned proof installs the two hash-locked projection parsers
+before it runs the repository regression suite. The repository has a monthly
+**100–300 runner-minute** allocation for one small pull-request proof. Pull
+requests targeting `develop` or `main` run the governance aggregate, language
+and secret-shape checks, and repository regression suite on Python 3.13. One
+standard runner, read-only
 permissions, cancellation of superseded runs, and a ten-minute ceiling keep
 that observation bounded.
 
@@ -96,7 +98,8 @@ wider evidence is material. The reusable workflows remain available to
 reviewed callers through their bounded inputs.
 
 Monthly dependency updates live in `.github/dependabot.yml`, target `develop`,
-group minor and patch updates, and keep at most two update pull requests open.
+group minor and patch updates, and keep at most two update pull requests open
+per ecosystem.
 Dependency pull requests use a distinct, bounded coordinate contract.
 Admission requires three aligned facts:
 
@@ -105,12 +108,12 @@ Admission requires three aligned facts:
 - the pull-request author is the corresponding GitHub bot identity;
 - the target is `main` or `develop`.
 
-The active configuration names GitHub Actions, so its admitted branch grammar
-begins with `dependabot/github_actions/`. A future package ecosystem extends
-the configuration, grammar, and regression fixtures in the same reviewed
-change. Renovate uses its default `renovate/` branch prefix and hosted-app bot
-identity. A self-hosted Renovate caller adds its exact app identity through a
-reviewed policy change.
+The active configuration names GitHub Actions and Python packages, so its
+admitted branch grammars begin with `dependabot/github_actions/` and
+`dependabot/pip/`. A future package ecosystem extends the configuration,
+grammar, and regression fixtures in the same reviewed change. Renovate uses its
+default `renovate/` branch prefix and hosted-app bot identity. A self-hosted
+Renovate caller adds its exact app identity through a reviewed policy change.
 
 An activated security update may target the default branch. Its standing proof
 is local validation plus human review, immutable action-reference inspection,

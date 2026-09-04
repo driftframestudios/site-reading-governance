@@ -110,6 +110,10 @@ class GovernancePagesTests(unittest.TestCase):
             source = temporary_root / "source"
             source.mkdir()
             shutil.copytree(ROOT / "schemas", source / "schemas")
+            shutil.copytree(
+                ROOT / "schema-projections",
+                source / "schema-projections",
+            )
             shutil.copytree(ROOT / ".agents", source / ".agents")
             shutil.copy2(ROOT / "GOVERNANCE.md", source / "GOVERNANCE.md")
             run_git(source, "init", "--initial-branch=develop")
@@ -341,6 +345,7 @@ class GovernancePagesTests(unittest.TestCase):
                 manifest["source"]["sourceRevision"],
             )
             self.assertEqual(["manifest.json"], manifest["inventory"]["excludes"])
+            self.assertEqual("1.1.0", manifest["manifestVersion"])
             declared = {item["path"] for item in manifest["inventory"]["files"]}
             actual = {
                 path.relative_to(output).as_posix()
@@ -356,6 +361,72 @@ class GovernancePagesTests(unittest.TestCase):
                     FIXTURE_PROOF,
                     allow_fixture_standing=True,
                 ),
+            )
+
+    def test_candidate_projection_family_keeps_json_authority_visible(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output, manifest = self.build_fixture(Path(temporary))
+            self.assertEqual(1, len(manifest["schemaFamilies"]))
+            family = manifest["schemaFamilies"][0]
+            self.assertEqual("promotion-receipt", family["family"])
+            self.assertEqual("candidate", family["projectionStatus"])
+            self.assertEqual(
+                pages.SCHEMA_ID_PREFIX
+                + "projections/promotion-receipt/v1.0.0/",
+                family["familyIdentifier"],
+            )
+            self.assertEqual(
+                {
+                    "format": "json-schema-2020-12",
+                    "identifier": pages.SCHEMA_ID_PREFIX
+                    + "promotion-receipt.schema.json",
+                    "outputPath": "schemas/v2.0/promotion-receipt.schema.json",
+                    "sourcePath": "schemas/promotion-receipt.schema.json",
+                },
+                family["validationAuthority"],
+            )
+            representations = {
+                record["format"]: record for record in family["representations"]
+            }
+            self.assertEqual(
+                {
+                    "constraint-coverage-ledger",
+                    "graphql-sdl",
+                    "yaml-1.2",
+                },
+                set(representations),
+            )
+            self.assertEqual(
+                "text/plain; charset=utf-8",
+                representations["graphql-sdl"]["mediaType"],
+            )
+            self.assertEqual(
+                "application/yaml",
+                representations["yaml-1.2"]["mediaType"],
+            )
+            for record in representations.values():
+                self.assertTrue(
+                    record["outputPath"].startswith(
+                        "schemas/v2.0/projections/promotion-receipt/v1.0.0/"
+                    )
+                )
+                self.assertEqual(
+                    pages.SCHEMA_ID_PREFIX
+                    + record["outputPath"].removeprefix("schemas/v2.0/"),
+                    record["identifier"],
+                )
+                self.assertEqual(
+                    record["bytes"],
+                    len((output / record["outputPath"]).read_bytes()),
+                )
+                self.assertIn(f"/{'f' * 40}/", record["sourceUrl"])
+
+            accepted_names = sorted(
+                path.name for path in (ROOT / "schemas").glob("*.schema.json")
+            )
+            self.assertEqual(
+                accepted_names,
+                sorted(Path(item["outputPath"]).name for item in manifest["schemas"]),
             )
 
     def test_every_schema_is_an_exact_source_copy_with_a_full_sha_link(self) -> None:
@@ -415,6 +486,27 @@ class GovernancePagesTests(unittest.TestCase):
             page = (output / pages.PUBLIC_SKILL_PAGE_PATH).read_text(encoding="utf-8")
             self.assertIn('href="SKILL.md"', page)
             self.assertIn(pages.PUBLIC_SKILL_METADATA["lineage_key"], page)
+            public_possible = {
+                path.parent.name
+                for path in (ROOT / ".agents" / "skills").glob("*/SKILL.md")
+                if pages.parse_skill_source(path)[0].get("source_band")
+                == "public_possible"
+            }
+            self.assertEqual(
+                {
+                    "contextual-jargon-scan",
+                    "repository-reentry",
+                    "source-authority-mapping",
+                },
+                public_possible,
+            )
+            self.assertTrue(
+                public_possible.isdisjoint(
+                    {record["name"] for record in manifest["skills"]}
+                )
+            )
+            for skill_name in public_possible:
+                self.assertFalse((output / "skills" / skill_name).exists())
 
     def test_projected_skill_has_no_unpublished_relative_markdown_links(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -423,6 +515,41 @@ class GovernancePagesTests(unittest.TestCase):
                 encoding="utf-8"
             )
             self.assertEqual((), pages.markdown_relative_targets(content))
+
+    def test_public_ready_skill_refuses_html_line_breaks(self) -> None:
+        for marker in (
+            "<br>",
+            "<BR>",
+            "<br/>",
+            "<br />",
+            '<br class="scenario-break">',
+            '<br data-kind="scenario"/>',
+            '<br\nclass="scenario-break">',
+        ):
+            with self.subTest(marker=marker):
+                with tempfile.TemporaryDirectory() as temporary:
+                    source = Path(temporary) / "source"
+                    shutil.copytree(ROOT / ".agents", source / ".agents")
+                    skill = source / pages.PUBLIC_SKILL_SOURCE_PATH
+                    skill.write_text(
+                        skill.read_text(encoding="utf-8") + f"\n{marker}\n",
+                        encoding="utf-8",
+                    )
+                    proof = pages.load_source_proof(
+                        FIXTURE_PROOF,
+                        source,
+                        allow_fixture_standing=True,
+                    )
+                    with self.assertRaisesRegex(
+                        pages.PagesBuildError,
+                        "HTML line-break element",
+                    ):
+                        pages.collect_public_skills(source, proof)
+
+    def test_html_line_break_guard_preserves_nearby_tag_names(self) -> None:
+        for marker in ("<break>", "<bracket>", "<broom>"):
+            with self.subTest(marker=marker):
+                self.assertIsNone(pages.HTML_LINE_BREAK.search(marker))
 
     def test_public_ready_skill_inventory_is_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -514,6 +641,25 @@ class GovernancePagesTests(unittest.TestCase):
             skill_path.write_bytes(skill_path.read_bytes() + b"\n")
             refresh_inventory(output)
             with self.assertRaisesRegex(pages.PagesBuildError, "published skill bytes"):
+                pages.validate_site(
+                    output,
+                    ROOT,
+                    FIXTURE_PROOF,
+                    allow_fixture_standing=True,
+                )
+
+    def test_projection_byte_mutation_fails_after_inventory_is_refreshed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output, manifest = self.build_fixture(Path(temporary))
+            projection_path = output / manifest["schemaFamilies"][0][
+                "representations"
+            ][0]["outputPath"]
+            projection_path.write_bytes(projection_path.read_bytes() + b"\n")
+            refresh_inventory(output)
+            with self.assertRaisesRegex(
+                pages.PagesBuildError,
+                "schema projection bytes differ",
+            ):
                 pages.validate_site(
                     output,
                     ROOT,

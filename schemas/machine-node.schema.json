@@ -51,7 +51,10 @@
     },
     "schema_release": {
       "type": "string",
-      "const": "2.1.0"
+      "enum": [
+        "2.1.0",
+        "2.2.0"
+      ]
     },
     "repository_role": {
       "type": "string",

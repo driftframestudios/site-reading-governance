@@ -27,6 +27,33 @@ jobs:
         with:
           python-version: "3.13"
           cache: ""
+      - name: Install projection proof dependencies
+        shell: bash
+        env:
+          PACKAGE_PATH: ${{ inputs.package_path }}
+        run: |
+          if [[ ! "$PACKAGE_PATH" =~ ^(\.|[A-Za-z0-9][A-Za-z0-9._/-]*)$ ]]; then
+            echo "Package path is outside the repository-relative grammar."
+            exit 2
+          fi
+          if [[ "$PACKAGE_PATH" != "." && (
+            "/$PACKAGE_PATH/" == *"/../"* ||
+            "/$PACKAGE_PATH/" == *"/./"* ||
+            "/$PACKAGE_PATH/" == *"//"*
+          ) ]]; then
+            echo "Package path contains a non-canonical segment."
+            exit 2
+          fi
+          package_root="$(realpath -m -- "$GITHUB_WORKSPACE/$PACKAGE_PATH")"
+          case "$package_root/" in
+            "$GITHUB_WORKSPACE/"*) ;;
+            *)
+              echo "Package path resolves outside the checked-out repository."
+              exit 2
+              ;;
+          esac
+          python3 -m pip install --disable-pip-version-check --require-hashes \
+            -r "$package_root/requirements-projections.txt"
       - name: Validate bounded governance package
         shell: bash
         env:
@@ -54,6 +81,7 @@ jobs:
           esac
           cd -- "$package_root"
           python3 tools/validate_governance.py
+          python3 tools/schema_projections.py
           python3 tools/check_language.py
           python3 tools/scan_secret_shapes.py
           python3 -m unittest discover -s tests -v

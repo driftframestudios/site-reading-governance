@@ -4,8 +4,9 @@
 
 Control Plane Profile v0.3 translates the Enterprise Human-AI Practitioner
 Registry into reusable governance contracts for enterprise implementation,
-simulation, evidence, and collaboration. Schema release `2.1.0` is the
-machine-readable implementation of this profile.
+simulation, evidence, and collaboration. Accepted schema release `2.1.0` and
+candidate `2.2.0` are machine-readable implementations of this profile; 2.2.0
+adds the promotion-receipt projection family.
 
 The profile joins five concerns that are frequently documented in isolation:
 
@@ -170,7 +171,8 @@ rather than becoming an unqualified confidence score.
 
 ## Adoption sequence
 
-1. Pin governance schema release `2.1.0` and Control Plane Profile `0.3.0`.
+1. Pin the accepted Governance 2.1.0 coordinate during review, then select
+   Governance 2.2.0 and Control Plane Profile `0.3.0` after release observation.
 2. Add a repository-specific Machine Node and first receipt.
 3. Create a Coordination Horizon for the active tranche.
 4. Register callers and service-owned operations.

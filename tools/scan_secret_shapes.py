@@ -16,6 +16,7 @@ TEXT_SUFFIXES = {
     ".conf",
     ".env",
     ".css",
+    ".graphql",
     ".html",
     ".ini",
     ".json",

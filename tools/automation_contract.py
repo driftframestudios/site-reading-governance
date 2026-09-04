@@ -300,10 +300,16 @@ PULL_REQUEST_CONTRACT = PullRequestContract(
     step_names=(
         "Check out the proposed source",
         "Select Python",
+        "Install projection proof dependencies",
         "Validate repository-owned governance",
+    ),
+    install_command=(
+        "python3 -m pip install --disable-pip-version-check --require-hashes "
+        "-r requirements-projections.txt"
     ),
     validation_commands=(
         "python3 tools/validate_governance.py",
+        "python3 tools/schema_projections.py",
         "python3 tools/check_language.py",
         "python3 tools/scan_secret_shapes.py",
         "python3 -m unittest discover -s tests -v",
@@ -325,7 +331,20 @@ DEPENDABOT_CONTRACT = {
                     "update-types": ["minor", "patch"],
                 }
             },
-        }
+        },
+        {
+            "package-ecosystem": "pip",
+            "directory": "/",
+            "target-branch": "develop",
+            "schedule": {"interval": "monthly"},
+            "open-pull-requests-limit": 2,
+            "groups": {
+                "pip-minor-patch": {
+                    "patterns": ["*"],
+                    "update-types": ["minor", "patch"],
+                }
+            },
+        },
     ],
 }
 
@@ -529,7 +548,7 @@ def validate_repository_automation(
 
     if dependabot is not None and dependabot != DEPENDABOT_CONTRACT:
         findings.append(
-            "Dependabot must contain exactly the declared monthly develop update record"
+            "Dependabot must contain exactly the declared monthly develop update records"
         )
     if not findings:
         assert isinstance(workflow, dict)

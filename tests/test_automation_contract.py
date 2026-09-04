@@ -65,11 +65,17 @@ class AutomationContractTests(unittest.TestCase):
         self.assertEqual(
             (
                 "python3 tools/validate_governance.py",
+                "python3 tools/schema_projections.py",
                 "python3 tools/check_language.py",
                 "python3 tools/scan_secret_shapes.py",
                 "python3 -m unittest discover -s tests -v",
             ),
             automation_contract.PULL_REQUEST_CONTRACT.validation_commands,
+        )
+        self.assertEqual(
+            "python3 -m pip install --disable-pip-version-check --require-hashes "
+            "-r requirements-projections.txt",
+            automation_contract.PULL_REQUEST_CONTRACT.install_command,
         )
         codeowners = (ROOT / ".github" / "CODEOWNERS").read_text(
             encoding="utf-8"
@@ -288,6 +294,7 @@ class AutomationContractTests(unittest.TestCase):
         step_names = (
             "Check out the proposed source",
             "Select Python",
+            "Install projection proof dependencies",
             "Validate repository-owned governance",
         )
         for step_name in step_names:
@@ -410,7 +417,7 @@ class AutomationContractTests(unittest.TestCase):
             with self.subTest():
                 self.assert_rejected(
                     self.findings(dependabot=dependabot),
-                    "exactly the declared monthly develop update record",
+                    "exactly the declared monthly develop update records",
                 )
 
 

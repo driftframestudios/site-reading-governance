@@ -140,6 +140,14 @@ class BranchFlowAutomationTests(unittest.TestCase):
             head="dependabot/pip/setuptools-80.0.0",
             author="dependabot[bot]",
         )
+        self.assertEqual(0, result)
+        self.assertIn("Dependabot branch", output)
+
+        result, output = self.invoke(
+            base="main",
+            head="dependabot/npm/typescript-6.0.0",
+            author="dependabot[bot]",
+        )
         self.assertEqual(1, result)
         self.assertIn("outside the branch naming contract", output)
 
@@ -163,6 +171,7 @@ class BranchFlowAutomationTests(unittest.TestCase):
         self.assertIn("interval: monthly", config)
         self.assertIn("open-pull-requests-limit: 2", config)
         self.assertIn("github-actions-minor-patch:", config)
+        self.assertIn("pip-minor-patch:", config)
         self.assertIn("update-types:\n          - minor\n          - patch", config)
         self.assertNotIn("pull-request-branch-name:", config)
 
@@ -227,7 +236,28 @@ class BranchFlowAutomationTests(unittest.TestCase):
         self.assertNotIn("strategy:", pull_request)
         self.assertNotIn("matrix:", pull_request)
         self.assertIn("python3 tools/validate_governance.py", pull_request)
+        self.assertIn("Install projection proof dependencies", pull_request)
+        self.assertIn("--require-hashes -r requirements-projections.txt", pull_request)
+        self.assertIn("python3 tools/schema_projections.py", pull_request)
         self.assertIn("python3 -m unittest discover -s tests -v", pull_request)
+
+        self.assertIn(
+            "Install projection proof dependencies",
+            workflows["validate.yml"],
+        )
+        self.assertIn(
+            "python3 tools/schema_projections.py",
+            workflows["validate.yml"],
+        )
+        full_reusable = workflows["reusable-governance-validation.yml"]
+        self.assertIn("Install projection proof dependencies", full_reusable)
+        self.assertIn("requirements-projections.txt", full_reusable)
+        self.assertIn("python3 tools/schema_projections.py", full_reusable)
+
+        json_only_reusable = workflows["reusable-contract-validation.yml"]
+        self.assertNotIn("requirements-projections.txt", json_only_reusable)
+        self.assertNotIn("schema_projections.py", json_only_reusable)
+        self.assertNotIn("pip install", json_only_reusable)
 
         for name in (
             "reusable-governance-validation.yml",

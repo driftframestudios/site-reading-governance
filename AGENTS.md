@@ -40,6 +40,27 @@ coordinate and byte-identical Pages copy. The map keeps schema meaning, release
 acceptance, projection evidence, hosted delivery, and downstream use as
 distinct facts.
 
+Use
+[`repository-reentry`](.agents/skills/repository-reentry/SKILL.md)
+when resumed work needs current branch, release, orientation, and collaboration
+state reconstructed before a change.
+
+Use
+[`source-authority-mapping`](.agents/skills/source-authority-mapping/SKILL.md)
+when a claim, language rule, schema family, example, release record, or Pages
+projection crosses several meaning, validation, acceptance, delivery, or
+downstream-use roles. The focused schema-release skill remains the smaller
+route when one schema and its exact retrieval copy are the whole decision.
+
+Use
+[`contextual-jargon-scan`](.agents/skills/contextual-jargon-scan/SKILL.md)
+in stride when public or cross-repository prose may assume local context.
+Retain exact schema, release, Git, and regulatory terms; define useful compact
+language and revise shorthand whose object or consequence remains unclear.
+
+These three skills remain public-possible while natural use tests their local
+fit. Governance Pages continues to project only reviewed public-ready skills.
+
 ## Use the accepted branch route
 
 - `main` carries reviewed governance releases; `develop` integrates the next
@@ -70,10 +91,12 @@ executable policy and exact reviewed corpus live in [`language-policy/`](languag
 
 ## Validate the material behavior
 
-The complete source-owned proof uses Python 3.11 or newer and the standard
-library:
+The complete source-owned proof uses Python 3.11 or newer. Install the exact
+projection parser set before running it:
 
 ```sh
+python3 -m pip install --disable-pip-version-check --require-hashes \
+  -r requirements-projections.txt
 make check
 ```
 

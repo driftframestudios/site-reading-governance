@@ -57,7 +57,7 @@ def release_observation(
 ) -> dict[str, object]:
     """Build one schema-valid observation from real Git object identifiers."""
     receipt = json.loads((ROOT / "promotion-receipt.json").read_text(encoding="utf-8"))
-    tag = "governance-v2.1.0"
+    tag = "governance-v2.2.0"
     tag_ref = f"refs/tags/{tag}"
     receipt["promotion_state"] = "release_observed"
     receipt["evidence_mode"] = "observed"
@@ -74,12 +74,12 @@ def release_observation(
         "archive_format": "git-tar",
         "archive_digest": archive_digest,
         "promoted_at": "2026-09-01T16:00:00Z",
-        "local_proof_receipt": "governed://local/governance-proof/2.1.0",
+        "local_proof_receipt": "governed://local/governance-proof/2.2.0",
         "hosted_check_contexts": [],
         "hosted_automation_receipt": None,
-        "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
-        "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
-        "tag_signature_receipt": "governed://git/tag-signature/governance-2-0-1",
+        "ruleset_receipt": "governed://github/rulesets/governance-2-2-0",
+        "codeowner_resolution": "governed://github/codeowners/governance-2-2-0",
+        "tag_signature_receipt": "governed://git/tag-signature/governance-2-2-0",
     }
     receipt["metadata"]["updated_at"] = "2026-09-01T16:05:00Z"
     return receipt
@@ -112,7 +112,7 @@ def initialize_release_repository(
             repository,
             "tag",
             "--no-sign",
-            "governance-v2.1.0",
+            "governance-v2.2.0",
             accepted_commit,
         )
     else:
@@ -121,9 +121,9 @@ def initialize_release_repository(
             "tag",
             "--annotate",
             "--no-sign",
-            "governance-v2.1.0",
+            "governance-v2.2.0",
             "--message",
-            "Governance 2.1.0",
+            "Governance 2.2.0",
             accepted_commit,
         )
     archive = run_git(repository, "archive", "--format=tar", accepted_commit)
@@ -202,11 +202,79 @@ class GovernancePackageTests(unittest.TestCase):
     def test_root_orientation_records_form_one_coherent_control_surface(self) -> None:
         self.assertEqual([], validation.validate_repository_orientation())
 
+    def test_historical_release_receipt_remains_separate_from_candidate(self) -> None:
+        historical = json.loads(
+            (
+                ROOT
+                / "release-receipts"
+                / "governance-v2.1.0.json"
+            ).read_text(encoding="utf-8")
+        )
+        candidate = json.loads(
+            (ROOT / "promotion-receipt.json").read_text(encoding="utf-8")
+        )
+
+        self.assertEqual([], validation.validate_historical_release_receipts())
+        self.assertEqual("RCP-GOVERNANCE-PROMOTION-002", historical["promotion_receipt_id"])
+        self.assertEqual("release_observed", historical["promotion_state"])
+        self.assertEqual("governance-v2.1.0", historical["release_coordinate"]["tag"])
+        self.assertEqual(
+            "8469c2a6b2c7f4445523cee262b961ffe3d2523b",
+            historical["release_coordinate"]["commit_oid"],
+        )
+        self.assertEqual("RCP-GOVERNANCE-PROMOTION-003", candidate["promotion_receipt_id"])
+        self.assertEqual("candidate_ready", candidate["promotion_state"])
+        self.assertIsNone(candidate["release_coordinate"])
+
+    def test_historical_release_receipt_rejects_whitespace_byte_drift(self) -> None:
+        source = (
+            ROOT
+            / "release-receipts"
+            / "governance-v2.1.0.json"
+        ).read_bytes()
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            receipt_directory = Path(temporary_directory)
+            (receipt_directory / "governance-v2.1.0.json").write_bytes(
+                source + b"\n"
+            )
+            with patch.object(
+                validation,
+                "RELEASE_RECEIPT_DIR",
+                receipt_directory,
+            ):
+                findings = validation.validate_historical_release_receipts()
+
+        self.assertTrue(
+            any("whole-file SHA-256 identity" in finding.message for finding in findings),
+            findings,
+        )
+
     def test_candidate_provenance_requires_a_settling_promotion_item(self) -> None:
         records = {
             name: json.loads((ROOT / name).read_text(encoding="utf-8"))
             for name in validation.ROOT_ORIENTATION_SCHEMAS
         }
+        node = records["machine-node.json"]
+        first_receipt = records["first-receipt.json"]
+        promotion = records["promotion-receipt.json"]
+        horizon = records["coordination-horizon.json"]
+        receipt_id = promotion["promotion_receipt_id"]
+
+        node["lifecycle_state"] = "settling"
+        node["current_provenance"] = {
+            "release": "candidate-governance-v2.2.0",
+            "commit": "0" * 40,
+            "digest": "sha256:" + ("0" * 64),
+        }
+        node["open_receipts"] = [receipt_id]
+        first_receipt["open_receipts"] = [receipt_id]
+        promotion["promotion_state"] = "candidate_ready"
+        promotion["evidence_mode"] = "planned"
+        promotion["assurance_stage"] = "specified"
+        promotion["release_coordinate"] = None
+        promotion_item_id = "WORK-GOVERNANCE-PROMOTION-003"
+        if promotion_item_id not in horizon["current_item_ids"]:
+            horizon["current_item_ids"].append(promotion_item_id)
         for item in records["coordination-horizon.json"]["work_items"]:
             if item["item_id"] in records["coordination-horizon.json"][
                 "current_item_ids"
@@ -232,7 +300,7 @@ class GovernancePackageTests(unittest.TestCase):
 
         node["lifecycle_state"] = "active"
         node["current_provenance"] = {
-            "release": "governance-v2.1.0",
+            "release": "governance-v2.2.0",
             "commit": commit,
             "digest": digest,
         }
@@ -243,22 +311,28 @@ class GovernancePackageTests(unittest.TestCase):
         promotion["assurance_stage"] = "verified"
         promotion["release_coordinate"] = {
             "git_object_format": "sha1",
-            "tag": "governance-v2.1.0",
+            "tag": "governance-v2.2.0",
             "tag_object_oid": "c" * 40,
             "commit_oid": commit,
             "archive_format": "git-tar",
             "archive_digest": digest,
             "promoted_at": "2026-07-28T22:00:00Z",
-            "local_proof_receipt": "governed://local/governance-proof/2.1.0",
+            "local_proof_receipt": "governed://local/governance-proof/2.2.0",
             "hosted_check_contexts": [],
             "hosted_automation_receipt": None,
-            "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
-            "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
-            "tag_signature_receipt": "governed://git/tag-signature/governance-2-0-1",
+            "ruleset_receipt": "governed://github/rulesets/governance-2-2-0",
+            "codeowner_resolution": "governed://github/codeowners/governance-2-2-0",
+            "tag_signature_receipt": "governed://git/tag-signature/governance-2-2-0",
         }
-        for item in horizon["work_items"]:
-            if "promotion" in item["horizon_label"].lower():
-                item["state"] = "complete"
+        items_by_id = {
+            item["item_id"]: item for item in horizon["work_items"]
+        }
+        for item_id in (
+            "WORK-MULTIFORMAT-PROJECTION-003",
+            "WORK-DOWNSTREAM-REHEARSAL-003",
+            "WORK-GOVERNANCE-PROMOTION-003",
+        ):
+            items_by_id[item_id]["state"] = "complete"
 
         self.assertEqual(
             [],
@@ -271,6 +345,22 @@ class GovernancePackageTests(unittest.TestCase):
             validation._validate_repository_orientation_records(records),
         )
 
+        items_by_id["WORK-DOWNSTREAM-REHEARSAL-003"]["state"] = "active"
+        findings = validation._validate_repository_orientation_records(records)
+        self.assertTrue(
+            any("promotion dependency closure" in finding.message for finding in findings),
+            findings,
+        )
+        items_by_id["WORK-DOWNSTREAM-REHEARSAL-003"]["state"] = "complete"
+
+        items_by_id["WORK-MULTIFORMAT-PROJECTION-003"]["state"] = "active"
+        findings = validation._validate_repository_orientation_records(records)
+        self.assertTrue(
+            any("promotion dependency closure" in finding.message for finding in findings),
+            findings,
+        )
+        items_by_id["WORK-MULTIFORMAT-PROJECTION-003"]["state"] = "complete"
+
         promotion["release_coordinate"]["tag"] = "governance-v2.0.2"
         node["current_provenance"]["release"] = "governance-v2.0.2"
         findings = validation._validate_repository_orientation_records(records)
@@ -278,8 +368,8 @@ class GovernancePackageTests(unittest.TestCase):
             any("receipt target release" in finding.message for finding in findings),
             findings,
         )
-        promotion["release_coordinate"]["tag"] = "governance-v2.1.0"
-        node["current_provenance"]["release"] = "governance-v2.1.0"
+        promotion["release_coordinate"]["tag"] = "governance-v2.2.0"
+        node["current_provenance"]["release"] = "governance-v2.2.0"
 
         promotion["release_coordinate"]["hosted_check_contexts"] = [
             "governance-validation"
@@ -306,18 +396,18 @@ class GovernancePackageTests(unittest.TestCase):
         promotion["assurance_stage"] = "verified"
         promotion["release_coordinate"] = {
             "git_object_format": "sha1",
-            "tag": "governance-v2.1.0",
+            "tag": "governance-v2.2.0",
             "tag_object_oid": "c" * 40,
             "commit_oid": "a" * 40,
             "archive_format": "git-tar",
             "archive_digest": "sha256:" + ("b" * 64),
             "promoted_at": "2026-07-28T22:00:00Z",
-            "local_proof_receipt": "governed://local/governance-proof/2.1.0",
+            "local_proof_receipt": "governed://local/governance-proof/2.2.0",
             "hosted_check_contexts": ["governance-validation"],
             "hosted_automation_receipt": None,
-            "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
-            "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
-            "tag_signature_receipt": "governed://git/tag-signature/governance-2-0-1",
+            "ruleset_receipt": "governed://github/rulesets/governance-2-2-0",
+            "codeowner_resolution": "governed://github/codeowners/governance-2-2-0",
+            "tag_signature_receipt": "governed://git/tag-signature/governance-2-2-0",
         }
         schema = validation.SchemaValidator(
             ROOT / "schemas" / "promotion-receipt.schema.json"
@@ -341,18 +431,18 @@ class GovernancePackageTests(unittest.TestCase):
         )
         promotion["release_coordinate"] = {
             "git_object_format": "sha1",
-            "tag": "governance-v2.1.0",
+            "tag": "governance-v2.2.0",
             "tag_object_oid": "c" * 40,
             "commit_oid": "a" * 40,
             "archive_format": "git-tar",
             "archive_digest": "sha256:" + ("b" * 64),
             "promoted_at": "2026-07-28T22:00:00Z",
-            "local_proof_receipt": "governed://local/governance-proof/2.1.0",
+            "local_proof_receipt": "governed://local/governance-proof/2.2.0",
             "hosted_check_contexts": [],
             "hosted_automation_receipt": None,
-            "ruleset_receipt": "governed://github/rulesets/governance-2-0-1",
-            "codeowner_resolution": "governed://github/codeowners/governance-2-0-1",
-            "tag_signature_receipt": "governed://git/tag-signature/governance-2-0-1",
+            "ruleset_receipt": "governed://github/rulesets/governance-2-2-0",
+            "codeowner_resolution": "governed://github/codeowners/governance-2-2-0",
+            "tag_signature_receipt": "governed://git/tag-signature/governance-2-2-0",
         }
         findings = validation.SchemaValidator(
             ROOT / "schemas" / "promotion-receipt.schema.json"
@@ -553,18 +643,32 @@ class GovernancePackageTests(unittest.TestCase):
             )
 
     def test_root_contract_digest_binds_material_contract_file(self) -> None:
-        records = {
-            name: json.loads((ROOT / name).read_text(encoding="utf-8"))
-            for name in validation.ROOT_ORIENTATION_SCHEMAS
-        }
-        records["machine-node.json"]["contracts"][0]["digest"] = (
-            "sha256:" + ("f" * 64)
+        cases = (
+            (0, "schemas/simulated-receipt-closure.schema.json"),
+            (1, "tools/check_branch_flow.py"),
         )
-        findings = validation._validate_repository_orientation_records(records)
-        self.assertTrue(
-            any("must bind" in finding.message for finding in findings),
-            findings,
-        )
+        for index, expected_material in cases:
+            with self.subTest(contract=index):
+                records = {
+                    name: json.loads((ROOT / name).read_text(encoding="utf-8"))
+                    for name in validation.ROOT_ORIENTATION_SCHEMAS
+                }
+                records["machine-node.json"]["contracts"][index]["digest"] = (
+                    "sha256:" + ("f" * 64)
+                )
+                records["first-receipt.json"]["contract_state"] = records[
+                    "machine-node.json"
+                ]["contracts"]
+                findings = validation._validate_repository_orientation_records(records)
+                self.assertTrue(
+                    any(
+                        finding.path
+                        == f"machine-node.json.contracts[{index}].digest"
+                        and expected_material in finding.message
+                        for finding in findings
+                    ),
+                    findings,
+                )
 
     def test_ruleset_exports_preserve_governed_flow(self) -> None:
         self.assertEqual([], validation.validate_rulesets())
@@ -617,6 +721,29 @@ class GovernancePackageTests(unittest.TestCase):
         )
         self.assertIn("authorized resolver", " ".join(content.split()))
         self.assertNotIn("https://github.com/", content)
+        self.assertIsNone(validation.HTML_LINE_BREAK.search(content))
+
+    def test_public_possible_skill_workbench_has_copy_local_lineage(self) -> None:
+        self.assertEqual([], validation.validate_public_possible_skills())
+        for relative, expected in validation.PUBLIC_POSSIBLE_SKILL_METADATA.items():
+            metadata, content = validation.parse_skill_source(ROOT / relative)
+            for key, value in expected.items():
+                self.assertEqual(value, metadata[key])
+            self.assertEqual(Path(relative).parent.name, metadata["name"])
+            self.assertIn("independently usable", " ".join(content.split()))
+
+    def test_public_possible_lineage_drift_is_visible(self) -> None:
+        relative = ".agents/skills/repository-reentry/SKILL.md"
+        expected = validation.PUBLIC_POSSIBLE_SKILL_METADATA[relative]
+        with patch.dict(expected, {"upstream_revision": "0" * 40}):
+            findings = validation.validate_public_possible_skills()
+        self.assertTrue(
+            any(
+                "upstream source coordinates" in finding.message
+                for finding in findings
+            ),
+            findings,
+        )
 
     def test_public_language_route_is_complete_and_locator_safe(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
@@ -708,7 +835,7 @@ class GovernancePackageTests(unittest.TestCase):
         self.assertTrue(branch_flow.check_flow("main", "release/v2.1.0"))
 
     def test_schema_release_coordinates_are_current(self) -> None:
-        self.assertEqual("2.1.0", (ROOT / "VERSION").read_text().strip())
+        self.assertEqual("2.2.0", (ROOT / "VERSION").read_text().strip())
         for path in sorted((ROOT / "schemas").glob("*.schema.json")):
             schema = json.loads(path.read_text())
             self.assertTrue(schema["$id"].startswith(validation.SCHEMA_ID_PREFIX))
@@ -721,6 +848,41 @@ class GovernancePackageTests(unittest.TestCase):
                 validation.SCHEMA_RELEASE,
                 document["metadata"]["schema_version"],
             )
+        machine_node = json.loads(
+            (ROOT / "examples" / "machine-node.json").read_text()
+        )
+        self.assertEqual(
+            validation.SCHEMA_RELEASE,
+            machine_node["schema_release"],
+        )
+
+    def test_accepted_2_1_machine_node_remains_schema_compatible(self) -> None:
+        accepted = json.loads(
+            (
+                ROOT
+                / "tests"
+                / "fixtures"
+                / "machine-node-v2.1.0.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            [],
+            validation.SchemaValidator(
+                ROOT / "schemas" / "machine-node.schema.json"
+            ).validate(accepted),
+        )
+
+    def test_root_machine_node_selects_current_schema_release(self) -> None:
+        records = {
+            name: json.loads((ROOT / name).read_text(encoding="utf-8"))
+            for name in validation.ROOT_ORIENTATION_SCHEMAS
+        }
+        records["machine-node.json"]["schema_release"] = "2.1.0"
+        findings = validation._validate_repository_orientation_records(records)
+        self.assertTrue(
+            any("root orientation must select" in finding.message for finding in findings),
+            findings,
+        )
 
     def test_feature_branch_routes_through_develop(self) -> None:
         findings = branch_flow.check_flow("main", "feature/1042-receipt-contract")
