@@ -2,7 +2,7 @@
   "horizon_id": "HORIZON-GOVERNANCE-PROMOTION-003",
   "title": "Governance 2.2.0 multiformat promotion",
   "objective": "Settle Governance 2.2.0 as a reviewable release that keeps JSON Schema validation authoritative and adds deterministic YAML and bounded GraphQL retrieval projections.",
-  "as_of": "2026-09-04T09:21:57Z",
+  "as_of": "2026-09-04T09:39:27Z",
   "current_item_ids": [
     "WORK-GOVERNANCE-PAGES-PUBLICATION-003"
   ],
@@ -68,14 +68,15 @@
       "item_id": "WORK-GOVERNANCE-PAGES-PUBLICATION-003",
       "horizon_label": "Accepted-source Pages publication",
       "sequence": 4,
-      "state": "active",
+      "state": "complete",
       "desired_state": "The public Governance Pages route serves the verified 2.2.0 artifact built from the accepted source commit.",
       "entry_evidence": [
         "The observed release coordinate exists and two canonical 43-file builds share one exact manifest identity."
       ],
       "completion_evidence": [
-        "The docs branch carries the verified accepted-source artifact without an unreviewed source difference.",
-        "The HTTPS visitor route serves the 2.2.0 manifest, schemas, projection family, and public skill from that artifact."
+        "Docs commit ddb613a1c6520318ecadd498911de7f1f995c3d5 matches the inspected accepted-source artifact exactly.",
+        "The HTTPS visitor route serves the 2.2.0 manifest, schemas, projection family, and public skill from that artifact.",
+        "The live manifest has SHA-256 487ac40bd39b9674b61fc0596972d8b971b48f7d88203f590e0106db2faf545e, and every one of its 42 listed payloads matches the inspected artifact byte for byte."
       ],
       "owner_role": "Governance publication receiver",
       "dependency_ids": [
@@ -84,14 +85,14 @@
     }
   ],
   "reentry_capsule": {
-    "current_state": "Governance 2.2.0 is accepted and its immutable release coordinate is observed; downstream adoption and Pages publication are ready for their receivers while the multiformat projection family retains candidate standing.",
+    "current_state": "Governance 2.2.0 and its byte-identical public retrieval artifact are accepted and observed; downstream adoption remains available to each receiving repository while the multiformat projection family retains candidate standing.",
     "recent_decisions": [
       "DECISION-JSON-SCHEMA-VALIDATION-AUTHORITY-001",
       "DECISION-DETERMINISTIC-YAML-TWIN-001",
       "DECISION-BOUNDED-GRAPHQL-PROJECTION-001"
     ],
-    "next_safe_action": "Publish the verified accepted-source Pages artifact and let each downstream repository adopt the 2.2.0 coordinate through its own reviewed change.",
-    "verification": "Confirm the exact tag object, accepted commit, reproducible archive digest, 2.2.0 schema conformance, candidate projection standing, and Pages manifest before use."
+    "next_safe_action": "When a downstream repository selects adoption as its next material move, pin the signed Governance 2.2.0 release and validate its representative records through that repository's own change.",
+    "verification": "Confirm the exact tag object, accepted commit, reproducible archive digest, 2.2.0 schema conformance, candidate projection standing, and live Pages manifest before use."
   },
   "retained_effects": [
     "Governance 2.2.0 is the accepted release, while the YAML and GraphQL projection family remains an explicitly bounded candidate interface.",
@@ -108,7 +109,7 @@
   "metadata": {
     "schema_version": "2.2.0",
     "created_at": "2026-09-04T08:36:56Z",
-    "updated_at": "2026-09-04T09:21:57Z",
+    "updated_at": "2026-09-04T09:39:27Z",
     "owner": {
       "actor_id": "OWNER-GOVERNANCE-HORIZON-003",
       "display_name": "Site Reading governance stewardship role",

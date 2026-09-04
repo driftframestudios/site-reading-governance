@@ -31,6 +31,10 @@ chronology and contribution credit.
 [`coordination-horizon.json`](coordination-horizon.json) records current work
 and the next evidence-bearing move.
 
+The accepted Governance 2.2.0 retrieval artifact is available at
+[fieldformlab.org](https://fieldformlab.org/). Its manifest binds every public
+payload to the accepted release source.
+
 ## Repository-local collaboration guides
 
 Four self-contained guides support work when this is the only suite repository
