@@ -91,10 +91,12 @@ executable policy and exact reviewed corpus live in [`language-policy/`](languag
 
 ## Validate the material behavior
 
-The complete source-owned proof uses Python 3.11 or newer and the standard
-library:
+The complete source-owned proof uses Python 3.11 or newer. Install the exact
+projection parser set before running it:
 
 ```sh
+python3 -m pip install --disable-pip-version-check --require-hashes \
+  -r requirements-projections.txt
 make check
 ```
 

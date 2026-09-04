@@ -5,6 +5,8 @@
 * @driftframestudios
 
 /schemas/ @driftframestudios
+/schema-projections/ @driftframestudios
+/requirements-projections.txt @driftframestudios
 /rulesets/ @driftframestudios
 /AUTHORS @driftframestudios
 /AGENTS.md @driftframestudios
@@ -20,12 +22,14 @@
 /tools/language_policy_core.py @driftframestudios
 /tools/validate_governance.py @driftframestudios
 /tools/build_governance_pages.py @driftframestudios
+/tools/schema_projections.py @driftframestudios
 /language-policy/ @driftframestudios
 /language-policy/manifest.json @driftframestudios
 /schemas/language-control.schema.json @driftframestudios
 /tests/test_check_branch_flow.py @driftframestudios
 /tests/test_governance.py @driftframestudios
 /tests/test_governance_pages.py @driftframestudios
+/tests/test_schema_projections.py @driftframestudios
 /tests/test_language_assurance.py @driftframestudios
 /machine-node.json @driftframestudios
 /first-receipt.json @driftframestudios

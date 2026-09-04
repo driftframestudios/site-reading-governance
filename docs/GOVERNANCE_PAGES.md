@@ -5,11 +5,12 @@ accepted Governance 2.1.0 JSON Schemas. A visitor can find the right contract,
 read its authority boundary in ordinary language, download the accepted bytes,
 and recover the exact full-SHA source from every schema row.
 
-The builder uses the Python standard library. It writes a new local artifact
-directory and leaves repository refs, GitHub Pages settings, hosted branches,
-custom-domain settings, and DNS at their current coordinates. A publication
-receiver can inspect the artifact first, then select those hosted settings as a
-separate human action.
+The builder uses the standard library for artifact assembly and the exact
+hash-locked YAML and GraphQL parsers in `requirements-projections.txt` for the
+candidate projection proof. It writes a new local artifact directory and leaves
+repository refs, GitHub Pages settings, hosted branches, custom-domain settings,
+and DNS at their current coordinates. A publication receiver can inspect the
+artifact first, then select those hosted settings as a separate human action.
 
 ## Source proof
 
@@ -55,6 +56,9 @@ Use a clean worktree at the accepted source revision, a proof stored outside
 that worktree, and a new output path outside the worktree:
 
 ```bash
+python3 -m pip install --disable-pip-version-check --require-hashes \
+  -r requirements-projections.txt
+
 python3 tools/build_governance_pages.py build \
   --source-root /path/to/accepted-governance-source \
   --source-proof /path/to/governance-2.1.0-source-proof.json \
@@ -98,6 +102,9 @@ The generated directory contains:
 - `index.html`, `guidance/index.html`, two progressively deeper schema
   discovery pages, and two collaboration-guide pages;
 - `schemas/v2.0/*.schema.json`, copied byte for byte from the accepted source;
+- `schemas/v2.0/projections/promotion-receipt/v1.0.0/`, containing the
+  deterministic YAML 1.2 semantic twin, bounded authored GraphQL SDL, and exact
+  source-constraint ledger at version-bearing retrieval paths;
 - `skills/governance-schema-release-lineage/SKILL.md`, copied byte for byte
   from the one repository skill whose front matter declares
   `source_band: public_ready`;
@@ -145,6 +152,10 @@ The deterministic manifest keeps these jobs distinct:
   roles;
 - `schemas` records each identifier, source path and URL, output path, byte
   length, and SHA-256 digest;
+- `schemaFamilies` records the candidate promotion-receipt projection version,
+  its versioned family identifier, its JSON validation authority, and each
+  representation's versioned identifier, format, media type, relation, source,
+  output, bytes, and SHA-256 digest;
 - `skills` records the one accepted public skill's identity, source and output
   paths, source URL, bytes, SHA-256 digest, version, adaptation relation, and
   locator-safe lineage key;
@@ -187,8 +198,8 @@ selection, domain ownership, and DNS remain with the publication receiver.
 
 ## Generated-artifact safety
 
-The repository secret-shape scanner includes HTML and CSS, so it can observe
-the complete generated text surface:
+The repository secret-shape scanner includes HTML, CSS, JSON, YAML, Markdown,
+and GraphQL SDL, so it can observe the complete generated text surface:
 
 ```bash
 python3 tools/scan_secret_shapes.py --root /tmp/governance-pages-2.1.0

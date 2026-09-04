@@ -4,6 +4,7 @@ check: validate test
 
 validate:
 	python3 tools/validate_governance.py
+	python3 tools/schema_projections.py
 	python3 tools/check_language.py
 	python3 tools/scan_secret_shapes.py
 

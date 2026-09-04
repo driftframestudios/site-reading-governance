@@ -7,6 +7,7 @@
 | Governance model | Reference-ready | Document review and tests |
 | Branching model | Reference-ready | Ruleset alignment tests |
 | JSON schemas | Reference-ready | Meta-structure and exemplar validation |
+| Promotion-receipt projections | Candidate | YAML semantic equality, GraphQL composition, and exact source-constraint tuple coverage |
 | Example corpus | Reference-ready | Every example validates against its declared schema |
 | Control Plane Profile v0.3 | Reference-ready | Cross-record semantic validation and failure-twin tests |
 | Simulated substantive closure | Reference-ready | Four-family future-reality manifest and executable-check contracts |

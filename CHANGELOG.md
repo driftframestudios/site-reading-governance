@@ -6,6 +6,15 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+- Added a candidate promotion-receipt projection family: deterministic YAML
+  1.2 semantic-twin generation, bounded GraphQL SDL, exact extracted
+  constraint-tuple coverage, focused mutation tests, and additive Pages
+  manifest records with version-bearing retrieval identities that keep
+  accepted JSON Schema authority visible.
+- Added hash-locked YAML and GraphQL parser requirements to the pull-request,
+  manual, and full reusable Governance proofs, with monthly grouped Python
+  dependency updates and matching branch grammar. The downstream JSON-only
+  contract workflow remains dependency-free.
 - Added public-possible, repository-local guides for Governance re-entry,
   broader source-authority mapping, and contextual jargon scanning. Root
   orientation now routes to the complete local workbench while Governance

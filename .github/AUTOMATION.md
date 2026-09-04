@@ -5,15 +5,17 @@
 This repository has an approved allocation of **100–300 GitHub Actions runner
 minutes per month**. Pull requests targeting `develop` or `main` receive one
 read-only `ubuntu-24.04` job on Python 3.13. Superseded runs cancel, and each
-run has a ten-minute ceiling. The job validates governance contracts and
-examples, workflow boundaries, root orientation, language, secret shapes, and
-the repository-owned regression suite. Its parsed controls must match the
+run has a ten-minute ceiling. The job installs two hash-locked projection
+parsers, then validates governance contracts and examples, schema projections,
+workflow boundaries, root orientation, language, secret shapes, and the
+repository-owned regression suite. Its parsed controls must match the
 source-owned `.github/automation-controls.json` projection.
 
 The pull-request path receives repository contents and proposed source through
 read-only permissions. Protected values stay with their dedicated proof paths.
-Monthly Dependabot updates target `develop`, group minor and patch updates, and
-keep at most two update pull requests open.
+Monthly Dependabot updates for GitHub Actions and the Python projection parsers
+target `develop`, group minor and patch updates by ecosystem, and keep at most
+two update pull requests open per ecosystem.
 
 ## Deliberate full proof
 

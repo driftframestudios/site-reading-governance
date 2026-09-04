@@ -61,8 +61,12 @@ jobs:
         with:
           python-version: "3.13"
           cache: ""
+      - name: Install projection proof dependencies
+        run: python3 -m pip install --disable-pip-version-check --require-hashes -r requirements-projections.txt
       - name: Validate contracts and examples
-        run: python3 tools/validate_governance.py
+        run: |
+          python3 tools/validate_governance.py
+          python3 tools/schema_projections.py
       - name: Check negation-aware language
         run: python3 tools/check_language.py
       - name: Scan secret shapes with redacted findings
