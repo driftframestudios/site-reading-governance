@@ -27,6 +27,7 @@ from automation_contract import (
     validate_repository_automation,
 )
 from build_governance_pages import (
+    HTML_LINE_BREAK,
     PUBLIC_SKILL_METADATA,
     PUBLIC_SKILL_SOURCE_PATH,
     PagesBuildError,
@@ -1409,6 +1410,14 @@ def validate_public_ready_skills() -> list[Finding]:
                         relative,
                         "public adaptation lineage must use its operator-blind key "
                         "and authorized resolver without a gated GitHub locator",
+                    )
+                )
+            if HTML_LINE_BREAK.search(content):
+                findings.append(
+                    Finding(
+                        relative,
+                        "public-ready skill uses an HTML line-break element; "
+                        "use native Markdown structure",
                     )
                 )
 

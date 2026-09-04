@@ -6,6 +6,9 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 ## [Unreleased]
 
+- Advanced the public schema-release-lineage guide to 0.1.2, expressed its
+  representative scenario as ordinary Markdown, and added a public-boundary
+  check that keeps HTML line-break elements out of published skill sources.
 - Added a candidate promotion-receipt projection family: deterministic YAML
   1.2 semantic-twin generation, bounded GraphQL SDL, exact extracted
   constraint-tuple coverage, focused mutation tests, and additive Pages

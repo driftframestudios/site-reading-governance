@@ -74,7 +74,7 @@ PUBLIC_SKILL_METADATA = {
         "or downstream use needs a verifiable source and receiver."
     ),
     "name": PUBLIC_SKILL_SLUG,
-    "skill_version": "0.1.1",
+    "skill_version": "0.1.2",
     "source_band": "public_ready",
     "lineage_key": "lims-src-006",
 }
@@ -101,6 +101,7 @@ MANIFEST_FIELDS = {
     "source",
 }
 SHA_PATTERN = re.compile(r"^[0-9a-f]{40}$")
+HTML_LINE_BREAK = re.compile(r"<br(?=[\s/>])[^>]*>", re.IGNORECASE)
 CNAME_PATTERN = re.compile(
     r"^(?=.{1,253}\Z)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+"
     r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$"
@@ -683,6 +684,11 @@ def collect_public_skills(source_root: Path, proof: SourceProof) -> list[SkillRe
     if markdown_relative_targets(content):
         raise PagesBuildError(
             "public-ready skill contains a relative Markdown link without a published receiver"
+        )
+    if HTML_LINE_BREAK.search(content):
+        raise PagesBuildError(
+            "public-ready skill contains an HTML line-break element; "
+            "use native Markdown structure"
         )
     content_bytes = path.read_bytes()
     return [
