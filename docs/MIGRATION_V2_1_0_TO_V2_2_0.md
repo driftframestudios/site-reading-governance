@@ -81,8 +81,8 @@ records the observed coordinate after the following release sequence:
 
 The observed Governance 2.1.0 receipt remains in
 `release-receipts/governance-v2.1.0.json`. The root promotion receipt describes
-the observed 2.2.0 coordinate, and the current horizon routes the verified
-artifact to its Pages publication receiver.
+the observed 2.2.0 coordinate, and the current horizon records the verified
+Pages publication as complete.
 
 ## Recovery and compatibility
 
