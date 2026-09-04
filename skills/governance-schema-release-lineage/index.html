@@ -20,13 +20,13 @@
   <main id="main" tabindex="-1">
 
     <section class="hero hero--compact">
-      <p class="eyebrow">Repository skill · 0.1.0</p>
+      <p class="eyebrow">Repository skill · 0.1.2</p>
       <h1>governance-schema-release-lineage</h1>
       <p class="lede">Traces one Site Reading Governance schema from tracked source through an accepted release coordinate to its byte-identical Pages retrieval copy. Applies when schema meaning, release identity, public projection, or downstream use needs a verifiable source and receiver.</p>
-      <p class="coordinate"><span>Accepted source</span> <a href="https://github.com/driftframestudios/site-reading-governance/tree/8469c2a6b2c7f4445523cee262b961ffe3d2523b"><code>8469c2a6b2c7f4445523cee262b961ffe3d2523b</code></a></p>
+      <p class="coordinate"><span>Accepted source</span> <a href="https://github.com/driftframestudios/site-reading-governance/tree/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee"><code>c8d7150b8c4e6277bc504a7c69289cb5b949b0ee</code></a></p>
       <div class="actions">
         <a class="button" href="SKILL.md">Open the exact skill source</a>
-        <a class="button button--quiet" href="https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/.agents/skills/governance-schema-release-lineage/SKILL.md">Inspect the tracked source</a>
+        <a class="button button--quiet" href="https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/.agents/skills/governance-schema-release-lineage/SKILL.md">Inspect the tracked source</a>
       </div>
     </section>
     <section aria-labelledby="lineage-skill-heading">
@@ -39,7 +39,7 @@
         <li><a href="../../schemas/v2.0/index.html">Choose a versioned schema</a> and retain its stable identifier.</li>
         <li><a href="../../guidance/index.html">Read the use and authority guide</a> for the schema's evidence boundary.</li>
         <li><a href="../../manifest.json">Inspect the artifact manifest</a> for exact source, output, byte, and digest records.</li>
-        <li><a href="https://github.com/driftframestudios/site-reading-governance/blob/8469c2a6b2c7f4445523cee262b961ffe3d2523b/promotion-receipt.json">Inspect the tracked promotion receipt</a> when release standing affects the map.</li>
+        <li><a href="https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/promotion-receipt.json">Inspect the tracked promotion receipt</a> when release standing affects the map.</li>
       </ul>
     </section>
     <section aria-labelledby="skill-source-heading">
@@ -48,7 +48,7 @@
 name: governance-schema-release-lineage
 description: Traces one Site Reading Governance schema from tracked source through an accepted release coordinate to its byte-identical Pages retrieval copy. Applies when schema meaning, release identity, public projection, or downstream use needs a verifiable source and receiver.
 source_band: public_ready
-skill_version: 0.1.0
+skill_version: 0.1.2
 lineage_key: lims-src-006
 adaptation_relation: repository_local_derivative
 ---
@@ -150,20 +150,22 @@ Reopen when:
 
 ### Scenario: An accepted schema reaches a downstream validation record
 
-Given one tracked Governance 2.0.1 schema retains its stable `/v2.0/` identifier&lt;br&gt;
-And an observed promotion receipt binds the annotated release tag, accepted
-commit, and reproducible archive digest&lt;br&gt;
-When Governance Pages copies that schema to its versioned retrieval path and
-records the same source path, full revision, bytes, identifier, and SHA-256&lt;br&gt;
-Then the map records `defines`, `accepts`, and `projects` as separate relations&lt;br&gt;
-And the downstream record pins the accepted coordinate and selected schema&lt;br&gt;
-And a change to the tracked schema, release coordinate, projection bytes, or
-consumer requirement reopens the map from the changed source
+- Given one schema in the current accepted Governance release retains its
+  stable `/v2.0/` identifier
+- And an observed promotion receipt binds the annotated release tag, accepted
+  commit, and reproducible archive digest
+- When Governance Pages copies that schema to its versioned retrieval path and
+  records the same source path, full revision, bytes, identifier, and SHA-256
+- Then the map records `defines`, `accepts`, and `projects` as separate
+  relations
+- And the downstream record pins the accepted coordinate and selected schema
+- And a change to the tracked schema, release coordinate, projection bytes, or
+  consumer requirement reopens the map from the changed source
 
 ## Adaptation lineage
 
 This repository-local derivative narrows a shared method for tracing source and
-authority to one Governance schema, the 2.0.1 promotion receipt, its
+authority to one Governance schema, the accepted promotion receipt, its
 byte-identical Pages retrieval copy, and the downstream receiver. Public
 lineage key `lims-src-006` identifies the selected source within its authorized
 resolver. The public guide carries the relation, purpose, and evidence standing

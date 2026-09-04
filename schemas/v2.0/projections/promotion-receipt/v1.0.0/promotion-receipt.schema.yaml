@@ -1,0 +1,172 @@
+%YAML 1.2
+---
+"$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/promotion-receipt.schema.json"
+"$schema": "https://json-schema.org/draft/2020-12/schema"
+"additionalProperties": false
+"allOf":
+  - "if":
+      "properties":
+        "promotion_state":
+          "const": "candidate_ready"
+    "then":
+      "properties":
+        "assurance_stage":
+          "const": "specified"
+        "evidence_mode":
+          "const": "planned"
+        "release_coordinate":
+          "type": "null"
+  - "if":
+      "properties":
+        "promotion_state":
+          "const": "release_observed"
+    "then":
+      "properties":
+        "assurance_stage":
+          "enum":
+            - "verified"
+            - "qualified"
+            - "validated"
+            - "accepted"
+        "evidence_mode":
+          "const": "observed"
+        "release_coordinate":
+          "type": "object"
+"properties":
+  "accountable_role":
+    "maxLength": 120
+    "minLength": 3
+    "type": "string"
+  "assurance_stage":
+    "$ref": "common.schema.json#/$defs/assuranceStage"
+  "evidence_mode":
+    "$ref": "common.schema.json#/$defs/evidenceMode"
+  "metadata":
+    "$ref": "common.schema.json#/$defs/recordMetadata"
+  "promotion_receipt_id":
+    "$ref": "common.schema.json#/$defs/identifier"
+  "promotion_state":
+    "enum":
+      - "candidate_ready"
+      - "release_observed"
+    "type": "string"
+  "release_coordinate":
+    "oneOf":
+      - "type": "null"
+      - "additionalProperties": false
+        "allOf":
+          - "else":
+              "properties":
+                "commit_oid":
+                  "pattern": "^(?!0{64}$)[a-f0-9]{64}$"
+                "tag_object_oid":
+                  "pattern": "^(?!0{64}$)[a-f0-9]{64}$"
+            "if":
+              "properties":
+                "git_object_format":
+                  "const": "sha1"
+            "then":
+              "properties":
+                "commit_oid":
+                  "pattern": "^(?!0{40}$)[a-f0-9]{40}$"
+                "tag_object_oid":
+                  "pattern": "^(?!0{40}$)[a-f0-9]{40}$"
+          - "else":
+              "properties":
+                "hosted_automation_receipt":
+                  "type": "null"
+            "if":
+              "properties":
+                "hosted_check_contexts":
+                  "minItems": 1
+            "then":
+              "properties":
+                "hosted_automation_receipt":
+                  "type": "string"
+        "properties":
+          "archive_digest":
+            "pattern": "^sha256:(?!0{64}$)[a-f0-9]{64}$"
+            "type": "string"
+          "archive_format":
+            "const": "git-tar"
+            "type": "string"
+          "codeowner_resolution":
+            "$ref": "common.schema.json#/$defs/governedLocator"
+          "commit_oid":
+            "pattern": "^(?:(?!0{40}$)[a-f0-9]{40}|(?!0{64}$)[a-f0-9]{64})$"
+            "type": "string"
+          "git_object_format":
+            "enum":
+              - "sha1"
+              - "sha256"
+            "type": "string"
+          "hosted_automation_receipt":
+            "oneOf":
+              - "type": "null"
+              - "$ref": "common.schema.json#/$defs/governedLocator"
+          "hosted_check_contexts":
+            "items":
+              "maxLength": 200
+              "minLength": 1
+              "type": "string"
+            "type": "array"
+            "uniqueItems": true
+          "local_proof_receipt":
+            "$ref": "common.schema.json#/$defs/governedLocator"
+          "promoted_at":
+            "format": "date-time"
+            "type": "string"
+          "ruleset_receipt":
+            "$ref": "common.schema.json#/$defs/governedLocator"
+          "tag":
+            "pattern": "^governance-v(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$"
+            "type": "string"
+          "tag_object_oid":
+            "pattern": "^(?:(?!0{40}$)[a-f0-9]{40}|(?!0{64}$)[a-f0-9]{64})$"
+            "type": "string"
+          "tag_signature_receipt":
+            "$ref": "common.schema.json#/$defs/governedLocator"
+        "required":
+          - "git_object_format"
+          - "tag"
+          - "tag_object_oid"
+          - "commit_oid"
+          - "archive_format"
+          - "archive_digest"
+          - "promoted_at"
+          - "local_proof_receipt"
+          - "hosted_check_contexts"
+          - "hosted_automation_receipt"
+          - "ruleset_receipt"
+          - "codeowner_resolution"
+          - "tag_signature_receipt"
+        "type": "object"
+  "repository":
+    "maxLength": 200
+    "minLength": 3
+    "pattern": "^[a-z0-9]+/[a-z0-9][a-z0-9-]*$"
+    "type": "string"
+  "required_evidence":
+    "items":
+      "maxLength": 500
+      "minLength": 10
+      "type": "string"
+    "minItems": 1
+    "type": "array"
+    "uniqueItems": true
+  "target_release":
+    "pattern": "^governance-v(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$"
+    "type": "string"
+"required":
+  - "promotion_receipt_id"
+  - "repository"
+  - "target_release"
+  - "promotion_state"
+  - "evidence_mode"
+  - "assurance_stage"
+  - "release_coordinate"
+  - "required_evidence"
+  - "accountable_role"
+  - "metadata"
+"title": "Repository Promotion Receipt"
+"type": "object"

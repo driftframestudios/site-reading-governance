@@ -1,0 +1,184 @@
+"""
+A read-only inspection entry point for the promotion-receipt projection.
+
+This field describes an interface shape. A receiving service supplies any
+resolver, authorization, persistence, and network behavior through its own
+reviewed contract.
+"""
+type SchemaProjectionQuery {
+  promotion_receipt: PromotionReceipt
+}
+
+schema {
+  query: SchemaProjectionQuery
+}
+
+"""A repository promotion receipt presented for inspection."""
+type PromotionReceipt {
+  promotion_receipt_id: GovernanceIdentifier!
+  repository: RepositoryCoordinate!
+  target_release: GovernanceReleaseTag!
+  promotion_state: PromotionState!
+  evidence_mode: EvidenceMode!
+  assurance_stage: AssuranceStage!
+  release_coordinate: ReleaseCoordinate
+  required_evidence: [String!]!
+  accountable_role: String!
+  metadata: RecordMetadata!
+}
+
+"""
+An input shape for a promotion receipt.
+
+JSON Schema remains the validation authority for required-but-nullable
+presence, scalar patterns and lengths, list cardinality and uniqueness, and
+cross-field conditions.
+"""
+input PromotionReceiptInput {
+  promotion_receipt_id: GovernanceIdentifier!
+  repository: RepositoryCoordinate!
+  target_release: GovernanceReleaseTag!
+  promotion_state: PromotionState!
+  evidence_mode: EvidenceMode!
+  assurance_stage: AssuranceStage!
+  release_coordinate: ReleaseCoordinateInput
+  required_evidence: [String!]!
+  accountable_role: String!
+  metadata: RecordMetadataInput!
+}
+
+"""An observed immutable Git release coordinate."""
+type ReleaseCoordinate {
+  git_object_format: GitObjectFormat!
+  tag: GovernanceReleaseTag!
+  tag_object_oid: GitObjectId!
+  commit_oid: GitObjectId!
+  archive_format: String!
+  archive_digest: Sha256Digest!
+  promoted_at: DateTime!
+  local_proof_receipt: GovernedLocator!
+  hosted_check_contexts: [String!]!
+  hosted_automation_receipt: GovernedLocator
+  ruleset_receipt: GovernedLocator!
+  codeowner_resolution: GovernedLocator!
+  tag_signature_receipt: GovernedLocator!
+}
+
+"""
+The input counterpart to an observed release coordinate.
+
+The hosted_automation_receipt field remains nullable because its JSON source
+requires the key while allowing null. GraphQL couples nullable input fields
+with optional presence, so JSON Schema retains that presence rule.
+"""
+input ReleaseCoordinateInput {
+  git_object_format: GitObjectFormat!
+  tag: GovernanceReleaseTag!
+  tag_object_oid: GitObjectId!
+  commit_oid: GitObjectId!
+  archive_format: String!
+  archive_digest: Sha256Digest!
+  promoted_at: DateTime!
+  local_proof_receipt: GovernedLocator!
+  hosted_check_contexts: [String!]!
+  hosted_automation_receipt: GovernedLocator
+  ruleset_receipt: GovernedLocator!
+  codeowner_resolution: GovernedLocator!
+  tag_signature_receipt: GovernedLocator!
+}
+
+"""Shared creation, update, version, and ownership context."""
+type RecordMetadata {
+  schema_version: SemanticVersion!
+  created_at: DateTime!
+  updated_at: DateTime!
+  owner: GovernanceActor!
+}
+
+"""The input counterpart to shared record metadata."""
+input RecordMetadataInput {
+  schema_version: SemanticVersion!
+  created_at: DateTime!
+  updated_at: DateTime!
+  owner: GovernanceActorInput!
+}
+
+"""A role-bearing actor record used by governance metadata."""
+type GovernanceActor {
+  actor_id: GovernanceIdentifier!
+  display_name: String!
+  role: String!
+  organization: String
+}
+
+"""The input counterpart to a governance actor."""
+input GovernanceActorInput {
+  actor_id: GovernanceIdentifier!
+  display_name: String!
+  role: String!
+  organization: String
+}
+
+"""The promotion lifecycle state carried by the JSON record."""
+enum PromotionState {
+  candidate_ready
+  release_observed
+}
+
+"""The evidence relationship carried by the JSON record."""
+enum EvidenceMode {
+  planned
+  simulated
+  observed
+}
+
+"""The assurance stage carried by the JSON record."""
+enum AssuranceStage {
+  specified
+  verified
+  qualified
+  validated
+  accepted
+}
+
+"""The Git object format used by an observed release coordinate."""
+enum GitObjectFormat {
+  sha1
+  sha256
+}
+
+"""
+A governance identifier string. Its pattern and length remain JSON Schema
+constraints in this projection family.
+"""
+scalar GovernanceIdentifier
+
+"""
+An owner/repository string. Its repository grammar and length remain JSON
+Schema constraints in this projection family.
+"""
+scalar RepositoryCoordinate
+
+"""
+A governance release tag string. Its semantic-version tag grammar remains a
+JSON Schema constraint in this projection family.
+"""
+scalar GovernanceReleaseTag
+
+"""
+A Git object identifier string. JSON Schema selects its exact length from the
+git_object_format field.
+"""
+scalar GitObjectId
+
+"""A SHA-256 digest string whose executable pattern remains in JSON Schema."""
+scalar Sha256Digest
+
+"""An RFC 3339 instant whose date-time check remains in JSON Schema."""
+scalar DateTime
+
+"""A governed evidence locator whose grammar remains in JSON Schema."""
+scalar GovernedLocator
+
+"""A semantic-version string whose grammar remains in JSON Schema."""
+scalar SemanticVersion
