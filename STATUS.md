@@ -8,6 +8,7 @@
 | Branching model | Reference-ready | Ruleset alignment tests |
 | JSON schemas | Reference-ready | Meta-structure and exemplar validation |
 | Promotion-receipt projections | Candidate | YAML semantic equality, GraphQL composition, and exact source-constraint tuple coverage |
+| Governance Pages | Reference-ready | Live manifest and payload equality with the accepted-source artifact |
 | Example corpus | Reference-ready | Every example validates against its declared schema |
 | Control Plane Profile v0.3 | Reference-ready | Cross-record semantic validation and failure-twin tests |
 | Simulated substantive closure | Reference-ready | Four-family future-reality manifest and executable-check contracts |
@@ -43,10 +44,13 @@ Governance `2.2.0` has completed its source release path:
    `c8d7150b8c4e6277bc504a7c69289cb5b949b0ee`;
 4. two accepted-source Governance Pages builds produced the same 43-file tree
    and manifest identity;
-5. the tagged release ancestry was merged forward into `develop`; and
+5. the tagged release ancestry was merged forward into `develop`;
 6. this later evidence record captures the tag object, accepted commit, raw Git
    tar archive digest, hosted check result, delegated review resolution, and
-   signature verification.
+   signature verification; and
+7. Pages commit `ddb613a1c6520318ecadd498911de7f1f995c3d5` published the
+   inspected 43-file artifact, whose live manifest and 42 listed payloads match
+   the accepted-source build byte for byte.
 
 The Git-backed verifier establishes tag type, tag object, accepted subject,
 archive digest, subject ancestry, and exact receipt-carrier bytes. The tag's
@@ -61,8 +65,9 @@ whose exact 195-tuple coverage is available for inspection.
 
 The observed 2.1 receipt remains available as historical release evidence at
 [`release-receipts/governance-v2.1.0.json`](release-receipts/governance-v2.1.0.json).
-The current receivers can publish the inspected 2.2 Pages artifact and let each
-downstream repository adopt the 2.2 coordinate through its own review.
+The accepted 2.2 retrieval artifact is available at
+[fieldformlab.org](https://fieldformlab.org/). Each downstream repository can
+adopt the 2.2 coordinate when that change becomes material to its own work.
 
 ## Known extension points
 

@@ -1,11 +1,12 @@
 # Governance Pages source
 
-The Governance Pages builder is prepared to create one reviewable retrieval
-artifact for Governance 2.2.0 after the source is accepted. A visitor can find
-the right contract, read its authority boundary in ordinary language, download
-the accepted bytes, and recover the exact full-SHA source from every schema
-row. The published Governance 2.1.0 artifact remains the accepted retrieval
-surface until a publication receiver completes that 2.2.0 handoff.
+The accepted Governance 2.2.0 retrieval artifact is published at
+[fieldformlab.org](https://fieldformlab.org/). Its manifest identifies accepted
+source commit `c8d7150b8c4e6277bc504a7c69289cb5b949b0ee`, while docs commit
+`ddb613a1c6520318ecadd498911de7f1f995c3d5` carries the generated publication
+bytes. A visitor can find the right contract, read its authority boundary in
+ordinary language, download the accepted bytes, and recover the exact full-SHA
+source from every schema row.
 
 The builder uses the standard library for artifact assembly and the exact
 hash-locked YAML and GraphQL parsers in `requirements-projections.txt` for the
