@@ -202,7 +202,7 @@ class GovernancePackageTests(unittest.TestCase):
     def test_root_orientation_records_form_one_coherent_control_surface(self) -> None:
         self.assertEqual([], validation.validate_repository_orientation())
 
-    def test_historical_release_receipt_remains_separate_from_candidate(self) -> None:
+    def test_historical_release_receipt_remains_separate_from_current_release(self) -> None:
         historical = json.loads(
             (
                 ROOT
@@ -210,7 +210,7 @@ class GovernancePackageTests(unittest.TestCase):
                 / "governance-v2.1.0.json"
             ).read_text(encoding="utf-8")
         )
-        candidate = json.loads(
+        current = json.loads(
             (ROOT / "promotion-receipt.json").read_text(encoding="utf-8")
         )
 
@@ -222,9 +222,12 @@ class GovernancePackageTests(unittest.TestCase):
             "8469c2a6b2c7f4445523cee262b961ffe3d2523b",
             historical["release_coordinate"]["commit_oid"],
         )
-        self.assertEqual("RCP-GOVERNANCE-PROMOTION-003", candidate["promotion_receipt_id"])
-        self.assertEqual("candidate_ready", candidate["promotion_state"])
-        self.assertIsNone(candidate["release_coordinate"])
+        self.assertEqual("RCP-GOVERNANCE-PROMOTION-003", current["promotion_receipt_id"])
+        self.assertEqual("release_observed", current["promotion_state"])
+        self.assertEqual(
+            "governance-v2.2.0",
+            current["release_coordinate"]["tag"],
+        )
 
     def test_historical_release_receipt_rejects_whitespace_byte_drift(self) -> None:
         source = (

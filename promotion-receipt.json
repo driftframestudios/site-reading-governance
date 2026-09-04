@@ -2,24 +2,40 @@
   "promotion_receipt_id": "RCP-GOVERNANCE-PROMOTION-003",
   "repository": "driftframestudios/site-reading-governance",
   "target_release": "governance-v2.2.0",
-  "promotion_state": "candidate_ready",
-  "evidence_mode": "planned",
-  "assurance_stage": "specified",
-  "release_coordinate": null,
+  "promotion_state": "release_observed",
+  "evidence_mode": "observed",
+  "assurance_stage": "verified",
+  "release_coordinate": {
+    "git_object_format": "sha1",
+    "tag": "governance-v2.2.0",
+    "tag_object_oid": "6acdf4c7e7c200972ee3d7b257f5bc828bde753b",
+    "commit_oid": "c8d7150b8c4e6277bc504a7c69289cb5b949b0ee",
+    "archive_format": "git-tar",
+    "archive_digest": "sha256:2da503b695252fde152f2f7765776e4c784b9afeec463dae592a7a6012126a58",
+    "promoted_at": "2026-09-04T09:13:13Z",
+    "local_proof_receipt": "governed://release-evidence/site-reading-governance/governance-v2.2.0/local-proof",
+    "hosted_check_contexts": [
+      "governance-pr-validation"
+    ],
+    "hosted_automation_receipt": "governed://release-evidence/site-reading-governance/governance-v2.2.0/hosted-proof",
+    "ruleset_receipt": "governed://release-evidence/site-reading-governance/governance-v2.2.0/delegated-protected-delivery-resolution",
+    "codeowner_resolution": "governed://release-evidence/site-reading-governance/governance-v2.2.0/delegated-review-resolution",
+    "tag_signature_receipt": "governed://release-evidence/site-reading-governance/governance-v2.2.0/tag-signature"
+  },
   "required_evidence": [
     "The local governance, projection, language, secret-shape, and regression proofs pass before the source is accepted.",
     "A downstream contract rehearsal applies the candidate schemas to representative governed records and makes each required metadata update visible.",
-    "The protected release merge preserves deletion and non-fast-forward protection, one approving review, CODEOWNER review, last-push approval, and review-thread resolution.",
+    "Independent release review and the hosted governance proof pass before the expressly delegated main-branch resolution carries the merge through GitHub's REVIEW_REQUIRED state.",
     "A later receipt observes the canonical annotated governance tag, its accepted commit, its Git archive digest, and its signature evidence.",
-    "The installed aggregate ruleset and resolvable CODEOWNER evidence match the versioned policy.",
-    "Downstream consumers bind the accepted commit and reproducible archive digest before applying the contracts.",
+    "The delegated review and protected-delivery locators carry the authorized resolution; GitHub exposes no hosted approval object for this merge.",
+    "The downstream rehearsal records compatibility and exact adoption changes while each repository retains its own acceptance decision.",
     "Two accepted-source Governance Pages builds produce identical bytes before the publication receiver updates the hosted artifact."
   ],
   "accountable_role": "Constellation release steward",
   "metadata": {
     "schema_version": "2.2.0",
     "created_at": "2026-09-04T08:36:56Z",
-    "updated_at": "2026-09-04T08:36:56Z",
+    "updated_at": "2026-09-04T09:21:57Z",
     "owner": {
       "actor_id": "OWNER-GOVERNANCE-PROMOTION-003",
       "display_name": "Site Reading governance release stewardship role",

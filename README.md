@@ -58,10 +58,11 @@ The package is private-repository ready. Its examples use synthetic identifiers,
 its automation uses read-only permissions by default, and its ruleset exports
 can be reviewed before installation through the GitHub Rulesets API.
 
-Governance `2.1.0` remains the accepted release. Candidate `2.2.0` keeps the
-stable `/v2.0/` schema identifiers and adds deterministic YAML and bounded
-GraphQL retrieval projections for promotion receipts. The accepted release and
-the candidate both implement **Control Plane Profile v0.3**, the Enterprise
+Governance `2.2.0` is the accepted release. It keeps the stable `/v2.0/` schema
+identifiers and adds deterministic YAML and bounded GraphQL retrieval
+projections for promotion receipts. Those projections retain an explicit
+candidate standing while material use informs their next release decision.
+Governance 2.2.0 implements **Control Plane Profile v0.3**, the Enterprise
 Human-AI Practitioner Registry-derived capability profile for bounded callers,
 veracity, orientation, coordination, and future-reality simulation.
 
