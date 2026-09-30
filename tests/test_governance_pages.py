@@ -94,6 +94,31 @@ class GovernancePagesTests(unittest.TestCase):
         )
         return output, manifest
 
+    def test_schema_catalog_links_each_registered_schema_to_itself(self) -> None:
+        descriptions = pages._catalog_descriptions(ROOT)
+        schema_names = {
+            path.name for path in (ROOT / "schemas").glob("*.schema.json")
+        }
+        self.assertEqual(schema_names, set(descriptions))
+
+    def test_schema_catalog_rejects_a_mismatched_link_target(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary)
+            schemas = source / "schemas"
+            schemas.mkdir()
+            (schemas / "README.md").write_text(
+                "| Schema | Record |\n"
+                "| --- | --- |\n"
+                "| [`receipt.schema.json`](other.schema.json) | Receipt |\n",
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(
+                pages.PagesBuildError,
+                "must target the same filename",
+            ):
+                pages._catalog_descriptions(source)
+
     def test_fixture_standing_is_explicit_and_cli_path_rejects_it(self) -> None:
         with self.assertRaisesRegex(pages.PagesBuildError, "fixture standing"):
             pages.load_source_proof(FIXTURE_PROOF, ROOT)
