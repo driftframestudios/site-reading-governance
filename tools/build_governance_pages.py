@@ -107,7 +107,8 @@ CNAME_PATTERN = re.compile(
     r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$"
 )
 CATALOG_ROW = re.compile(
-    r"^\|\s*`(?P<name>[^`]+\.schema\.json)`\s*\|\s*(?P<description>.*?)\s*\|\s*$"
+    r"^\|\s*\[`(?P<name>[^`]+\.schema\.json)`\]"
+    r"\((?P<target>[^)]+)\)\s*\|\s*(?P<description>.*?)\s*\|\s*$"
 )
 MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\((?P<target>[^)]+)\)")
 
@@ -722,7 +723,12 @@ def _catalog_descriptions(source_root: Path) -> dict[str, str]:
         if not match:
             continue
         name = match.group("name")
+        target = match.group("target")
         description = match.group("description").strip()
+        if target != name:
+            raise PagesBuildError(
+                f"schema catalog link for {name} must target the same filename"
+            )
         if name in descriptions:
             raise PagesBuildError(f"schema catalog repeats {name}")
         if not description:
