@@ -10,8 +10,8 @@ import tempfile
 from typing import Any, Callable
 import unittest
 
-from graphql import build_ast_schema, parse
-from graphql.utilities import coerce_input_value
+from graphql import Undefined, build_ast_schema, parse
+from graphql.utilities import coerce_input_value, validate_input_value
 
 from tools import schema_projections
 from tools import validate_governance
@@ -355,17 +355,52 @@ class SchemaProjectionTests(unittest.TestCase):
         )
 
         errors: list[str] = []
-        coerced = coerce_input_value(
+        validate_input_value(
             candidate,
             input_type,
-            on_error=lambda path, value, error: errors.append(str(error)),
+            on_error=lambda error, path: errors.append(str(error)),
         )
         self.assertEqual([], errors)
+        coerced = coerce_input_value(candidate, input_type)
+        self.assertIsNot(coerced, Undefined)
         self.assertEqual(candidate, coerced)
         findings = validate_governance.SchemaValidator(
             ROOT / schema_projections.SOURCE_SCHEMA_PATH
         ).validate(candidate)
         self.assertTrue(findings)
+
+    def test_graphql_coercion_rejects_malformed_input_shapes(self) -> None:
+        source = (ROOT / schema_projections.GRAPHQL_SOURCE_PATH).read_text(
+            encoding="utf-8"
+        )
+        input_type = build_ast_schema(parse(source)).get_type("PromotionReceiptInput")
+        original = json.loads(
+            (ROOT / "examples" / "promotion-receipt.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(original, coerce_input_value(original, input_type))
+        for field, value in (
+            ("promotion_state", 42),
+            ("assurance_stage", "unrecognized_stage"),
+            ("assurance_stage", Undefined),
+        ):
+            with self.subTest(field=field, value=value):
+                candidate = deepcopy(original)
+                if value is Undefined:
+                    del candidate[field]
+                else:
+                    candidate[field] = value
+                before = deepcopy(candidate)
+                errors: list[str] = []
+                validate_input_value(
+                    candidate,
+                    input_type,
+                    on_error=lambda error, path: errors.append(str(error)),
+                )
+                self.assertTrue(errors)
+                self.assertIs(coerce_input_value(candidate, input_type), Undefined)
+                self.assertEqual(before, candidate)
 
     def test_candidate_and_observed_examples_validate_with_json_authority(self) -> None:
         validator = validate_governance.SchemaValidator(
