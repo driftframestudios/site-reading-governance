@@ -214,3 +214,9 @@ Public collaboration prose uses repository-local or accepted public sources.
 Private working coordinates remain with their authorized lineage owner while a
 semantic title, role, evidence standing, and next route preserve the useful
 relationship here.
+
+## Confined container job
+
+The [finite container entry](infra/README.container-job.md) reuses the constellation's
+prepared-input and confined-runtime safeguards. Its source profile, focused
+checks, output ownership, and release-evidence boundary remain inspectable.

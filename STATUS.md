@@ -8,6 +8,7 @@
 | Branching model | Reference-ready | Ruleset alignment tests |
 | JSON schemas | Reference-ready | Meta-structure and exemplar validation |
 | Promotion-receipt projections | Candidate | YAML semantic equality, GraphQL composition, and exact source-constraint tuple coverage |
+| Governance Pages | Reference-ready | Live manifest and payload equality with the accepted-source artifact |
 | Example corpus | Reference-ready | Every example validates against its declared schema |
 | Control Plane Profile v0.3 | Reference-ready | Cross-record semantic validation and failure-twin tests |
 | Simulated substantive closure | Reference-ready | Four-family future-reality manifest and executable-check contracts |
@@ -29,42 +30,44 @@ production authorization effect. This lets the collaboration finish a coherent
 simulated reality while keeping later observed evidence as a separate evidence
 class.
 
-## Release candidate
-
-Governance `2.2.0` is the current release candidate. It keeps JSON Schema as
-the validation authority and adds deterministic YAML 1.2 and read-only GraphQL
-projections for the promotion-receipt family. Exact source-constraint coverage,
-semantic binding checks, focused mutation tests, and Pages inventory checks
-make the relationship among the three formats inspectable.
-
-The candidate carries a fresh promotion receipt with an open release
-coordinate. Downstream rehearsal and protected `main` review are the next
-receivers. The signed tag, accepted commit, and reproducible Git archive digest
-enter the later evidence record after those observations exist.
-
 ## Accepted release
 
-Governance `2.1.0` has completed its source release path:
+Governance `2.2.0` has completed its source release path:
 
-1. the full local governance proof passed on the release candidate;
-2. `release/2.1.0` entered `main` through its protected pull-request route;
-3. the signed annotated `governance-v2.1.0` tag identifies the accepted merge
-   commit;
-4. two accepted-source Governance Pages builds produced the same inventory and
-   bytes;
-5. the tagged release was merged forward into `develop`; and
+1. the complete local proof passed, and the twelve-record downstream rehearsal
+   confirmed compatibility across the release change while keeping established
+   repository-local extension findings visible;
+2. the release branch passed hosted validation and entered `main` through the
+   expressly delegated protected-delivery resolution while GitHub retained its
+   `REVIEW_REQUIRED` status;
+3. the signed annotated `governance-v2.2.0` tag identifies accepted commit
+   `c8d7150b8c4e6277bc504a7c69289cb5b949b0ee`;
+4. two accepted-source Governance Pages builds produced the same 43-file tree
+   and manifest identity;
+5. the tagged release ancestry was merged forward into `develop`;
 6. this later evidence record captures the tag object, accepted commit, raw Git
-   tar archive digest, hosted check results, and signature verification.
+   tar archive digest, hosted check result, delegated review resolution, and
+   signature verification; and
+7. Pages commit `ddb613a1c6520318ecadd498911de7f1f995c3d5` published the
+   inspected 43-file artifact, whose live manifest and 42 listed payloads match
+   the accepted-source build byte for byte.
 
 The Git-backed verifier establishes tag type, tag object, accepted subject,
 archive digest, subject ancestry, and exact receipt-carrier bytes. The tag's
 cryptographic signature verifies locally, and GitHub recognizes the matching
 registered signing key.
 
-The observed 2.1 receipt remains available at
+Independent release review passed before the merge. The evidence record uses
+the authorized delegated resolution as its review carrier; GitHub exposes no
+hosted approval object for this merge. JSON Schema is the accepted validation
+authority; the YAML and GraphQL projection family remains a candidate interface
+whose exact 195-tuple coverage is available for inspection.
+
+The observed 2.1 receipt remains available as historical release evidence at
 [`release-receipts/governance-v2.1.0.json`](release-receipts/governance-v2.1.0.json).
-Its immutable coordinate remains the accepted downstream reference while the
-2.2 candidate completes rehearsal, review, tagging, and release observation.
+The accepted 2.2 retrieval artifact is available at
+[fieldformlab.org](https://fieldformlab.org/). Each downstream repository can
+adopt the 2.2 coordinate when that change becomes material to its own work.
 
 ## Known extension points
 

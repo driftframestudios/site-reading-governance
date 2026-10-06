@@ -1,7 +1,7 @@
 {
   "first_receipt_id": "FIRST-RCP-SITE-READING-GOVERNANCE-002",
   "machine_node_id": "NODE-SITE-READING-GOVERNANCE-002",
-  "as_of": "2026-09-04T08:36:56Z",
+  "as_of": "2026-09-04T09:39:27Z",
   "orientation_purpose": "Give each entering collaborator a compact, non-authorizing account of governance contracts, campaign markings, branch automation, validation evidence, coordination, and promotion posture.",
   "authority_posture": {
     "mode": "orientation_only",
@@ -33,13 +33,19 @@
       "status": "active"
     },
     {
-      "claim": "The Governance 2.1.0 annotated release tag resolves to its accepted source commit, and its Git tar archive reproduces the recorded SHA-256 digest.",
+      "claim": "The Governance 2.2.0 annotated release tag resolves to its accepted source commit, and its Git tar archive reproduces the recorded SHA-256 digest.",
       "mode": "observed",
       "assurance_stage": "verified",
       "status": "active"
     },
     {
-      "claim": "The Governance 2.2.0 candidate keeps JSON Schema as validation authority while its YAML and GraphQL projections pass exact source-binding checks.",
+      "claim": "The accepted Governance 2.2.0 source keeps JSON Schema as validation authority while its candidate YAML and GraphQL projection family passes exact source-binding checks.",
+      "mode": "observed",
+      "assurance_stage": "verified",
+      "status": "active"
+    },
+    {
+      "claim": "The public Governance Pages route serves the inspected 2.2.0 artifact, and every manifest-listed payload matches its accepted-source build byte for byte.",
       "mode": "observed",
       "assurance_stage": "verified",
       "status": "active"
@@ -52,13 +58,12 @@
     }
   ],
   "coordination_horizon_id": "HORIZON-GOVERNANCE-PROMOTION-003",
-  "current_horizon_summary": "Governance 2.1.0 remains accepted while the 2.2.0 multiformat candidate enters downstream rehearsal and protected promotion.",
-  "open_receipts": [
-    "RCP-GOVERNANCE-PROMOTION-003"
-  ],
+  "current_horizon_summary": "Governance 2.2.0 and its byte-identical public retrieval artifact are accepted and observed; downstream adoption remains available to each receiving repository.",
+  "open_receipts": [],
   "invalidation_conditions": [
     "A contract, schema, automation grammar, workflow authority, campaign marking, or validation result changes.",
-    "The accepted Governance 2.2.0 tag, commit, and reproducible archive digest replace the candidate placeholders after release observation."
+    "The HTTPS Governance Pages manifest or a manifest-listed payload diverges from the accepted artifact.",
+    "A later accepted governance release supersedes the current tag, commit, or reproducible archive digest."
   ],
   "source_permissions": [
     {
@@ -67,7 +72,7 @@
       "verification": "Resolve the schema release and exact contract digest before consuming a requirement."
     },
     {
-      "source": "candidate-governance-source",
+      "source": "working-governance-source",
       "permission": "propose",
       "verification": "Bind each change to tests, reviewed branch coordinates, and a documented material effect."
     },
@@ -78,14 +83,14 @@
     }
   ],
   "handoff": {
-    "recipient_role": "Constellation release steward",
-    "next_safe_action": "Run the full candidate proof and downstream contract rehearsal, then promote the reviewed release through main and record its signed tag from a later evidence commit.",
-    "success_evidence": "The Governance 2.2.0 candidate passes repository and downstream checks while Governance 2.1.0 remains the accepted coordinate until protected promotion supplies the new tag, commit, and archive digest."
+    "recipient_role": "Downstream repository collaborator",
+    "next_safe_action": "When adoption becomes the receiving repository's next material move, pin the signed Governance 2.2.0 release and validate that repository's representative records.",
+    "success_evidence": "Governance 2.2.0 retains its accepted tag, commit, reproducible archive digest, passing repository proof, byte-identical public retrieval artifact, and explicit candidate standing for the multiformat projection family."
   },
   "metadata": {
     "schema_version": "2.2.0",
     "created_at": "2026-07-28T17:30:02Z",
-    "updated_at": "2026-09-04T08:36:56Z",
+    "updated_at": "2026-09-04T09:39:27Z",
     "owner": {
       "actor_id": "OWNER-GOVERNANCE-RECEIPT-002",
       "display_name": "Site Reading governance stewardship role",
