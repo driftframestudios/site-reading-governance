@@ -3,7 +3,7 @@
     "humanReadable": {
       "role": "meaning, use, decision rights, and evidence boundaries",
       "sourcePath": "GOVERNANCE.md",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/GOVERNANCE.md"
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/GOVERNANCE.md"
     },
     "machineValidation": {
       "dialect": "https://json-schema.org/draft/2020-12/schema",
@@ -13,11 +13,11 @@
     "publication": {
       "role": "byte-identical retrieval projection",
       "sourcePath": "schemas/",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/tree/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas"
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/tree/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas"
     }
   },
   "digests": {
-    "content": "sha256:8dc3e1f5b9849d389dbeb0fd95b9b59d8b8437b239c86f87bde664ce779800f3",
+    "content": "sha256:88c12ddc059b36c3e889f94fb474a8c3c0e5b614fed87e694dc7fe4cf635b33a",
     "schemas": "sha256:b80768a5424d01f9c25301da34b2814a0b0c2804e1f7892d420893e81d8eb791"
   },
   "inventory": {
@@ -44,17 +44,17 @@
       {
         "bytes": 5985,
         "path": "guidance/index.html",
-        "sha256": "sha256:7a658eef3102ccab4c76267c5679235ca222462fc2b17f2fc0dda383ac216f0f"
+        "sha256": "sha256:28656517d0f0fcd019bea08f6e3a5ec75308600266ffa7cba1b4e925ec86fbae"
       },
       {
         "bytes": 5433,
         "path": "index.html",
-        "sha256": "sha256:de699ae2252b85e67d98dd5471de47cc8557dbab7056bf99574d4c0caccb4771"
+        "sha256": "sha256:ffdf3aff3bfbaa4f6497fc148763ff02f3b882ef3dd11e206ffd1d140a9af614"
       },
       {
         "bytes": 4693,
         "path": "schemas/index.html",
-        "sha256": "sha256:35f4d12ab22c8f2e8d08b355518adba2175ea903ed5f33afd593a16af930c69f"
+        "sha256": "sha256:db13551005fd5de038e200c7343b151358aacad85492121ed28c21ca3db5b113"
       },
       {
         "bytes": 4332,
@@ -149,7 +149,7 @@
       {
         "bytes": 19968,
         "path": "schemas/v2.0/index.html",
-        "sha256": "sha256:0d98211cc9de9b57229076ed0b6ba80bd2d48926010b6ddec3c1e92121bb99a6"
+        "sha256": "sha256:faf6329d66237c2866279f387e2eeb11fa2a48853a18020da956a3982ddad64a"
       },
       {
         "bytes": 3763,
@@ -229,12 +229,12 @@
       {
         "bytes": 11984,
         "path": "skills/governance-schema-release-lineage/index.html",
-        "sha256": "sha256:e1335e1ada935e1ef9e89441af35cd6a2c340eaeb99e7f134b683d0dbaa8408d"
+        "sha256": "sha256:0ab0810415c458447817e62e1704cb3fc975208ab36b76158f3c591889f1c456"
       },
       {
         "bytes": 4305,
         "path": "skills/index.html",
-        "sha256": "sha256:5b21118b116d9ebcefb03c8783a000efc44aad63fc5f4712bc91c66d88cb8f94"
+        "sha256": "sha256:7138e2bf98f4373ee77907893282d5eb44bfb6e79b5a5a2dea132e3a718c1d94"
       }
     ]
   },
@@ -308,7 +308,7 @@
           "relation": "semantic_twin",
           "sha256": "sha256:54d58257f8b6bb081cf6bc3d416824c72fe2b59ab46e01993f1975f1bd91a1ba",
           "sourcePath": "schemas/promotion-receipt.schema.json",
-          "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/promotion-receipt.schema.json"
+          "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/promotion-receipt.schema.json"
         },
         {
           "bytes": 4945,
@@ -319,7 +319,7 @@
           "relation": "interface_projection",
           "sha256": "sha256:e4398f4505745f4c2fbd5de5907ea4f0af32b37c603868b2bd9ce271177fa422",
           "sourcePath": "schema-projections/promotion-receipt/v1.0.0/promotion-receipt.graphql",
-          "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schema-projections/promotion-receipt/v1.0.0/promotion-receipt.graphql"
+          "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schema-projections/promotion-receipt/v1.0.0/promotion-receipt.graphql"
         },
         {
           "bytes": 63835,
@@ -330,7 +330,7 @@
           "relation": "coverage_proof",
           "sha256": "sha256:e862b81b932761b18a98dde323a79641bc7ba7c8a3dc5e68d83e6a2b1971ea52",
           "sourcePath": "schema-projections/promotion-receipt/v1.0.0/coverage.json",
-          "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schema-projections/promotion-receipt/v1.0.0/coverage.json"
+          "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schema-projections/promotion-receipt/v1.0.0/coverage.json"
         }
       ],
       "validationAuthority": {
@@ -349,7 +349,7 @@
       "outputPath": "schemas/v2.0/acceptance.schema.json",
       "sha256": "sha256:2763c5c8c60129f5b9eca0574bf8dabee5d6f9496a83b41bfc97895dc4df96f0",
       "sourcePath": "schemas/acceptance.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/acceptance.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/acceptance.schema.json",
       "title": "Accountable Acceptance Decision"
     },
     {
@@ -359,7 +359,7 @@
       "outputPath": "schemas/v2.0/approval.schema.json",
       "sha256": "sha256:fd065b3912ba83382513db2934c891b3bacda0b2384ed7a800019ef6f6bda3aa",
       "sourcePath": "schemas/approval.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/approval.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/approval.schema.json",
       "title": "Bounded Operation Approval"
     },
     {
@@ -369,7 +369,7 @@
       "outputPath": "schemas/v2.0/bounded-caller.schema.json",
       "sha256": "sha256:fe1b95507c99507987852dac624bd366f4ac4109787fe6e8ffd995d23370fc3c",
       "sourcePath": "schemas/bounded-caller.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/bounded-caller.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/bounded-caller.schema.json",
       "title": "Bounded Caller"
     },
     {
@@ -379,7 +379,7 @@
       "outputPath": "schemas/v2.0/call-receipt.schema.json",
       "sha256": "sha256:eef16d2c38ccc6b3c4ffe1a8aaeca7eb37d963d600b63cf5cc8b8841cae8371f",
       "sourcePath": "schemas/call-receipt.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/call-receipt.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/call-receipt.schema.json",
       "title": "Bounded Call Receipt"
     },
     {
@@ -389,7 +389,7 @@
       "outputPath": "schemas/v2.0/claim-veracity.schema.json",
       "sha256": "sha256:610bd0d4399dd9d9129c695b4b8ceefec3e36d8d76e178c07b723bafb0c18589",
       "sourcePath": "schemas/claim-veracity.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/claim-veracity.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/claim-veracity.schema.json",
       "title": "Claim Veracity Record"
     },
     {
@@ -399,7 +399,7 @@
       "outputPath": "schemas/v2.0/common.schema.json",
       "sha256": "sha256:a578ee7b7e18adab0dd8424a5edbe8fbb01a6b03f2c2b96d9e1e3856f2025014",
       "sourcePath": "schemas/common.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/common.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/common.schema.json",
       "title": "Site Reading Common Definitions"
     },
     {
@@ -409,7 +409,7 @@
       "outputPath": "schemas/v2.0/comparison.schema.json",
       "sha256": "sha256:165e75f570f9316de8b9ef244f8ef32c1d3cdc953cb0e51ccd5644583665dd09",
       "sourcePath": "schemas/comparison.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/comparison.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/comparison.schema.json",
       "title": "Actual and Simulation Comparison"
     },
     {
@@ -419,7 +419,7 @@
       "outputPath": "schemas/v2.0/constellation.schema.json",
       "sha256": "sha256:7d6597d5a4d17507f3d84bdf197c0d333304ee19308ba635397fb10116333004",
       "sourcePath": "schemas/constellation.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/constellation.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/constellation.schema.json",
       "title": "Comparative Site Reading Constellation"
     },
     {
@@ -429,7 +429,7 @@
       "outputPath": "schemas/v2.0/coordination-horizon.schema.json",
       "sha256": "sha256:0e4236b2928484c882f5c8984619ff639f32b0662b0a1c79a7497b5b6d8dce0e",
       "sourcePath": "schemas/coordination-horizon.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/coordination-horizon.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/coordination-horizon.schema.json",
       "title": "Coordination Horizon"
     },
     {
@@ -439,7 +439,7 @@
       "outputPath": "schemas/v2.0/data-contract.schema.json",
       "sha256": "sha256:b85409595f085238493ae141c7cfd8b120f62ffef8ae296cc6515fcbfed6b8fb",
       "sourcePath": "schemas/data-contract.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/data-contract.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/data-contract.schema.json",
       "title": "Database Data Contract"
     },
     {
@@ -449,7 +449,7 @@
       "outputPath": "schemas/v2.0/data-reconciliation.schema.json",
       "sha256": "sha256:0141449b4ce543dde8f2578e7d272b794cd5310d884f6a7e0e58e9c6eaa73e8e",
       "sourcePath": "schemas/data-reconciliation.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/data-reconciliation.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/data-reconciliation.schema.json",
       "title": "Database Data Reconciliation"
     },
     {
@@ -459,7 +459,7 @@
       "outputPath": "schemas/v2.0/database-migration-plan.schema.json",
       "sha256": "sha256:999c80dc5ae0214ac4c45b047c3c68ae75cbe8d646c77d9f3bff5b122779169c",
       "sourcePath": "schemas/database-migration-plan.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/database-migration-plan.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/database-migration-plan.schema.json",
       "title": "Database Migration Plan"
     },
     {
@@ -469,7 +469,7 @@
       "outputPath": "schemas/v2.0/database-migration-receipt.schema.json",
       "sha256": "sha256:a67026b22dba3a5a2a24af8c5d915f743d1093b3a42ca9eae2e761c13469f29e",
       "sourcePath": "schemas/database-migration-receipt.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/database-migration-receipt.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/database-migration-receipt.schema.json",
       "title": "Database Migration Execution Receipt"
     },
     {
@@ -479,7 +479,7 @@
       "outputPath": "schemas/v2.0/database-refactor-finding.schema.json",
       "sha256": "sha256:e6b5d2ddf602e35a32163492cfe405327ea74a47a979a3e94045c2e6adb8fc86",
       "sourcePath": "schemas/database-refactor-finding.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/database-refactor-finding.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/database-refactor-finding.schema.json",
       "title": "Database Refactor Finding"
     },
     {
@@ -489,7 +489,7 @@
       "outputPath": "schemas/v2.0/database-release-manifest.schema.json",
       "sha256": "sha256:6eff7c1f5aaed80b137161e7986850991128505e57bc3e340fe73fd04c89dc60",
       "sourcePath": "schemas/database-release-manifest.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/database-release-manifest.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/database-release-manifest.schema.json",
       "title": "Database Release Manifest"
     },
     {
@@ -499,7 +499,7 @@
       "outputPath": "schemas/v2.0/decision.schema.json",
       "sha256": "sha256:5ed18f568bbaee240fdb1b3b0cc9bce5d9b32fb50ea7c5182ef968e3f70bdfb3",
       "sourcePath": "schemas/decision.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/decision.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/decision.schema.json",
       "title": "Comparative Site Reading Decision"
     },
     {
@@ -509,7 +509,7 @@
       "outputPath": "schemas/v2.0/effect.schema.json",
       "sha256": "sha256:df1c4bd46674f7c0f0ff15b1eaadd3b34497b403bd1a236a99fb5f8960d47a05",
       "sourcePath": "schemas/effect.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/effect.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/effect.schema.json",
       "title": "Bounded Operation Effect"
     },
     {
@@ -519,7 +519,7 @@
       "outputPath": "schemas/v2.0/first-receipt.schema.json",
       "sha256": "sha256:6457169c37de220fa54a90a92695c11beb48a63e473378f66bf2def7e1940cb3",
       "sourcePath": "schemas/first-receipt.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/first-receipt.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/first-receipt.schema.json",
       "title": "First Receipt Orientation Contract"
     },
     {
@@ -529,7 +529,7 @@
       "outputPath": "schemas/v2.0/invalidation.schema.json",
       "sha256": "sha256:a999d8c823968677d24cb91e3b5634af1121b169ab6a6214a4c916f5d38c2dbf",
       "sourcePath": "schemas/invalidation.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/invalidation.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/invalidation.schema.json",
       "title": "Assurance Invalidation and Re-evaluation"
     },
     {
@@ -539,7 +539,7 @@
       "outputPath": "schemas/v2.0/language-control.schema.json",
       "sha256": "sha256:b653dce5df36d02a2d0d6ed86ef9cbb5d3570917321bedd411445a8b95c62d83",
       "sourcePath": "schemas/language-control.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/language-control.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/language-control.schema.json",
       "title": "High-consequence Language Control"
     },
     {
@@ -549,7 +549,7 @@
       "outputPath": "schemas/v2.0/machine-node.schema.json",
       "sha256": "sha256:f8e7bced0dd3f40282273b624594dc866237c81e27e7dc99b494230e9fd4e573",
       "sourcePath": "schemas/machine-node.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/machine-node.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/machine-node.schema.json",
       "title": "Machine Node Orientation"
     },
     {
@@ -559,7 +559,7 @@
       "outputPath": "schemas/v2.0/operation.schema.json",
       "sha256": "sha256:40e8d0d77a36fc3bd33e6054ee8452b71645a9177a09d9531ac5e8dc9a7a883a",
       "sourcePath": "schemas/operation.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/operation.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/operation.schema.json",
       "title": "Service-Owned Operation"
     },
     {
@@ -569,7 +569,7 @@
       "outputPath": "schemas/v2.0/practitioner-probe.schema.json",
       "sha256": "sha256:1cff14a4f0e91c5c7c5f5ef9cc7e504d5d80f846399012859c628a6807891b1f",
       "sourcePath": "schemas/practitioner-probe.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/practitioner-probe.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/practitioner-probe.schema.json",
       "title": "Practitioner Probe"
     },
     {
@@ -579,7 +579,7 @@
       "outputPath": "schemas/v2.0/promotion-receipt.schema.json",
       "sha256": "sha256:5c643f1b65b2dd2b46ec96987c8d451eab18c4bccf3993e4840e3a150515c7a3",
       "sourcePath": "schemas/promotion-receipt.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/promotion-receipt.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/promotion-receipt.schema.json",
       "title": "Repository Promotion Receipt"
     },
     {
@@ -589,7 +589,7 @@
       "outputPath": "schemas/v2.0/receipt.schema.json",
       "sha256": "sha256:74eeb039786974bf5f413cfe9c608df806cb869ad88f8c2330a0248cc1e64fbc",
       "sourcePath": "schemas/receipt.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/receipt.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/receipt.schema.json",
       "title": "Assurance Receipt"
     },
     {
@@ -599,7 +599,7 @@
       "outputPath": "schemas/v2.0/scenario.schema.json",
       "sha256": "sha256:990d00a4b5b2e4d9d1d6434b6feaa2d875dc474a1d318159a781a7c8b8499fd2",
       "sourcePath": "schemas/scenario.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/scenario.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/scenario.schema.json",
       "title": "Specification-by-Example Scenario"
     },
     {
@@ -609,7 +609,7 @@
       "outputPath": "schemas/v2.0/simulated-receipt-closure.schema.json",
       "sha256": "sha256:522d2a6a5b7f40fe71e6bafcf5373c6b15490445ea0e303062d787afafaa4e55",
       "sourcePath": "schemas/simulated-receipt-closure.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/simulated-receipt-closure.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/simulated-receipt-closure.schema.json",
       "title": "Simulated Substantive Receipt Closure"
     },
     {
@@ -619,7 +619,7 @@
       "outputPath": "schemas/v2.0/simulation-assumption.schema.json",
       "sha256": "sha256:09ffa80850ca6a70b857443d28ea5da36f1a0e915996b04f3b2076252b6b7488",
       "sourcePath": "schemas/simulation-assumption.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/simulation-assumption.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/simulation-assumption.schema.json",
       "title": "Simulation Assumption"
     },
     {
@@ -629,7 +629,7 @@
       "outputPath": "schemas/v2.0/specification.schema.json",
       "sha256": "sha256:802ca8812e28b067ded223229011d861354e13195adbf8be411bf08fcbae7700",
       "sourcePath": "schemas/specification.schema.json",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/schemas/specification.schema.json",
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/schemas/specification.schema.json",
       "title": "Site Reading Specification"
     }
   ],
@@ -645,13 +645,13 @@
       "sha256": "sha256:3ad66a616cd4835d0d80fb410659f04703e7ede4b5c3a9e2c347db3a22feef6c",
       "skillVersion": "0.1.2",
       "sourcePath": ".agents/skills/governance-schema-release-lineage/SKILL.md",
-      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee/.agents/skills/governance-schema-release-lineage/SKILL.md"
+      "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/blob/b82ab6617d6014d93e45e9a810afe3d642ff0350/.agents/skills/governance-schema-release-lineage/SKILL.md"
     }
   ],
   "source": {
     "repository": "driftframestudios/site-reading-governance",
-    "sourceRevision": "c8d7150b8c4e6277bc504a7c69289cb5b949b0ee",
-    "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/tree/c8d7150b8c4e6277bc504a7c69289cb5b949b0ee",
+    "sourceRevision": "b82ab6617d6014d93e45e9a810afe3d642ff0350",
+    "sourceUrl": "https://github.com/driftframestudios/site-reading-governance/tree/b82ab6617d6014d93e45e9a810afe3d642ff0350",
     "standing": "clean"
   }
 }
