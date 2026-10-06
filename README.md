@@ -11,6 +11,26 @@ Repository authorship and maintenance provenance is recorded in
 [`AUTHORS`](AUTHORS). Git history and reviewed pull requests preserve change
 chronology and contribution credit.
 
+## Start with a result and its evidence
+
+Use Governance to make a result understandable to the next reviewer: what was
+observed, what decision is being considered, who can accept it, and what would
+prompt a revision. The [schema guide](schemas/README.md) connects the record
+families with their examples and validation routes.
+
+For example, take a laboratory comparison and identify the source evidence,
+intended use, review authority, and acceptance decision. Keep the observed
+result and the decision as related records so a future reviewer can inspect
+both. Program's [constellation starting guide](https://github.com/driftframestudios/lims-eln-program-specification/blob/main/docs/README.md)
+shows how that handoff connects to the workbench and comparison tools.
+
+Insurance and administrative studies can start from the existing evidence and
+decision grammar. The dedicated provenance, population-claim, and decision
+assurance extensions are owned by
+[#38](https://github.com/driftframestudios/site-reading-governance/issues/38).
+The shared administrative meanings stay with Program; Governance describes
+how evidence, review, recourse, and acceptance support their use.
+
 ## Current state
 
 The release line and the later evidence line answer different questions:
