@@ -256,3 +256,9 @@ desired-state guidance, hard-boundary treatment, automated checks, and exact
 local verification path. Working-source lineage remains with its authorized
 steward while this repository-local guide gives public collaborators the
 complete behavior needed here.
+
+## Confined container job
+
+The [finite container entry](infra/README.container-job.md) reuses the constellation's
+prepared-input and confined-runtime safeguards. Its source profile, focused
+checks, output ownership, and release-evidence boundary remain inspectable.
