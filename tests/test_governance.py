@@ -150,6 +150,98 @@ class GovernancePackageTests(unittest.TestCase):
     def test_schema_catalog_is_coherent(self) -> None:
         self.assertEqual([], validation.validate_schema_catalog())
 
+    def test_readme_graph_has_registered_layers_and_resolving_routes(self) -> None:
+        self.assertEqual([], validation.validate_readme_graph())
+
+    def test_readme_fragment_ids_follow_stable_heading_labels(self) -> None:
+        identifiers = validation._markdown_heading_ids(
+            "# Site Reading Governance\n"
+            "## Orientation records\n"
+            "## Evidence and authority\n"
+        )
+        self.assertEqual(
+            {"site-reading-governance", "orientation-records", "evidence-and-authority"},
+            identifiers,
+        )
+
+    def test_readme_graph_requires_exact_unfenced_headings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temporary_root = Path(directory)
+            (temporary_root / "README.md").write_text(
+                "# Fixture\n"
+                "## Purposeful\n"
+                "```markdown\n"
+                "## Purpose\n"
+                "```\n",
+                encoding="utf-8",
+            )
+            with (
+                patch.object(validation, "ROOT", temporary_root),
+                patch.object(
+                    validation,
+                    "README_GRAPH_CONTRACTS",
+                    {"README.md": ("## Purpose",)},
+                ),
+                patch.object(validation, "ROOT_ORIENTATION_SCHEMAS", {}),
+            ):
+                findings = validation.validate_readme_graph()
+
+            self.assertTrue(
+                any("requires '## Purpose'" in finding.message for finding in findings),
+                findings,
+            )
+
+    def test_readme_graph_ignores_generated_cache_readmes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temporary_root = Path(directory)
+            (temporary_root / "README.md").write_text(
+                "# Fixture\n\n## Purpose\n",
+                encoding="utf-8",
+            )
+            cache = temporary_root / ".pytest_cache"
+            cache.mkdir()
+            (cache / "README.md").write_text("cache metadata\n", encoding="utf-8")
+            with (
+                patch.object(validation, "ROOT", temporary_root),
+                patch.object(
+                    validation,
+                    "README_GRAPH_CONTRACTS",
+                    {"README.md": ("## Purpose",)},
+                ),
+                patch.object(validation, "ROOT_ORIENTATION_SCHEMAS", {}),
+            ):
+                findings = validation.validate_readme_graph()
+
+            self.assertEqual([], findings)
+
+    def test_readme_graph_keeps_local_routes_inside_repository(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temporary_root = Path(directory) / "repository"
+            temporary_root.mkdir()
+            (temporary_root.parent / "outside.md").write_text(
+                "# Outside\n",
+                encoding="utf-8",
+            )
+            (temporary_root / "README.md").write_text(
+                "# Fixture\n\n## Purpose\n\n[Outside](../outside.md#outside)\n",
+                encoding="utf-8",
+            )
+            with (
+                patch.object(validation, "ROOT", temporary_root),
+                patch.object(
+                    validation,
+                    "README_GRAPH_CONTRACTS",
+                    {"README.md": ("## Purpose",)},
+                ),
+                patch.object(validation, "ROOT_ORIENTATION_SCHEMAS", {}),
+            ):
+                findings = validation.validate_readme_graph()
+
+            self.assertTrue(
+                any("leaves the repository" in finding.message for finding in findings),
+                findings,
+            )
+
     def test_schema_catalog_diagnostic_names_stable_identifier_family(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             temporary_root = Path(directory)
