@@ -43,6 +43,11 @@ The [runbook index](.agents/runbooks/index.md) routes population review,
 decision recourse, invalidation, and contract handoff. These source-level
 profiles prepare reviewed work; publication follows its tagged release gate.
 
+The [database lifecycle receiver](docs/DATABASE_LIFECYCLE_ASSURANCE.md) uses a
+separate pinned Program profile to receive declared resource ownership,
+operation outcomes, and recovery state. It keeps configured execution and
+accountable acceptance visible as separate pending claims.
+
 ## Current state
 
 The release line and the later evidence line answer different questions:

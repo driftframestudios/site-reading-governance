@@ -284,16 +284,18 @@ def render_markdown(record: dict) -> str:
     return "# Administrative assurance companion\n\nReview the statement, evidence class, authority, and successor route together.\n\n" + fence + "json\n" + text + "\n" + fence + "\n"
 
 
-def read_regular(path: Path) -> bytes:
+def read_regular(path: Path, *, max_bytes: int = MAX_BYTES) -> bytes:
+    if type(max_bytes) is not int or not 0 <= max_bytes <= MAX_BYTES:
+        raise ValueError("Choose an integer byte budget within the assurance limit.")
     try:
         fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
         with os.fdopen(fd, "rb") as stream:
             if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
                 raise AssuranceError("input_file", "Select an owned regular JSON file.")
-            payload = stream.read(MAX_BYTES + 1)
+            payload = stream.read(max_bytes + 1)
     except OSError:
         raise AssuranceError("input_file", "Select an accessible owned regular JSON file.") from None
-    if len(payload) > MAX_BYTES:
+    if len(payload) > max_bytes:
         raise AssuranceError("input_size", "Supply a JSON artifact within the profile byte budget.")
     return payload
 
