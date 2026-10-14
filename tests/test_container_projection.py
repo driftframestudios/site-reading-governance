@@ -291,6 +291,73 @@ class ProjectionTests(unittest.TestCase):
         self.assertEqual(tree(prior), before)
         self.assertEqual(list(self.root.glob(".projection-*")), [])
 
+    def test_deadline_during_acquisition_records_ownership_before_cleanup(self):
+        context = self.prepare()
+        prior = self.publish(context)
+        before = tree(prior)
+        code = '''import pathlib, signal, sys, time
+sys.path.insert(0, sys.argv[1])
+import container_projection as p
+source, receipt, root = map(pathlib.Path, sys.argv[2:5])
+phase = sys.argv[5]
+p.ROOT = source
+p.platform.system = lambda: "Linux"
+p.platform.machine = lambda: "aarch64"
+publish, produce, validate = p.runtime.publish, p.produce, p.validate
+p.runtime.publish = lambda producer, **options: publish(producer, root, **options)
+p.produce = lambda output: produce(output, source, receipt)
+p.validate = lambda output: validate(output, source, receipt)
+def expire():
+    signal.setitimer(signal.ITIMER_REAL, 0.01)
+    time.sleep(0.05)
+if phase == "preflight":
+    admit = p.admit_prepared
+    def interrupted_admission(*args):
+        print("preflight", flush=True)
+        expire()
+        return admit(*args)
+    p.admit_prepared = interrupted_admission
+elif phase in ("acquisition", "termination"):
+    allocate = p.runtime.tempfile.mkdtemp
+    def interrupted_acquisition(*args, **kwargs):
+        created = allocate(*args, **kwargs)
+        if kwargs.get("prefix") == ".pending-":
+            print("acquired-before-return", flush=True)
+            if phase == "termination":
+                signal.raise_signal(signal.SIGTERM)
+            else:
+                expire()
+            assert signal.SIGTERM in signal.sigpending(), "termination must wait for ownership"
+        return created
+    p.runtime.tempfile.mkdtemp = interrupted_acquisition
+else:
+    write = p.pages._write_text
+    def interrupted_write(path, content):
+        write(path, content)
+        print("partial-written", flush=True)
+        expire()
+    p.pages._write_text = interrupted_write
+p.run_projection()
+'''
+        for phase, marker, status in (
+            ("preflight", "preflight", 124),
+            ("acquisition", "acquired-before-return", 124),
+            ("partial", "partial-written", 124),
+            ("termination", "acquired-before-return", 143),
+        ):
+            with self.subTest(phase=phase):
+                process = subprocess.run(
+                    [sys.executable, "-B", "-c", code, str(ROOT / "infra"),
+                     str(context / "source"), str(context / "context-receipt.json"),
+                     str(prior.parent), phase],
+                    capture_output=True, text=True, timeout=10,
+                )
+                self.assertEqual(process.returncode, status, process.stderr)
+                self.assertIn(marker, process.stdout)
+                self.assertNotIn('"completed"', process.stdout)
+                self.assertEqual(tree(prior), before)
+                self.assertEqual({p.name for p in prior.parent.iterdir()}, {prior.name})
+
     def test_real_termination_cleans_partial_projection_and_retains_prior_run(self):
         context = self.prepare()
         prior = self.publish(context)

@@ -308,8 +308,15 @@ def validate(output: Path, source: Path = ROOT, receipt_path: Path = ROOT.parent
 
 
 def run_projection() -> None:
+    timed_out = False
+    def interrupted(number, _frame):
+        raise SystemExit(128 + number)
     def expired(_number, _frame):
-        raise SystemExit(124)
+        nonlocal timed_out
+        timed_out = True
+        # The shared publisher defers SIGTERM until acquisition records ownership.
+        signal.raise_signal(signal.SIGTERM)
+    previous_term = signal.signal(signal.SIGTERM, interrupted)
     previous = signal.signal(signal.SIGALRM, expired)
     signal.alarm(JOB_SECONDS)
     try:
@@ -318,9 +325,14 @@ def run_projection() -> None:
         if platform.system() != "Linux" or request["platform"] != f"linux/{machine}":
             raise job.ContextError("projection-runtime-platform")
         runtime.run(produce, validate=validate)
+    except SystemExit as exc:
+        if timed_out and exc.code == 128 + signal.SIGTERM:
+            raise SystemExit(124) from None
+        raise
     finally:
         signal.alarm(0)
         signal.signal(signal.SIGALRM, previous)
+        signal.signal(signal.SIGTERM, previous_term)
 
 
 def main() -> int:
