@@ -1,4 +1,5 @@
-"""Use the source-owned schema validator on its admitted example pairs."""
+"""Select the standard-library validation job or the confined Pages projection."""
+import argparse
 import json
 from pathlib import Path
 import sys
@@ -14,4 +15,12 @@ def produce(output):
         if errors: raise ValueError("governance-example-admission")
     (output/"validation.json").write_text(json.dumps({"status":"passed","pairs":[{"schema":s,"document":d} for s,d in pairs]},sort_keys=True,indent=2)+"\n")
 
-if __name__=="__main__": run(produce)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--profile", choices=("validation", "projection"), default="validation")
+    args = parser.parse_args()
+    if args.profile == "projection":
+        from container_projection import run_projection
+        run_projection()
+    else:
+        run(produce)
