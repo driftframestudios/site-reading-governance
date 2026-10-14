@@ -31,6 +31,18 @@ assurance extensions are owned by
 The shared administrative meanings stay with Program; Governance describes
 how evidence, review, recourse, and acceptance support their use.
 
+## Review an administrative evidence packet
+
+The [assurance guide](docs/ADMINISTRATIVE_ASSURANCE.md) receives digest-bound
+scenario, study, comparison, and capability records. Start with the local
+capability example, then use the optional upstream profile for a complete
+study. Each companion separates the proposed statement, evidence class,
+review authority, omitted dimensions, and correction route.
+
+The [runbook index](.agents/runbooks/index.md) routes population review,
+decision recourse, invalidation, and contract handoff. These source-level
+profiles prepare reviewed work; publication follows its tagged release gate.
+
 ## Current state
 
 The release line and the later evidence line answer different questions:

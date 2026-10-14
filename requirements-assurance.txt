@@ -1,0 +1,4 @@
+# Optional offline study owners; install in a dedicated environment.
+lims-eln-program-specification @ git+https://github.com/driftframestudios/lims-eln-program-specification.git@83a97deb76b9a5636cc7da484d350d5556c51661
+lims-eln-simulated-final-state @ git+https://github.com/driftframestudios/lims-eln-simulated-final-state.git@8c31ab403207c1797da0cb55b5aaee0cf690aa75
+lims-eln-comparative-evidence @ git+https://github.com/driftframestudios/lims-eln-comparative-evidence.git@47be93b7539b98df87bcd5530683efe90f7a7713
