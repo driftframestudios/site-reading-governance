@@ -1205,6 +1205,95 @@ class GovernancePackageTests(unittest.TestCase):
         self.assertIn("PostgreSQL instant fields use timestamptz", messages)
         self.assertIn("foreign-key target field must resolve", messages)
 
+    def test_database_contract_requires_coherent_key_and_decimal_declarations(self) -> None:
+        def unequal_arity(entities):
+            entities[1]["constraints"][0]["field_ids"].append("FIELD-RESULT-ID-001")
+
+        def nonunique_target(entities):
+            field = dict(entities[0]["fields"][0])
+            field.update(field_id="FIELD-SPECIMEN-OTHER-001", column_name="other_id")
+            entities[0]["fields"].append(field)
+            entities[1]["constraints"][0]["referenced_field_ids"] = [field["field_id"]]
+
+        def nullable_primary(entities):
+            entities[0]["fields"][0]["nullable"] = True
+
+        def decimal_disagreement(entities):
+            entities[1]["fields"][2]["physical_type"] = "numeric(6,2)"
+
+        for mutate, expected_path, expected_message in (
+            (unequal_arity, "constraints[0].referenced_field_ids", "equal column counts"),
+            (nonunique_target, "constraints[0].referenced_field_ids", "primary or unique key"),
+            (nullable_primary, "fields[0].nullable", "nonnullable"),
+            (decimal_disagreement, "fields[2].physical_type", "precision and scale"),
+        ):
+            with self.subTest(case=mutate.__name__):
+                records = load_database_examples()
+                mutate(records["data-contract.json"]["entities"])
+                self.assertEqual([], validation.SchemaValidator(
+                    ROOT / "schemas" / "data-contract.schema.json"
+                ).validate(records["data-contract.json"]))
+                findings = validation._validate_database_examples(records)
+                self.assertTrue(any(
+                    expected_path in item.path and expected_message in item.message
+                    for item in findings
+                ), findings)
+
+    def test_database_contract_accepts_composite_unique_and_self_references(self) -> None:
+        for key_kind in ("primary", "unique"):
+            with self.subTest(key_kind=key_kind):
+                records = load_database_examples()
+                parent, child = records["data-contract.json"]["entities"]
+                extra = dict(parent["fields"][0])
+                extra.update(field_id="FIELD-SPECIMEN-OTHER-001", column_name="other_id")
+                parent["fields"].append(extra)
+                target_ids = [parent["fields"][0]["field_id"], extra["field_id"]]
+                if key_kind == "primary":
+                    parent["primary_key_field_ids"] = target_ids
+                else:
+                    parent["constraints"].append({
+                        "constraint_id": "CONSTRAINT-SPECIMEN-UNIQUE-001",
+                        "constraint_type": "unique", "field_ids": target_ids,
+                        "validation_state": "validated",
+                    })
+                child["constraints"][0]["field_ids"].append("FIELD-RESULT-ID-001")
+                child["constraints"][0]["referenced_field_ids"] = target_ids[::-1]
+                parent["constraints"].append({
+                    "constraint_id": "CONSTRAINT-SPECIMEN-SELF-001",
+                    "constraint_type": "foreign_key", "field_ids": target_ids,
+                    "referenced_entity_id": parent["entity_id"],
+                    "referenced_field_ids": target_ids, "validation_state": "validated",
+                })
+                child["fields"][2]["physical_type"] = "decimal(18,6)"
+                self.assertEqual([], validation.SchemaValidator(
+                    ROOT / "schemas" / "data-contract.schema.json"
+                ).validate(records["data-contract.json"]))
+                self.assertEqual([], validation._validate_database_examples(records))
+
+    def test_migration_receipt_binds_phase_identity_to_its_sequence(self) -> None:
+        records = load_database_examples()
+        phases = records["database-migration-receipt.json"]["phase_results"]
+        phases[0]["phase_id"], phases[1]["phase_id"] = phases[1]["phase_id"], phases[0]["phase_id"]
+        findings = validation._validate_database_examples(records)
+        self.assertTrue(any(
+            item.path == "examples/database-migration-receipt.json.phase_results"
+            and "phase order must match" in item.message
+            for item in findings
+        ), findings)
+
+    def test_database_numeric_diagnostics_preserve_structural_failure_reporting(self) -> None:
+        records = load_database_examples()
+        field = records["data-contract.json"]["entities"][1]["fields"][2]
+        field["physical_type"] = "numeric(" + "9" * 4400 + ",6)"
+        structural = validation.SchemaValidator(
+            ROOT / "schemas" / "data-contract.schema.json"
+        ).validate(records["data-contract.json"])
+        self.assertTrue(any("maxLength" in item.message for item in structural))
+        findings = validation._validate_database_examples(records)
+        self.assertTrue(any("precision and scale" in item.message for item in findings))
+        field["physical_type"] = "numeric(18,006)"
+        self.assertEqual([], validation._validate_database_examples(records))
+
     def test_destructive_migration_requires_scoped_approval(self) -> None:
         schema = ROOT / "schemas" / "database-migration-plan.schema.json"
         document = json.loads(

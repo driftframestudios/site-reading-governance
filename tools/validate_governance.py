@@ -1015,10 +1015,26 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
     entities = {
         entity.get("entity_id"): entity for entity in contract.get("entities", [])
     }
+    fields_by_entity = {
+        entity_id: {field.get("field_id"): field for field in entity.get("fields", [])}
+        for entity_id, entity in entities.items()
+    }
+    keys_by_entity = {
+        entity_id: {
+            frozenset(entity.get("primary_key_field_ids", [])),
+            *(
+                frozenset(constraint.get("field_ids", []))
+                for constraint in entity.get("constraints", [])
+                if constraint.get("constraint_type") == "unique"
+            ),
+        }
+        for entity_id, entity in entities.items()
+    }
     engine_family = contract.get("database", {}).get("engine_family")
     for entity_index, entity in enumerate(contract.get("entities", [])):
         field_ids = [field.get("field_id") for field in entity.get("fields", [])]
         field_id_set = set(field_ids)
+        primary_key_ids = set(entity.get("primary_key_field_ids", []))
         if len(field_ids) != len(field_id_set):
             findings.append(
                 Finding(
@@ -1026,7 +1042,7 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
                     "field identifiers must be unique within one entity",
                 )
             )
-        if not set(entity.get("primary_key_field_ids", [])).issubset(field_id_set):
+        if not primary_key_ids.issubset(field_id_set):
             findings.append(
                 Finding(
                     f"examples/data-contract.json.entities[{entity_index}].primary_key_field_ids",
@@ -1034,6 +1050,17 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
                 )
             )
         for field_index, field in enumerate(entity.get("fields", [])):
+            if (
+                field.get("field_id") in primary_key_ids
+                and field.get("nullable") is not False
+            ):
+                findings.append(
+                    Finding(
+                        f"examples/data-contract.json.entities[{entity_index}]"
+                        f".fields[{field_index}].nullable",
+                        "primary-key fields require nonnullable values",
+                    )
+                )
             physical_type = str(field.get("physical_type", "")).lower()
             semantic_type = field.get("semantic_type")
             expected_postgresql_type = {
@@ -1053,19 +1080,20 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
                         f"PostgreSQL {semantic_type} fields use {expected_postgresql_type}",
                     )
                 )
-            if (
-                engine_family == "postgresql"
-                and semantic_type == "exact_decimal"
-                and re.fullmatch(r"(?:numeric|decimal)\([1-9][0-9]*,[0-9]+\)", physical_type)
-                is None
-            ):
-                findings.append(
-                    Finding(
-                        f"examples/data-contract.json.entities[{entity_index}]"
-                        f".fields[{field_index}].physical_type",
-                        "PostgreSQL exact-decimal fields use declared numeric precision and scale",
-                    )
+            if engine_family == "postgresql" and semantic_type == "exact_decimal":
+                numeric = re.fullmatch(
+                    r"(?:numeric|decimal)\(([1-9][0-9]*),([0-9]+)\)", physical_type
                 )
+                if numeric is None or (
+                    numeric.group(1), numeric.group(2).lstrip("0") or "0"
+                ) != (str(field.get("precision")), str(field.get("scale"))):
+                    findings.append(
+                        Finding(
+                            f"examples/data-contract.json.entities[{entity_index}]"
+                            f".fields[{field_index}].physical_type",
+                            "PostgreSQL exact-decimal fields use declared numeric precision and scale",
+                        )
+                    )
         for constraint_index, constraint in enumerate(entity.get("constraints", [])):
             if not set(constraint.get("field_ids", [])).issubset(field_id_set):
                 findings.append(
@@ -1076,6 +1104,16 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
                     )
                 )
             if constraint.get("constraint_type") == "foreign_key":
+                source_ids = constraint.get("field_ids", [])
+                referenced_ids = constraint.get("referenced_field_ids", [])
+                if len(source_ids) != len(referenced_ids):
+                    findings.append(
+                        Finding(
+                            f"examples/data-contract.json.entities[{entity_index}]"
+                            f".constraints[{constraint_index}].referenced_field_ids",
+                            "foreign-key source and target require equal column counts",
+                        )
+                    )
                 target = entities.get(constraint.get("referenced_entity_id"))
                 if target is None:
                     findings.append(
@@ -1086,17 +1124,22 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
                         )
                     )
                 else:
-                    target_field_ids = {
-                        field.get("field_id") for field in target.get("fields", [])
-                    }
-                    if not set(constraint.get("referenced_field_ids", [])).issubset(
-                        target_field_ids
-                    ):
+                    target_id = constraint.get("referenced_entity_id")
+                    target_field_ids = fields_by_entity[target_id]
+                    if not set(referenced_ids).issubset(target_field_ids):
                         findings.append(
                             Finding(
                                 f"examples/data-contract.json.entities[{entity_index}]"
                                 f".constraints[{constraint_index}].referenced_field_ids",
                                 "every foreign-key target field must resolve",
+                            )
+                        )
+                    elif frozenset(referenced_ids) not in keys_by_entity[target_id]:
+                        findings.append(
+                            Finding(
+                                f"examples/data-contract.json.entities[{entity_index}]"
+                                f".constraints[{constraint_index}].referenced_field_ids",
+                                "foreign-key target fields require a declared primary or unique key",
                             )
                         )
 
@@ -1186,7 +1229,9 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
                 "execution receipt must cover every planned phase exactly once",
             )
         )
-    if receipt_phase_sequences != phase_sequences:
+    if list(zip(receipt_phase_ids, receipt_phase_sequences)) != list(
+        zip(phase_ids, phase_sequences)
+    ):
         findings.append(
             Finding(
                 "examples/database-migration-receipt.json.phase_results",
