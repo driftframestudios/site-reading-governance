@@ -92,6 +92,69 @@ class AssuranceCompanionTests(unittest.TestCase):
         self.assertEqual(successor['claims'][0]['review_state'],'reviewed')
         with self.assertRaises(AssuranceError): record_review(prior,claim_id='CLAIM-EXECUTION-001',successor_id='ASSURANCE-REVIEW-003',note='Review request')
 
+    def test_escaped_surrogates_receive_typed_json_recovery(self):
+        for scalar in ('\ud800', '\udfff'):
+            mutations = (
+                lambda r: r.update(intended_use='Review ' + scalar),
+                lambda r: r['claims'][0].update(statement='Claim ' + scalar),
+                lambda r: r['reviewer'].update(display_name='Reviewer ' + scalar),
+                lambda r: r['reviewer'].update({scalar: 'value'}),
+            )
+            for index, mutation in enumerate(mutations):
+                with self.subTest(scalar=repr(scalar), field=index):
+                    request = copy.deepcopy(self.request)
+                    mutation(request)
+                    payload = json.dumps(request, ensure_ascii=True).encode('ascii')
+                    with self.assertRaises(AssuranceError) as error:
+                        receive(payload, self.artifacts)
+                    self.assertEqual(error.exception.code, 'input_json')
+            with self.subTest(scalar=repr(scalar), field='artifact-key'):
+                artifact = json.loads(self.artifacts['capability'])
+                artifact[scalar] = 'value'
+                payload = json.dumps(artifact, ensure_ascii=True).encode('ascii')
+                request = copy.deepcopy(self.request)
+                request['artifacts'][0]['digest'] = digest(payload)
+                with self.assertRaises(AssuranceError) as error:
+                    receive(encoded(request), {'capability': payload})
+                self.assertEqual(error.exception.code, 'input_json')
+
+    def test_direct_records_and_successor_text_require_unicode_scalars(self):
+        for scalar in ('\ud800', '\udfff'):
+            prior = self.accepted()
+            snapshot = encoded(prior)
+            for transition in ('validate', 'review', 'invalidate'):
+                with self.subTest(scalar=repr(scalar), transition=transition):
+                    with self.assertRaises(AssuranceError) as error:
+                        if transition == 'validate':
+                            altered = copy.deepcopy(prior)
+                            altered['claims'][0]['statement'] += scalar
+                            validate_record(altered)
+                        elif transition == 'review':
+                            record_review(prior, claim_id='CLAIM-COMPOSITION-001', successor_id='ASSURANCE-REVIEW-002', note='Review ' + scalar)
+                        else:
+                            invalidate(prior, changed_bindings=frozenset({'intended_use'}), successor_id='ASSURANCE-CHANGE-002', reason='Changed ' + scalar)
+                    self.assertEqual(error.exception.code, 'record_shape')
+                    self.assertEqual(encoded(prior), snapshot)
+
+    def test_unicode_text_preserves_exact_encoding_across_transitions(self):
+        text = 'Review café, cafe\u0301, and \U0001f9ea.'
+        self.request['intended_use'] = text
+        self.request['claims'][0]['statement'] = text
+        self.request['reviewer']['display_name'] = text
+        # The escaped supplementary pair and literal UTF-8 produce the same text.
+        prior = receive(json.dumps(self.request, ensure_ascii=True).encode('ascii'), self.artifacts)
+        self.assertEqual(prior, self.accepted())
+        self.assertEqual(prior['assessment']['bindings']['intended_use'], digest(text.encode('utf-8')))
+        reviewed = record_review(prior, claim_id='CLAIM-COMPOSITION-001', successor_id='ASSURANCE-REVIEW-002', note=text)
+        changed = invalidate(reviewed, changed_bindings=frozenset({'intended_use'}), successor_id='ASSURANCE-CHANGE-003', reason=text)
+        self.assertEqual(reviewed['prior_digest'], digest(encoded(prior)))
+        self.assertEqual(changed['prior_digest'], digest(encoded(reviewed)))
+        self.assertEqual(reviewed['claims'][0]['review_note'], text)
+        self.assertEqual(changed['change']['reason'], text)
+        for record in (prior, reviewed, changed):
+            self.assertEqual(json.loads(encoded(record)), record)
+            self.assertIn(text, render_markdown(record))
+
     def test_policy_change_preserves_unaffected_composition(self):
         prior=self.accepted()
         successor=invalidate(prior,changed_bindings=frozenset({'policy'}),successor_id='ASSURANCE-CHANGE-002',reason='The source policy effective window changed; study claims receive fresh admission.')

@@ -53,6 +53,12 @@ artifact digests and upstream canonical semantic digests are labeled separately.
 A supplied commit identifies the proposed provenance coordinate; its acceptance
 comes from source review. A matching digest establishes content identity.
 
+JSON keys and text values carry Unicode scalar text that encodes as UTF-8.
+Admission and direct review transitions check this boundary before returning a
+record, preserving accepted text exactly for rendering and digest binding.
+Escaped lone surrogates receive the existing `input_json` or `record_shape`
+recovery code so the caller can supply corrected text.
+
 ## Compatibility and ownership
 
 | Input | Meaning and admission owner | Governance receiving job |

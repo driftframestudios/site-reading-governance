@@ -49,13 +49,27 @@ def digest(payload: bytes) -> str:
     return "sha256:" + hashlib.sha256(payload).hexdigest()
 
 
+def _validate_unicode(value: object) -> None:
+    """Require UTF-8 scalar text in JSON keys and values, preserving exact text."""
+    if isinstance(value, str):
+        value.encode("utf-8")
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            _validate_unicode(key)
+            _validate_unicode(item)
+    elif isinstance(value, list):
+        for item in value:
+            _validate_unicode(item)
+
+
 def document(payload: bytes, label: str) -> dict:
     if type(payload) is not bytes or len(payload) > MAX_BYTES:
         raise AssuranceError("input_size", f"Supply bounded UTF-8 JSON for {label}.")
     try:
         value = load_json_bytes(payload)
+        _validate_unicode(value)
     except (ValueError, UnicodeError, RecursionError):
-        raise AssuranceError("input_json", f"Supply strict, finite JSON for {label}.") from None
+        raise AssuranceError("input_json", f"Supply strict, finite JSON with UTF-8 scalar text for {label}.") from None
     if type(value) is not dict:
         raise AssuranceError("input_object", f"Supply one object for {label}.")
     return value
@@ -64,6 +78,7 @@ def document(payload: bytes, label: str) -> dict:
 def validate_record(record: dict) -> None:
     """Check the closed schema and the profile's cross-field invariants."""
     try:
+        _validate_unicode(record)
         findings = SchemaValidator(SCHEMA).validate(record)
     except (ValueError, KeyError, RecursionError):
         raise AssuranceError("record_shape", "Use the declared assurance profile and its bounded fields.") from None
