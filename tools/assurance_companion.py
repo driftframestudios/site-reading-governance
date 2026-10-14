@@ -96,6 +96,69 @@ def validate_record(record: dict) -> None:
             raise AssuranceError("claim_ceiling", "Retain the received evidence class through review.")
 
 
+    _validate_assessment(record)
+
+
+def _claim_supported(kind: str, roles: set[str], population: Mapping[str, int] | None) -> bool:
+    """Choose a review entry from supplied roles and observed work, in O(1)."""
+    if kind == "capability_composition":
+        return "capability" in roles
+    if not STUDY_ROLES.issubset(roles) or population is None:
+        return False
+    if kind == "harness_behavior":
+        return population["attempted"] > 0
+    if kind == "output_comparison":
+        return all(population[key] > 0 for key in ("completed", "usable", "scored"))
+    return False
+
+
+def _validate_assessment(record: dict) -> None:
+    """Reconcile admitted metadata in O(artifacts + claims); source owners admit bytes."""
+    roles = {artifact["role"] for artifact in record["artifacts"]}
+    study_roles = roles & STUDY_ROLES
+    if study_roles and study_roles != STUDY_ROLES:
+        raise AssuranceError("study_membership", "Receive the pack, study, and report together.")
+    assessment = record["assessment"]
+    bindings = assessment["bindings"]
+    expected_bindings = roles | {"intended_use"}
+    if study_roles:
+        expected_bindings |= STUDY_BINDINGS
+    if set(bindings) != expected_bindings:
+        raise AssuranceError("assessment_bindings", "Re-admit the supplied artifacts to restore their complete binding set.")
+    if bindings["intended_use"] != digest(record["intended_use"].encode("utf-8")):
+        raise AssuranceError("assessment_binding", "Re-admit the artifacts for the current intended use.")
+    for artifact in record["artifacts"]:
+        if bindings[artifact["role"]] != artifact["digest"]:
+            raise AssuranceError("assessment_binding", "Re-admit the changed artifact before reviewing its claims.")
+    population = assessment["population"]
+    if study_roles:
+        if population is None:
+            raise AssuranceError("population_required", "Receive the study's complete population accounting.")
+        if assessment["evidence_class"] not in {"fixture_demonstration", "caller_supplied_synthetic"}:
+            raise AssuranceError("assessment_evidence", "Retain the study owner's declared evidence class.")
+        disagreements = assessment["scientific_disagreements"]
+        if disagreements is None or disagreements > population["scored"]:
+            raise AssuranceError("assessment_evidence", "Bind scientific disagreements to the scored population.")
+    elif (population is not None or assessment["represented_dimensions"]
+          or assessment["scientific_disagreements"] is not None
+          or assessment["evidence_class"] != "composition_only"):
+        raise AssuranceError("assessment_evidence", "Keep capability composition distinct from study observations.")
+    for claim in record["claims"]:
+        ceiling = ("composition_only" if claim["claim_type"] == "capability_composition"
+                   else assessment["evidence_class"])
+        if claim["review_state"] in {"review_ready", "reviewed"}:
+            if not _claim_supported(claim["claim_type"], roles, population):
+                raise AssuranceError("claim_support", "Receive the artifacts and observations required by this claim before review.")
+            if claim["evidence_ceiling"] != ceiling:
+                raise AssuranceError("claim_ceiling", "Retain the evidence class established by the claim's source.")
+        elif claim["evidence_ceiling"] not in {"pending", ceiling}:
+            raise AssuranceError("claim_ceiling", "Retain the prior source's ceiling while the claim is held.")
+        change = record["change"]
+        if (change and set(change["bindings"]) & set(claim["depends_on"])
+                and claim["review_state"] != "held"):
+            raise AssuranceError("claim_invalidation", "Re-admit affected evidence before creating a fresh review entry.")
+
+
 @dataclass(frozen=True)
 class StudyAssessment:
     bindings: Mapping[str, str]
@@ -152,7 +215,7 @@ def receive(request_bytes: bytes, artifacts: Mapping[str, bytes], *, study_recei
     result["assessment"] = assessment
     for claim in result["claims"]:
         kind = claim["claim_type"]
-        supported = (kind in {"harness_behavior", "output_comparison"} and bool(study_roles)) or (kind == "capability_composition" and "capability" in expected)
+        supported = _claim_supported(claim["claim_type"], set(expected), assessment["population"])
         claim["review_state"] = "review_ready" if supported else "held"
         claim["evidence_ceiling"] = "composition_only" if kind == "capability_composition" and supported else assessment["evidence_class"] if supported else "pending"
         claim["review_note"] = "A named reviewer can assess this statement within its recorded evidence class." if supported else "Receive evidence for this claim's population, environment, and authority before scoped review."

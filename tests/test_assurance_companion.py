@@ -27,11 +27,54 @@ class AssuranceCompanionTests(unittest.TestCase):
         self.assertEqual([c['review_state'] for c in result['claims']], ['review_ready', 'held'])
 
     def test_reference_boundaries(self):
-        for mutation, code in ((lambda r: r['artifacts'].append(copy.deepcopy(r['artifacts'][0])), 'duplicate_reference'), (lambda r: r['artifacts'][0].update(digest='sha256:'+'0'*64), 'artifact_digest'), (lambda r: r['artifacts'][0].update(schema_id='urn:unsupported:1'), 'artifact_schema'), (lambda r: r['claims'][0].update(depends_on=['capability']), 'claim_dependencies'), (lambda r: r['claims'][0].update(review_state='reviewed'), 'request_review')):
+        for mutation, code in ((lambda r: r['artifacts'].append(copy.deepcopy(r['artifacts'][0])), 'record_shape'), (lambda r: r['artifacts'][0].update(digest='sha256:'+'0'*64), 'artifact_digest'), (lambda r: r['artifacts'][0].update(schema_id='urn:unsupported:1'), 'artifact_schema'), (lambda r: r['claims'][0].update(depends_on=['capability']), 'claim_dependencies'), (lambda r: r['claims'][0].update(review_state='reviewed'), 'request_review')):
             with self.subTest(code=code):
                 request=copy.deepcopy(self.request);mutation(request)
                 with self.assertRaises(AssuranceError) as error: receive(encoded(request), self.artifacts)
                 self.assertEqual(error.exception.code, code)
+
+    def test_distinct_references_keep_role_and_identity_unique(self):
+        for changes in ({'artifact_id': 'ARTIFACT-CAPABILITY-002'}, {'role': 'study'}):
+            with self.subTest(changes=changes):
+                request = copy.deepcopy(self.request)
+                request['artifacts'].append({**request['artifacts'][0], **changes})
+                with self.assertRaises(AssuranceError) as error:
+                    receive(encoded(request), self.artifacts)
+                self.assertEqual(error.exception.code, 'duplicate_reference')
+
+    def test_companion_readmission_reconciles_binding_and_claim_support(self):
+        mutations = (
+            ('intended-use', lambda r: r.update(intended_use='A changed receiving decision.'), 'assessment_binding'),
+            ('missing-binding', lambda r: r['assessment']['bindings'].pop('capability'), 'assessment_bindings'),
+            ('artifact-digest', lambda r: r['artifacts'][0].update(digest='sha256:' + '0' * 64), 'assessment_binding'),
+            ('extra-binding', lambda r: r['assessment']['bindings'].update(policy='sha256:' + '0' * 64), 'assessment_bindings'),
+            ('unsupported-claim', lambda r: r['claims'][0].update(claim_type='output_comparison', depends_on=sorted(DEPENDENCIES['output_comparison'])), 'claim_support'),
+        )
+        for name, mutation, code in mutations:
+            for transition in ('validate', 'review', 'invalidate'):
+                with self.subTest(mutation=name, transition=transition):
+                    record = self.accepted()
+                    mutation(record)
+                    snapshot = encoded(record)
+                    with self.assertRaises(AssuranceError) as error:
+                        if transition == 'validate':
+                            validate_record(record)
+                        elif transition == 'review':
+                            record_review(record, claim_id='CLAIM-COMPOSITION-001', successor_id='ASSURANCE-REVIEW-002', note='A scoped review.')
+                        else:
+                            invalidate(record, changed_bindings=frozenset({'policy'}), successor_id='ASSURANCE-CHANGE-002', reason='Receive the current policy.')
+                    self.assertEqual(error.exception.code, code)
+                    self.assertEqual(encoded(record), snapshot)
+
+    def test_invalidated_claim_stays_held_until_fresh_admission(self):
+        held = invalidate(self.accepted(), changed_bindings=frozenset({'intended_use'}), successor_id='ASSURANCE-CHANGE-002', reason='Receive evidence for the revised use.')
+        for state in ('review_ready', 'reviewed'):
+            with self.subTest(state=state):
+                altered = copy.deepcopy(held)
+                altered['claims'][0]['review_state'] = state
+                with self.assertRaises(AssuranceError) as error:
+                    validate_record(altered)
+                self.assertEqual(error.exception.code, 'claim_invalidation')
 
     def test_exact_membership_and_strict_json(self):
         for artifacts in ({}, {**self.artifacts,'study':b'{}'}):

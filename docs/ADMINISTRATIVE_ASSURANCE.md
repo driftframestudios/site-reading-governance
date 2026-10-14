@@ -95,3 +95,35 @@ organizational-acceptance profile supplies its evidence contract and versioned
 migration. Public projection proceeds through the separately approved site release.
 
 [Return to repository orientation](../README.md)
+
+## Review entry and retained evidence
+
+The receiver reconciles every supplied artifact digest with its named assessment
+binding, binds the exact intended-use text, and requires the complete role-specific
+binding set. The same eligibility rule governs initial admission and subsequent
+review. An observation-free study retains its planned denominator and source
+identities; its output-comparison claim stays held until completed, usable, and
+scored observations are available. A capability response supports composition
+review. Configured execution and population effects receive their own evidence.
+
+A successor preserves the prior record and its digest. Policy or intended-use
+changes hold dependent claims; unaffected composition claims retain their prior
+standing. Fresh evidence enters through artifact admission. Companion validation
+checks internal consistency. Source admission and accountable review establish
+provenance and permitted use; a content digest identifies the supplied bytes.
+
+### Focused exercise
+
+Run the existing assurance test family in the contracts-enabled environment:
+
+```sh
+python -m unittest discover -s tests -p 'test_assurance_*.py' -v
+```
+
+The exercise uses the designed 144-run population: 136 attempted, 128 completed,
+128 usable, 128 scored, four pending, four abstained, four failed, four excluded,
+and zero cancelled. It checks each source binding against its named input owner,
+retains a raw label including its surrounding spaces, reviews the fixture-level
+comparison, holds a population-effect claim, and invalidates dependent claims after
+policy and intended-use changes. The complete administrative decision, override,
+and recourse procedures remain the next exercise under Issue #39.
