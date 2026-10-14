@@ -60,6 +60,12 @@ validation.
 from each standalone record schema to its synthetic example. `common.schema.json`
 supplies shared definitions and therefore has no standalone example.
 
+Program owns the external database lifecycle 1.0.0 schema and semantic rules.
+Governance's [lifecycle receiver](../docs/DATABASE_LIFECYCLE_ASSURANCE.md)
+binds its reviewed package and schema bytes through a separate optional
+profile, then keeps declared operations distinct from configured execution
+and accountable acceptance.
+
 ### Contract invariants
 
 - Simulated receipts use simulation authority and retain actual acceptance as
