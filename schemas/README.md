@@ -53,6 +53,7 @@ validation.
 | [`database-migration-receipt.schema.json`](database-migration-receipt.schema.json) | Plan-bound execution, phase outcomes, environment coordinate, measurements, and recovery evidence |
 | [`data-reconciliation.schema.json`](data-reconciliation.schema.json) | Cohort-bound exact comparisons, scientific invariants, exceptions, and accountable review |
 | [`database-release-manifest.schema.json`](database-release-manifest.schema.json) | Contract, ordered migration, receipt, acceptance, finding, and evidence-bundle release coordinate |
+| [`administrative-assurance.schema.json`](administrative-assurance.schema.json) | Candidate profile 0.1: source-bound evidence, population accounting, scoped review, and successor recovery |
 | [`common.schema.json`](common.schema.json) | Shared identifiers, actors, artifacts, metrics, and boundaries |
 
 [`../examples/example-map.json`](../examples/example-map.json) owns the mapping

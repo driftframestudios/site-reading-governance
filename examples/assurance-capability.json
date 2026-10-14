@@ -1,0 +1,42 @@
+{
+  "contract_id": "urn:driftframe:lims-eln:workbench-capabilities:1.0.0",
+  "runtime": {
+    "state_adapter": "process_local",
+    "state_lifetime": "process",
+    "access_scope": "local_reference"
+  },
+  "shared_contracts": {
+    "expected_package_version": "0.6.1",
+    "expected_contract_version": "0.1.0",
+    "version_compatible": true
+  },
+  "operations": {
+    "summary": {
+      "method": "GET",
+      "path": "/api/workbench/summary",
+      "tenant_context": "header_and_query"
+    },
+    "specimen": {
+      "method": "GET",
+      "path": "/api/workbench/specimens/{specimen_id}",
+      "tenant_context": "header_and_query"
+    },
+    "observation": {
+      "method": "GET",
+      "path": "/api/workbench/observations/{run_id}",
+      "tenant_context": "header_and_query"
+    },
+    "golden_specimen": {
+      "method": "POST",
+      "path": "/api/workbench/golden-runs",
+      "tenant_context": "header_and_body"
+    },
+    "instrument_recovery": {
+      "method": "POST",
+      "path": "/api/workbench/instrument-recovery-runs",
+      "tenant_context": "header_and_body"
+    }
+  },
+  "administrative_interface": "python_library",
+  "readiness_path": "/health/ready"
+}
