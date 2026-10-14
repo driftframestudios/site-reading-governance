@@ -30,6 +30,10 @@ from validate_governance import validate_pair
 PROFILE = "infra/container-projection-profile.json"
 REQUEST = "infra/projection-input.json"
 JOB_SECONDS = 120
+SUPPORT_EXAMPLES = {
+    "assurance-request.json": "schemas/administrative-assurance.schema.json",
+    "assurance-capability.json": "contract-resources/workbench-capabilities.v1.schema.json",
+}
 REQUIRED = {
     PROFILE, REQUEST, "AUTHORS", "LICENSE", "requirements-projections.txt",
     "infra/container_entry.py", "infra/container_projection.py",
@@ -39,6 +43,9 @@ REQUIRED = {
     "schemas/README.md", "examples/example-map.json",
     "schema-projections/promotion-receipt/v1.0.0/promotion-receipt.graphql",
     "schema-projections/promotion-receipt/v1.0.0/coverage.json",
+    "contract-resources/assurance-source-map.json",
+    *SUPPORT_EXAMPLES.values(),
+    *("examples/" + name for name in SUPPORT_EXAMPLES),
 }
 
 
@@ -125,7 +132,7 @@ def wheel_closure(lock: bytes, wheels: object) -> None:
 
 
 def validate_examples(source: Path) -> None:
-    """Use the native pair validator for every member of the exact example map."""
+    """Validate mapped Governance examples and the two declared support inputs."""
     document = job.strict_document(job.regular_bytes(source, "examples/example-map.json"))
     if not isinstance(document, dict) or set(document) != {"schema_map"}:
         raise job.ContextError("projection-example-map")
@@ -137,13 +144,18 @@ def validate_examples(source: Path) -> None:
                 or not isinstance(schema, str)
                 or re.fullmatch(r"[a-z][a-z0-9-]*[.]schema[.]json", schema) is None):
             raise job.ContextError("projection-example-path")
-    if set(mapping) | {"example-map.json"} != {p.name for p in (source / "examples").glob("*.json")}:
+    if set(mapping) & SUPPORT_EXAMPLES.keys():
+        raise job.ContextError("projection-support-example-map")
+    if set(mapping) | SUPPORT_EXAMPLES.keys() | {"example-map.json"} != {p.name for p in (source / "examples").glob("*.json")}:
         raise job.ContextError("projection-example-membership")
     if set(mapping.values()) != {p.name for p in (source / "schemas").glob("*.schema.json") if p.name != "common.schema.json"}:
         raise job.ContextError("projection-schema-coverage")
     for example, schema in mapping.items():
         if validate_pair(source / "schemas" / schema, source / "examples" / example):
             raise job.ContextError("projection-example-admission")
+    for example, schema in SUPPORT_EXAMPLES.items():
+        if validate_pair(source / schema, source / "examples" / example):
+            raise job.ContextError("projection-support-admission")
 
 
 def prepare(source: Path, proof_path: Path, destination: Path, dependencies: Path,

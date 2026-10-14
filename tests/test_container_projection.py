@@ -117,7 +117,7 @@ class ProjectionTests(unittest.TestCase):
         first = self.publish(self.prepare("first", **options))
         second = self.publish(self.prepare("second", **options))
         expected = tree(native)
-        self.assertEqual(len(expected), 43)
+        self.assertEqual(len(expected), 44)
         self.assertEqual(tree(first / "payload/site"), expected)
         self.assertEqual(tree(second / "payload/site"), expected)
         manifest = json.loads(expected["manifest.json"])
@@ -126,7 +126,83 @@ class ProjectionTests(unittest.TestCase):
         for run in (first, second):
             receipt = json.loads((run / "job-receipt.json").read_bytes())
             self.assertEqual({r["path"] for r in receipt["files"]}, {"payload/" + name for name in tree(run / "payload")})
-            self.assertEqual(len(receipt["files"]), 44)
+            self.assertEqual(len(receipt["files"]), 45)
+
+    def test_integrated_assurance_inputs_retain_declared_owners_and_bytes(self):
+        expected = {
+            "schemas/administrative-assurance.schema.json",
+            "examples/administrative-assurance.json",
+            "examples/assurance-request.json",
+            "examples/assurance-capability.json",
+            "contract-resources/workbench-capabilities.v1.schema.json",
+            "contract-resources/assurance-source-map.json",
+        }
+        self.assertTrue(expected.issubset(self.profile["files"]))
+        mapping = json.loads((self.source / "examples/example-map.json").read_bytes())["schema_map"]
+        self.assertEqual(mapping["administrative-assurance.json"], "administrative-assurance.schema.json")
+        self.assertTrue({"assurance-request.json", "assurance-capability.json"}.isdisjoint(mapping))
+        context = self.prepare()
+        for name in expected:
+            with self.subTest(name=name):
+                self.assertEqual((context / "source" / name).read_bytes(), (ROOT / name).read_bytes())
+        copied = context / "source/contract-resources/workbench-capabilities.v1.schema.json"
+        provenance = json.loads((context / "source/contract-resources/assurance-source-map.json").read_bytes())
+        self.assertEqual(provenance["capability_schema"]["byte_digest"], "sha256:" + sha256(copied.read_bytes()).hexdigest())
+
+    def test_support_inputs_use_native_schema_admission_without_site_packages(self):
+        code = "import sys; sys.path.insert(0,'infra'); import container_projection as p; from pathlib import Path; p.validate_examples(Path('.')); assert not {'schema_projections', 'assurance_upstream', 'graphql', 'ruamel'} & sys.modules.keys()"
+        subprocess.run([sys.executable, "-B", "-S", "-c", code], cwd=self.source,
+                       check=True, capture_output=True)
+
+    def test_missing_malformed_and_schema_invalid_support_inputs_hold_preparation(self):
+        for name in ("assurance-request.json", "assurance-capability.json"):
+            path = self.source / "examples" / name
+            original = path.read_bytes()
+            invalid = json.loads(original)
+            if name == "assurance-request.json":
+                invalid["profile_version"] = "9.0.0"
+            else:
+                invalid["runtime"]["state_lifetime"] = "database"
+            for value in (None, b"{malformed", projection.encoded(invalid)):
+                with self.subTest(name=name, value=value):
+                    if value is None:
+                        path.unlink()
+                    else:
+                        path.write_bytes(value)
+                    self.commit()
+                    with self.assertRaises(ValueError):
+                        self.prepare()
+                    self.assertFalse((self.root / "context").exists())
+                    path.write_bytes(original)
+                    self.commit()
+
+    def test_support_inputs_keep_their_owners_outside_the_governance_map(self):
+        path = self.source / "examples/example-map.json"
+        original = path.read_bytes()
+        for name in ("assurance-request.json", "assurance-capability.json"):
+            with self.subTest(name=name):
+                document = json.loads(original)
+                document["schema_map"][name] = "administrative-assurance.schema.json"
+                path.write_bytes(projection.encoded(document))
+                self.commit()
+                with self.assertRaisesRegex(ValueError, "projection-support-example-map"):
+                    self.prepare()
+                self.assertFalse((self.root / "context").exists())
+        path.write_bytes(original)
+        self.commit()
+
+    def test_surplus_support_input_is_rejected_even_when_declared_in_profile(self):
+        name = "examples/extra-assurance.json"
+        (self.source / name).write_bytes((self.source / "examples/assurance-request.json").read_bytes())
+        for declared in (False, True):
+            with self.subTest(declared=declared):
+                if declared:
+                    altered = {**self.profile, "files": sorted([*self.profile["files"], name])}
+                    (self.source / projection.PROFILE).write_bytes(projection.encoded(altered))
+                self.commit()
+                with self.assertRaisesRegex(ValueError, "projection-example-membership" if declared else "projection-source-membership"):
+                    self.prepare()
+                self.assertFalse((self.root / "context").exists())
 
     def test_stdlib_validation_entry_operates_without_site_packages(self):
         code = "import sys; sys.path.insert(0,'infra'); import container_entry; from pathlib import Path; container_entry.produce(Path(sys.argv[1])); assert 'schema_projections' not in sys.modules"
@@ -149,7 +225,11 @@ class ProjectionTests(unittest.TestCase):
             self.prepare()
 
     def test_profile_cannot_omit_an_executed_owner_or_schema(self):
-        for name in ("tools/schema_projections.py", "schemas/receipt.schema.json"):
+        for name in ("tools/schema_projections.py", "schemas/receipt.schema.json",
+                     "schemas/administrative-assurance.schema.json",
+                     "examples/assurance-request.json", "examples/assurance-capability.json",
+                     "contract-resources/workbench-capabilities.v1.schema.json",
+                     "contract-resources/assurance-source-map.json"):
             with self.subTest(name=name):
                 altered = {**self.profile, "files": [p for p in self.profile["files"] if p != name]}
                 (self.source / projection.PROFILE).write_bytes(projection.encoded(altered))

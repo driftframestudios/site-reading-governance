@@ -1,0 +1,77 @@
+{
+  "companion_id": "ASSURANCE-CAPABILITY-001",
+  "profile_version": "0.1.0",
+  "record_kind": "companion",
+  "intended_use": "Inspect local-reference composition before a configured database exercise.",
+  "omitted_dimensions": [
+    "Configured execution",
+    "Remote caller authority",
+    "Population inference"
+  ],
+  "reviewer": {
+    "actor_id": "REVIEWER-ASSURANCE-001",
+    "display_name": "Example study reviewer",
+    "role": "Synthetic study assurance reviewer"
+  },
+  "authority_kind": "modeled_review_role",
+  "artifacts": [
+    {
+      "artifact_id": "ARTIFACT-CAPABILITY-001",
+      "role": "capability",
+      "schema_id": "urn:driftframe:lims-eln:workbench-capabilities:1.0.0",
+      "digest": "sha256:909fce0770e7aefe84e0cffb70bb3a4d86d743e1de09ee71d7047c24402909b0",
+      "source_commit": "6e7ee392100e147e6e0a66913a09205201f50df2"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "CLAIM-COMPOSITION-001",
+      "claim_type": "capability_composition",
+      "statement": "The supplied record declares a process-local adapter and its supported routes.",
+      "depends_on": [
+        "capability",
+        "intended_use"
+      ],
+      "review_state": "review_ready",
+      "evidence_ceiling": "composition_only",
+      "review_note": "A named reviewer can assess this statement within its recorded evidence class."
+    },
+    {
+      "claim_id": "CLAIM-EXECUTION-001",
+      "claim_type": "configured_execution",
+      "statement": "The selected database completes the intended administrative journey.",
+      "depends_on": [
+        "capability",
+        "intended_use"
+      ],
+      "review_state": "held",
+      "evidence_ceiling": "pending",
+      "review_note": "Receive evidence for this claim's population, environment, and authority before scoped review."
+    }
+  ],
+  "assessment": {
+    "evidence_class": "composition_only",
+    "bindings": {
+      "capability": "sha256:909fce0770e7aefe84e0cffb70bb3a4d86d743e1de09ee71d7047c24402909b0",
+      "intended_use": "sha256:9947d46d9d3af46da09401634a63c232c6ab1b1e157ab02a3aac00087b51bf55"
+    },
+    "population": null,
+    "represented_dimensions": [],
+    "scientific_disagreements": null,
+    "configured_execution": "pending",
+    "remote_authority": "pending"
+  },
+  "supersedes": null,
+  "prior_digest": null,
+  "change": null,
+  "metadata": {
+    "schema_version": "2.2.0",
+    "created_at": "2026-10-14T14:00:00Z",
+    "updated_at": "2026-10-14T14:00:00Z",
+    "owner": {
+      "actor_id": "REVIEWER-ASSURANCE-001",
+      "display_name": "Example study reviewer",
+      "role": "Synthetic study assurance reviewer"
+    }
+  }
+}

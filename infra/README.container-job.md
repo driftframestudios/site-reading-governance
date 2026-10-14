@@ -173,7 +173,22 @@ schema, mapped example, source catalog, GraphQL/coverage input, and scanned skil
 source is declared. Templates and CSS remain constants in the source-owned
 builder. Source-family omissions, changed prepared bytes, surplus prepared
 files/directories, and lock drift hold the job. Mapped examples pass their native
-schema-pair validator; full cross-record/release suites remain separate checks.
+schema-pair validator, including the administrative-assurance companion. Two
+explicit support inputs remain outside that Governance example map:
+
+| Support input | Structural validation owner |
+| --- | --- |
+| `examples/assurance-request.json` | `schemas/administrative-assurance.schema.json` |
+| `examples/assurance-capability.json` | Program's copied `contract-resources/workbench-capabilities.v1.schema.json` |
+
+The profile also retains `contract-resources/assurance-source-map.json` as the
+copied capability schema's provenance record. The existing standard-library
+schema-pair validator admits both support inputs. Every example belongs to the
+Governance map or this explicit support set; an additional profile entry alone
+does not admit another support input. Full assurance execution, cross-record
+binding, review transitions, and release suites retain their existing owners
+and dependency profiles. Projection preparation installs only the parser lock.
+
 Optional `--canonical-origin` and `--cname` keep the existing HTTPS and matching
 hostname contract and default to absent. Use identical settings for each build.
 
@@ -186,6 +201,17 @@ existing process, CPU, memory, and scratch limits. Dependencies install from the
 prepared closure with network disabled. The runtime has network disabled and a
 read-only image; its writable paths remain the owned output mount and bounded
 scratch space.
+
+Keep preparation, native-generation, and runtime temporary/output parents under
+exclusive operator control until cleanup finishes. Directory ownership alone
+does not establish that condition: permissions, ACLs, shared mounts, and other
+same-user processes can introduce concurrent writers. The builder and adapter
+use `TemporaryDirectory`; Program #67's saved CPython cleanup qualification
+therefore needs projection-specific disposition under Governance #43. The
+deadline fixture establishes interruption cleanup, not adversarial race
+resistance. Host preparation uses its separately identified interpreter and
+storage; runtime confinement describes the container stage. Preserve the saved
+advisory observations and exact dependency/base coordinates for that decision.
 
 ```sh
 mkdir -m 700 "$LIMS_JOB_OUTPUT" &&
@@ -223,9 +249,14 @@ The projection fixtures use real clean temporary Git sources, native builders,
 and independent complete byte maps. Synthetic wheel and patch bytes exercise
 admission only; configured image installation supplies package-execution
 evidence. Fault fixtures cover source and dependency membership, exact lock
-binding, malformed/missing examples, projection drift, changed source/proof,
+binding, malformed/missing mapped and support examples, support-owner separation,
+surplus input rejection, projection drift, changed source/proof,
 observed dependency versions, partial output, real termination, collisions, and
 retention of prior context/output bytes.
+
+With the integrated assurance schema and a CNAME, the native site contains 44
+files and the job receipt covers 45 payload members, including the construction
+record. These exact inventory assertions accompany complete byte equality.
 
 For configured acceptance, build the native site once and run two separately
 prepared contexts in isolated containers, then compare complete relative path
@@ -243,4 +274,8 @@ The resulting evidence and independent review return to Issue #43. Its remaining
 projection criterion and the all-five carrier gate in Program #65 stay with
 their named receivers. Source acceptance, construction evidence, carrier
 readiness, merge, tagging, and publication remain distinct decisions. This
-profile is independent of the administrative-assurance work in Issue #39.
+profile projects the integrated assurance schema and structurally admits its
+support fixtures; Issue #39's stateful assurance behavior keeps its own checks.
+Program #77 coordinates tagged SITE delivery through the existing Pages
+publication owners. Construction evidence leaves security disposition and
+release/publication approval with their accountable receivers.
