@@ -106,6 +106,15 @@ instants in canonical UTC, and numeric values remain finite. Database contracts
 express native temporal and exact-numeric storage separately from interchange
 encoding.
 
+The repository's six-record database example check also reconciles key
+membership, foreign-key column counts and declared target uniqueness,
+primary-key nullability, PostgreSQL numeric precision/scale, and each receipt
+phase's identity with its planned sequence. These are cross-record semantic
+checks in `tools/validate_governance.py`. Individual schema validation retains
+its structural scope; migrated catalog facts, engine-specific type
+compatibility, query plans, and restart observations come from the configured
+database receiver.
+
 ## Verify
 
 From the repository root, run the focused catalog and example checks:
