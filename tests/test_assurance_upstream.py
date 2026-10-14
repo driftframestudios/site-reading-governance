@@ -28,7 +28,7 @@ class UpstreamAssuranceTests(unittest.TestCase):
     def inputs(self):
         request=json.loads((ROOT/'examples/assurance-request.json').read_text())
         artifacts=dict(self.base)
-        request['artifacts']=[{'artifact_id':'ARTIFACT-'+role.upper()+'-001','role':role,'schema_id':json.loads(data)['$schema'],'digest':digest(data),'source_commit':{'pack':'8c31ab403207c1797da0cb55b5aaee0cf690aa75','study':'83a97deb76b9a5636cc7da484d350d5556c51661','report':'47be93b7539b98df87bcd5530683efe90f7a7713'}[role]} for role,data in artifacts.items()]
+        request['artifacts']=[{'artifact_id':'ARTIFACT-'+role.upper()+'-001','role':role,'schema_id':json.loads(data)['$schema'],'digest':digest(data),'source_commit':{'pack':'8c31ab403207c1797da0cb55b5aaee0cf690aa75','study':'83a97deb76b9a5636cc7da484d350d5556c51661','report':'98093c2021dce604564592074b67307338e374f6'}[role]} for role,data in artifacts.items()]
         request['claims']=[{'claim_id':'CLAIM-STUDY-001','claim_type':'output_comparison','statement':'The authored study preserves four designed scientific-output disagreements.','depends_on':sorted(DEPENDENCIES['output_comparison']),'review_state':'pending','evidence_ceiling':'pending','review_note':'Awaiting modeled review.'}]
         return request,artifacts
 
