@@ -89,6 +89,70 @@ ROOT_ORIENTATION_SCHEMAS = {
     "coordination-horizon.json": "coordination-horizon.schema.json",
     "promotion-receipt.json": "promotion-receipt.schema.json",
 }
+README_GRAPH_CONTRACTS = {
+    "README.md": (
+        "## Current state",
+        "## Choose your route",
+        "## Quickest proof",
+        "## Orientation records",
+        "## Evidence and authority",
+        "## Repository map",
+    ),
+    "schemas/README.md": (
+        "## Purpose",
+        "## Authority",
+        "## Use",
+        "## Verify",
+        "## Next route",
+        "## Return to repository root",
+    ),
+    "schema-projections/README.md": (
+        "## Purpose",
+        "## Authority",
+        "## Use",
+        "## Verify",
+        "## Next route",
+        "## Return to repository root",
+    ),
+    "language-policy/README.md": (
+        "## Purpose",
+        "## Authority",
+        "## Use",
+        "## Verify",
+        "## Next route",
+        "## Return to repository root",
+    ),
+    "release-receipts/README.md": (
+        "## Purpose",
+        "## Authority",
+        "## Use",
+        "## Verify",
+        "## Next route",
+        "## Return to repository root",
+    ),
+    "rulesets/README.md": (
+        "## Purpose",
+        "## Authority",
+        "## Use",
+        "## Verify",
+        "## Next route",
+        "## Return to repository root",
+    ),
+}
+MARKDOWN_LINK_TARGET = re.compile(r"\[[^\]]+\]\((?P<target>[^)]+)\)")
+README_DISCOVERY_EXCLUDED_PARTS = {
+    ".git",
+    ".mypy_cache",
+    ".nox",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".tox",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "node_modules",
+}
 ROOT_ORIENTATION_CONTRACTS = {
     "CONTRACT-SELECTED-FUTURE-CLOSURE-002": "2.0.0",
     "CONTRACT-AUTOMATION-BRANCH-POLICY-001": "1.0.0",
@@ -1413,6 +1477,167 @@ def validate_repository_orientation() -> list[Finding]:
     if set(records) != set(ROOT_ORIENTATION_SCHEMAS):
         return findings
     findings.extend(_validate_repository_orientation_records(records))
+    return findings
+
+
+def _markdown_headings(content: str) -> list[tuple[int, str]]:
+    """Return ordinary Markdown headings while leaving fenced examples inert."""
+    headings: list[tuple[int, str]] = []
+    fence: tuple[str, int] | None = None
+    for line in content.splitlines():
+        fence_match = re.match(r"^ {0,3}(?P<marker>`{3,}|~{3,})(?P<rest>.*)$", line)
+        if fence_match is not None:
+            marker = fence_match.group("marker")
+            if fence is None:
+                fence = (marker[0], len(marker))
+            elif (
+                marker[0] == fence[0]
+                and len(marker) >= fence[1]
+                and not fence_match.group("rest").strip()
+            ):
+                fence = None
+            continue
+        if fence is not None:
+            continue
+        match = re.match(r"^(#{1,6})\s+(.+?)\s*#*\s*$", line)
+        if match is not None:
+            headings.append((len(match.group(1)), match.group(2)))
+    return headings
+
+
+def _markdown_heading_ids(content: str) -> set[str]:
+    """Return stable GitHub-style identifiers for ordinary Markdown headings."""
+    identifiers: set[str] = set()
+    counts: dict[str, int] = {}
+    for _, heading in _markdown_headings(content):
+        label = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", heading)
+        label = label.replace("`", "").lower()
+        label = re.sub(r"[^a-z0-9 _-]", "", label)
+        base = re.sub(r"\s+", "-", label.strip())
+        count = counts.get(base, 0)
+        counts[base] = count + 1
+        identifiers.add(base if count == 0 else f"{base}-{count}")
+    return identifiers
+
+
+def _repository_readme_paths() -> set[str]:
+    """Return tracked and relevant untracked README paths for this checkout."""
+    try:
+        result = _run_git(
+            ROOT,
+            "ls-files",
+            "-z",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+            "--",
+            "*README.md",
+        )
+    except OSError:
+        result = None
+    if result is not None and result.returncode == 0:
+        return {
+            item.decode("utf-8")
+            for item in result.stdout.split(b"\0")
+            if item
+        }
+    return {
+        path.relative_to(ROOT).as_posix()
+        for path in ROOT.rglob("README.md")
+        if not any(
+            part in README_DISCOVERY_EXCLUDED_PARTS
+            for part in path.relative_to(ROOT).parts
+        )
+    }
+
+
+def validate_readme_graph() -> list[Finding]:
+    """Validate the registered orientation layers and their local routes."""
+    findings: list[Finding] = []
+    observed = _repository_readme_paths()
+    expected = set(README_GRAPH_CONTRACTS)
+    if observed != expected:
+        findings.append(
+            Finding(
+                "README graph",
+                "registered README membership differs; "
+                f"missing={sorted(expected - observed)}, "
+                f"unregistered={sorted(observed - expected)}",
+            )
+        )
+
+    contents: dict[Path, str] = {}
+    for relative, required_headings in README_GRAPH_CONTRACTS.items():
+        path = ROOT / relative
+        try:
+            content = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            findings.append(Finding(relative, str(exc)))
+            continue
+        contents[path.resolve()] = content
+        headings = {
+            f"{'#' * level} {label}"
+            for level, label in _markdown_headings(content)
+        }
+        for heading in required_headings:
+            if heading not in headings:
+                findings.append(
+                    Finding(relative, f"orientation route requires {heading!r}")
+                )
+        if relative != "README.md" and "](../README.md)" not in content:
+            findings.append(
+                Finding(relative, "nested orientation requires a root return route")
+            )
+
+        for match in MARKDOWN_LINK_TARGET.finditer(content):
+            target = match.group("target").strip()
+            route, fragment = urldefrag(target)
+            split = urlsplit(route)
+            if split.scheme or split.netloc:
+                continue
+            target_path = path if not split.path else (path.parent / split.path)
+            resolved = target_path.resolve()
+            try:
+                resolved.relative_to(ROOT.resolve())
+            except ValueError:
+                findings.append(
+                    Finding(
+                        relative,
+                        f"local Markdown route leaves the repository: {target}",
+                    )
+                )
+                continue
+            if not resolved.exists():
+                findings.append(
+                    Finding(relative, f"local Markdown route does not resolve: {target}")
+                )
+                continue
+            if fragment and resolved.is_file() and resolved.suffix == ".md":
+                target_content = contents.get(resolved)
+                if target_content is None:
+                    try:
+                        target_content = resolved.read_text(encoding="utf-8")
+                    except (OSError, UnicodeDecodeError) as exc:
+                        findings.append(Finding(relative, str(exc)))
+                        continue
+                    contents[resolved] = target_content
+                if fragment not in _markdown_heading_ids(target_content):
+                    findings.append(
+                        Finding(
+                            relative,
+                            f"local Markdown fragment does not resolve: {target}",
+                        )
+                    )
+
+    root_readme = contents.get((ROOT / "README.md").resolve(), "")
+    for record in ROOT_ORIENTATION_SCHEMAS:
+        if f"]({record})" not in root_readme:
+            findings.append(
+                Finding(
+                    "README.md",
+                    f"orientation set requires a route to {record}",
+                )
+            )
     return findings
 
 
@@ -2760,6 +2985,7 @@ def main(argv: list[str] | None = None) -> int:
         [
             *validate_schema_catalog(),
             *validate_examples(),
+            *validate_readme_graph(),
             *validate_repository_orientation(),
             *validate_historical_release_receipts(),
             *validate_public_ready_skills(),

@@ -1,118 +1,120 @@
 # Site Reading Governance
 
-This repository provides the shared schemas, examples, release evidence,
-language rules, and governance guidance used by the five-repository LIMS/ELN
-suite. Planning, implementation, simulation, and comparison repositories use
-its versioned contracts for decisions, scenarios, receipts, acceptance,
-comparison, and change-triggered review.
+Site Reading Governance is the shared rulebook and record format for a
+five-repository laboratory information management and electronic lab notebook
+(LIMS/ELN) collaboration. It gives teams stable schemas, worked examples,
+release evidence, language rules, and review boundaries so a plan,
+implementation result, simulation, comparison, or acceptance decision can
+travel with its meaning and authority intact.
 
 Repository authorship and maintenance provenance is recorded in
 [`AUTHORS`](AUTHORS). Git history and reviewed pull requests preserve change
 chronology and contribution credit.
 
-## Start here
+## Start with a result and its evidence
 
-1. Read [`GOVERNANCE.md`](GOVERNANCE.md) for meaning, decision rights, evidence
-   stages, review, and recovery.
-2. Use [`schemas/README.md`](schemas/README.md) to find the record you need, then
-   keep its stable identifier and release coordinate with each validation.
-3. Install the locked projection parsers, then run `make check` with Python
-   3.11 or newer. The focused JSON validation command in
-   [Quick start](#quick-start) remains dependency-free for downstream records.
-4. Start changes from `develop` using [`BRANCHING.md`](BRANCHING.md). Read
-   [`promotion-receipt.json`](promotion-receipt.json) when the accepted tag,
-   commit, archive digest, or release state affects the work.
-5. Use the repository-local
-   [`governance-schema-release-lineage`](.agents/skills/governance-schema-release-lineage/SKILL.md)
-   skill when one schema needs to be followed from source through release and
-   its byte-identical Pages retrieval copy.
+Use Governance to make a result understandable to the next reviewer: what was
+observed, what decision is being considered, who can accept it, and what would
+prompt a revision. The [schema guide](schemas/README.md) connects the record
+families with their examples and validation routes.
 
-[`first-receipt.json`](first-receipt.json) provides compact re-entry context.
-[`coordination-horizon.json`](coordination-horizon.json) records current work
-and the next evidence-bearing move.
+For example, take a laboratory comparison and identify the source evidence,
+intended use, review authority, and acceptance decision. Keep the observed
+result and the decision as related records so a future reviewer can inspect
+both. Program's [constellation starting guide](https://github.com/driftframestudios/lims-eln-program-specification/blob/main/docs/README.md)
+shows how that handoff connects to the workbench and comparison tools.
 
-The accepted Governance 2.2.0 retrieval artifact is available at
-[fieldformlab.org](https://fieldformlab.org/). Its manifest binds every public
-payload to the accepted release source.
+Insurance and administrative studies can start from the existing evidence and
+decision grammar. The dedicated provenance, population-claim, and decision
+assurance extensions are owned by
+[#38](https://github.com/driftframestudios/site-reading-governance/issues/38).
+The shared administrative meanings stay with Program; Governance describes
+how evidence, review, recourse, and acceptance support their use.
 
-## Repository-local collaboration guides
+## Current state
 
-Four self-contained guides support work when this is the only suite repository
-available:
+The release line and the later evidence line answer different questions:
 
-- [`governance-schema-release-lineage`](.agents/skills/governance-schema-release-lineage/SKILL.md)
-  follows one schema through tracked source, accepted release, byte-identical
-  Pages retrieval, and downstream use;
-- [`repository-reentry`](.agents/skills/repository-reentry/SKILL.md)
-  reconstructs current branch, release, root orientation, and live
-  collaboration state;
-- [`source-authority-mapping`](.agents/skills/source-authority-mapping/SKILL.md)
-  separates meaning, structure, executable checks, release acceptance,
-  delivery, and downstream use for a material Governance object; and
-- [`contextual-jargon-scan`](.agents/skills/contextual-jargon-scan/SKILL.md)
-  reviews a bounded prose change for useful precision and replaceable local
-  shorthand.
-
-The schema-release guide is public-ready and appears in Governance Pages. The
-other three remain public-possible while natural use tests their repository
-fit. They stay in the repository source workbench; the current public
-projection continues to carry the reviewed schema-release guide.
-
-The package is private-repository ready. Its examples use synthetic identifiers,
-its automation uses read-only permissions by default, and its ruleset exports
-can be reviewed before installation through the GitHub Rulesets API.
-
-Governance `2.2.0` is the accepted release. It keeps the stable `/v2.0/` schema
-identifiers and adds deterministic YAML and bounded GraphQL retrieval
-projections for promotion receipts. Those projections retain an explicit
-candidate standing while material use informs their next release decision.
-Governance 2.2.0 implements **Control Plane Profile v0.3**, the Enterprise
-Human-AI Practitioner Registry-derived capability profile for bounded callers,
-veracity, orientation, coordination, and future-reality simulation.
-
-## Constellation
-
-| Repository role | Purpose | Authority |
+| Coordinate | Current role | Read next |
 | --- | --- | --- |
-| Program specification | Intent, examples, risks, forecasts, and acceptance criteria | Desired behavior |
-| Enterprise implementation | Current code, infrastructure, migrations, and runbooks | Running implementation |
-| Simulated final state | Executable counterfactual with explicit assumptions | Forecast behavior |
-| Comparative evidence | Fixtures, normalizers, paired runs, and divergence adjudication | Comparison record |
-| Site Reading governance | Shared schemas, workflows, templates, and policy exports | Governance contract |
+| Annotated `governance-v2.2.0` tag | Identifies the accepted Governance 2.2.0 source subject on the protected `main` release line | [`STATUS.md`](STATUS.md) for the time-bounded source snapshot and [`BRANCHING.md`](BRANCHING.md) for the lifecycle |
+| `develop` | Carries the later observed release receipt and accepted-source Governance Pages publication evidence | The [four orientation records](#orientation-records) at the `develop` coordinate |
+| Promotion-receipt projection family | Retains candidate standing while JSON Schema remains its validation authority | [`schema-projections/README.md`](schema-projections/README.md) |
+| Downstream repositories | Choose when Governance 2.2.0 adoption becomes material and validate their own representative records | [`docs/ADOPTION.md`](docs/ADOPTION.md) |
 
-Runtime code flows from the program specification into each implementation
-through released, digest-pinned contracts. Learning flows back through reviewed
-decision records. The actual implementation and simulated final state maintain
-independent source histories.
+The files in the tagged source tree describe the state that was knowable when
+the release subject formed. The same root record paths on `develop` carry the
+later observation. Read the four records from one branch coordinate at a time;
+when comparing the release subject with its later evidence, name both roles.
+This keeps the signed tag stable while current collaboration remains easy to
+recover.
 
-## Assurance grammar
+## Choose your route
 
-Every evidence-bearing document records independent mode and assurance
-dimensions:
+| Task | Start here | Continue with |
+| --- | --- | --- |
+| Understand the governance model and decision rights | [`GOVERNANCE.md`](GOVERNANCE.md) | [`STATUS.md`](STATUS.md) for its time-bounded source snapshot and the [orientation records](#orientation-records) for later evidence |
+| Find or validate a record shape | [`schemas/README.md`](schemas/README.md) | [`examples/example-map.json`](examples/example-map.json) and [`docs/ADOPTION.md`](docs/ADOPTION.md) |
+| Resume repository work | [`first-receipt.json`](first-receipt.json) and [`coordination-horizon.json`](coordination-horizon.json) | [`repository-reentry`](.agents/skills/repository-reentry/SKILL.md) |
+| Audit a schema release from source to retrieval | [`promotion-receipt.json`](promotion-receipt.json) | [`governance-schema-release-lineage`](.agents/skills/governance-schema-release-lineage/SKILL.md) and [`docs/GOVERNANCE_PAGES.md`](docs/GOVERNANCE_PAGES.md) |
+| Distinguish meaning, validation, release, delivery, and use | [`source-authority-mapping`](.agents/skills/source-authority-mapping/SKILL.md) | The [evidence and authority map](#evidence-and-authority) |
+| Review public or cross-repository wording | [`docs/NEGATION_AWARE_LANGUAGE.md`](docs/NEGATION_AWARE_LANGUAGE.md) | [`language-policy/README.md`](language-policy/README.md) and [`contextual-jargon-scan`](.agents/skills/contextual-jargon-scan/SKILL.md) |
+| Change schemas, documentation, or repository policy | [`CONTRIBUTING.md`](CONTRIBUTING.md) | [`BRANCHING.md`](BRANCHING.md), [`SECURITY.md`](SECURITY.md), and [`rulesets/README.md`](rulesets/README.md) |
 
-- `evidence_mode`: `planned`, `simulated`, or `observed`
-- `assurance_stage`: `specified`, `verified`, `qualified`, `validated`, or
-  `accepted`
+## Quickest proof
 
-A standard assurance receipt can model a projected accepted state while
-retaining `evidence_mode: simulated`, `authority: simulation_only`, and
-`actual_acceptance_required: true`.
+Python 3.11 or newer can run the dependency-free governance validator:
 
-The v0.3 simulated-closure contract supplies a second, explicit posture for a
-selected future reality:
+```bash
+python3 tools/validate_governance.py
+```
 
-- `closure_status: closed_in_simulation`
-- `environment_observed_closure: separate_unasserted_state`
-- `production_authorization_effect: none`
+That command establishes the declared JSON schema, example, orientation,
+workflow, ruleset, release-receipt, and repository-route contracts it checks.
+The complete source-owned proof installs two exact, hash-locked parsers and
+adds projection, language, secret-shape, and regression evidence:
 
-This posture lets an executable simulation fully close the four substantive
-receipt families through modeled roles and synthetic environments. It makes no
-claim about a separately observed environment or production authorization.
+```bash
+python3 -m pip install --disable-pip-version-check --require-hashes \
+  -r requirements-projections.txt
+make check
+```
 
-## Database change assurance
+Passing checks establish executable agreement at the inspected revision.
+Material suitability, hosted behavior, downstream adoption, and accountable
+acceptance retain their own reviews and evidence.
 
-Six additive contracts make database evolution inspectable from discovery to
-release:
+## Orientation records
+
+The four root JSON files form one re-entry set:
+
+| Record | Reader job | Authority boundary |
+| --- | --- | --- |
+| [`machine-node.json`](machine-node.json) | Identify the repository role, provenance, consumers, campaigns, and source-handling classes | Orientation only; released policy and authenticated operations authorize effects |
+| [`first-receipt.json`](first-receipt.json) | Receive a compact evidence posture, source permissions, and handoff | Orientation only; the named source and accountable role own each decision |
+| [`coordination-horizon.json`](coordination-horizon.json) | See sequenced work, retained effects, consequential questions, and the next safe action | Coordinates work; its evidence owners establish completion |
+| [`promotion-receipt.json`](promotion-receipt.json) | Distinguish candidate readiness from an observed tag, commit, archive digest, and later receipt carrier | The protected release route and recorded evidence establish release standing |
+
+Use [`repository-reentry`](.agents/skills/repository-reentry/SKILL.md) when the
+records, branches, or publication surfaces appear to describe different
+moments. The result names settled release state, current source, open evidence,
+and one exact next move.
+
+## Contract journey
+
+The shortest governance journey is:
+
+```text
+meaning and decision rights
+  -> versioned schema
+  -> synthetic example and executable check
+  -> protected release subject and promotion receipt
+  -> byte-identified retrieval copy
+  -> downstream use and accountable acceptance
+```
+
+For database change, the record family adds the operational steps that make a
+transition inspectable:
 
 ```text
 data contract
@@ -123,139 +125,115 @@ data contract
   -> database release manifest
 ```
 
-The chain preserves logical meaning alongside physical representation. A plan
-records source and target schema digests, immutable script and tool coordinates,
-ordered expand/backfill/validate/cutover/contract phases, lock and statement
-budgets, compatibility, approval, and recovery. Execution receipts and exact
-reconciliation bind observed or simulated results back to that plan. The release
-manifest assembles migration, restore, acceptance, finding, and evidence-bundle
-coordinates into one reviewable promotion surface.
+[`GOVERNANCE.md`](GOVERNANCE.md) defines the assurance lifecycle from
+`specified` through `accepted`, the simulation boundary, bounded callers,
+invalidation, comparison, and review. The schema catalog links each stage to
+its machine-checkable record.
 
-The contracts remain migration-tool neutral. The current synthetic exemplar
-selects Flyway Community 13.0.0 for repository-owned PostgreSQL schema evolution.
-Flyway owns ordering, checksums, schema history, deployment serialization, and
-per-migration transaction handling. Reviewed SQL and acceptance evidence own
-domain constraints, upgrade preconditions, scientific reconciliation, security,
-restore rehearsal, and release disposition. Vendor-owned LIMS and ELN databases
-continue through vendor-supported lifecycle paths, while cross-platform data
-movement produces separate checkpoint and reconciliation receipts.
+## Evidence and authority
 
-Native database types preserve instants, civil dates, exact measurements,
-booleans, identifiers, and relational integrity. Interchange documents render
-migration instants as RFC 3339 UTC values while the data contract retains the
-database-native representation.
+| Role | Source owner | What it establishes |
+| --- | --- | --- |
+| Meaning and decision rights | [`GOVERNANCE.md`](GOVERNANCE.md) and focused guides | The intended distinctions, review roles, and recovery model |
+| Machine-checkable structure | [`schemas/`](schemas/) | The fields and invariants a selected document must satisfy |
+| Representative use | [`examples/`](examples/) | Synthetic records that exercise the declared contracts |
+| Executable agreement | [`tools/`](tools/) and [`tests/`](tests/) | The behavior covered by the named validators and assertions |
+| Release acceptance | [`promotion-receipt.json`](promotion-receipt.json), [`release-receipts/`](release-receipts/), and the annotated tag | The accepted source coordinate and its recorded evidence |
+| Retrieval identity | [`docs/GOVERNANCE_PAGES.md`](docs/GOVERNANCE_PAGES.md) and the generated manifest | The bytes, paths, and source relation of the public copy |
+| Material use and acceptance | Each receiving repository and accountable scientific, Quality, Regulatory, security, operational, or business role | Fitness and authorization for the stated context |
 
-## Quick start
+One source can carry several roles. Name the relation—such as `defines`,
+`validates`, `exemplifies`, `accepts`, `projects`, or `consumes`—when that
+distinction changes a decision.
 
-Requirements: Python 3.11 or newer. The JSON contract validator and downstream
-reusable contract workflow use the Python standard library. The full repository
-proof also checks the YAML and GraphQL candidate projections with two exact,
-hash-locked parser versions.
+## Collaboration guides
 
-```bash
-python3 -m pip install --disable-pip-version-check --require-hashes \
-  -r requirements-projections.txt
-python3 tools/validate_governance.py
-python3 tools/schema_projections.py
-python3 tools/check_language.py
-python3 tools/check_language.py --format sarif
-python3 tools/scan_secret_shapes.py
-python3 -m unittest discover -s tests -v
-```
+Four repository-local skill contracts support bounded work:
 
-The Governance Pages builder uses those locked parsers to prepare a
-deterministic, reviewable retrieval artifact after a release receiver supplies
-a structured proof for the exact accepted source revision. See
-[`docs/GOVERNANCE_PAGES.md`](docs/GOVERNANCE_PAGES.md) for the clean-source,
-two-build, manifest, and optional canonical-origin paths.
+| Task | Guide | Declared standing |
+| --- | --- | --- |
+| Trace one schema through release and Pages | [`governance-schema-release-lineage`](.agents/skills/governance-schema-release-lineage/SKILL.md) | `public_ready`; included in the reviewed Pages projection |
+| Reconstruct branch, release, orientation, and live work state | [`repository-reentry`](.agents/skills/repository-reentry/SKILL.md) | `public_possible`; retained in the source workbench |
+| Map several source and authority roles | [`source-authority-mapping`](.agents/skills/source-authority-mapping/SKILL.md) | `public_possible`; retained in the source workbench |
+| Replace collaboration-local shorthand while preserving exact terms | [`contextual-jargon-scan`](.agents/skills/contextual-jargon-scan/SKILL.md) | `public_possible`; retained in the source workbench |
 
-After a later receipt records an accepted release subject, verify its annotated
-tag, commit, reproducible archive digest, ancestry, and carrier bytes from Git:
+The frontmatter of each guide records its current source band and lineage.
+Governance Pages projects the reviewed `public_ready` contract. Natural use and
+review provide the evidence for any later standing change. A runbook catalog
+can begin when a settled multi-phase procedure exists in this repository.
 
-```bash
-python3 tools/validate_governance.py --verify-release-coordinate
-```
+## Constellation
 
-Validate a downstream document against this package:
+| Repository role | Purpose | Authority |
+| --- | --- | --- |
+| Program specification | Intent, examples, risks, forecasts, and acceptance criteria | Desired behavior |
+| Enterprise implementation | Current code, infrastructure, migrations, and runbooks | Running implementation |
+| Simulated final state | Executable counterfactual with explicit assumptions | Forecast behavior |
+| Comparative evidence | Fixtures, normalizers, paired runs, and divergence adjudication | Comparison record |
+| Site Reading Governance | Shared schemas, workflows, templates, and policy exports | Governance contract |
 
-```bash
-python3 tools/validate_governance.py \
-  --schema schemas/receipt.schema.json \
-  --document path/to/receipt.json
-```
+Runtime code flows from the program specification into each implementation
+through released, digest-pinned contracts. Learning returns through reviewed
+decision records. The actual implementation and simulated final state retain
+independent source histories.
 
-## Contents
+## Repository map
 
-- [`GOVERNANCE.md`](GOVERNANCE.md) — authority, decision, evidence, and review
-  model
-- [`BRANCHING.md`](BRANCHING.md) — GitFlow-like lifecycle and release protocol
-- [`docs/NEGATION_AWARE_LANGUAGE.md`](docs/NEGATION_AWARE_LANGUAGE.md) —
-  affirmative semantic-field guidance and authoritative language policy
-- [`language-policy/`](language-policy/) — digest-pinned policy manifest,
-  89-case union corpus, and exact reviewed exemption inventory
-- [`docs/AUTHOR_FEEDBACK.md`](docs/AUTHOR_FEEDBACK.md) — advisory,
-  structure-aware Vale scope, rule severity, and checksum-verified tool
-  coordinate
-- [`docs/SEMANTIC_SHADOW_REVIEW.md`](docs/SEMANTIC_SHADOW_REVIEW.md) —
-  inactive, bounded contract for qualifying future semantic author feedback
-- [`docs/CONTROL_PLANE_V0_3.md`](docs/CONTROL_PLANE_V0_3.md) — bounded caller,
-  Practitioner Probe, Coordination Horizon, Machine Node, veracity, and
-  simulated-closure operating model
-- [`docs/MIGRATION_V1_TO_V2.md`](docs/MIGRATION_V1_TO_V2.md) — downstream
-  migration sequence and release validation
-- [`docs/MIGRATION_V2_0_0_TO_V2_1_0.md`](docs/MIGRATION_V2_0_0_TO_V2_1_0.md) —
-  additive migration for promotion, language-control, and database-change
-  contracts
-- [`docs/MIGRATION_V2_1_0_TO_V2_2_0.md`](docs/MIGRATION_V2_1_0_TO_V2_2_0.md) —
-  additive adoption of YAML and GraphQL promotion-receipt projections while
-  JSON Schema retains validation authority
-- [`docs/GOVERNANCE_PAGES.md`](docs/GOVERNANCE_PAGES.md) — deterministic
-  Governance 2.2.0 schema retrieval, source proof, authority, and publication
-  handoff
-- [`schemas/`](schemas/) — JSON Schema 2020-12 contracts
-- [`schema-projections/`](schema-projections/) — candidate YAML 1.2 and GraphQL
-  forms with exact constraint coverage evidence
-- [`examples/`](examples/) — valid synthetic exemplars for every contract
-- [`machine-node.json`](machine-node.json), [`first-receipt.json`](first-receipt.json),
-  [`coordination-horizon.json`](coordination-horizon.json), and
-  [`promotion-receipt.json`](promotion-receipt.json) — root orientation and
-  executable promotion records
-- [`release-receipts/`](release-receipts/) — observed receipts retained by
-  immutable release identity as each new candidate becomes current
-- [`.github/workflows/`](.github/workflows/) — reusable validation workflows
-- [`rulesets/`](rulesets/) — reviewable GitHub repository ruleset exports
-- [`audits/repository-security-review-2026-07-28.md`](audits/repository-security-review-2026-07-28.md)
-  — five-repository review scope, remediations, evidence boundaries, and open
-  production receipts
-- [`audits/dependency-automation-review-2026-07-28.md`](audits/dependency-automation-review-2026-07-28.md)
-  — five-repository bot-identity, branch grammar, workflow, and follow-up review
-- [`tools/`](tools/) and [`tests/`](tests/) — dependency-free JSON contract and
-  language checks, locked projection checks, secret-shape checks, and focused
-  regression validation
+- [`STATUS.md`](STATUS.md) — time-bounded release and capability snapshot
+- [`GOVERNANCE.md`](GOVERNANCE.md) — meaning, authority, evidence, review, and
+  recovery
+- [`BRANCHING.md`](BRANCHING.md) — branch lifecycle and release protocol
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution and local-verification
+  contract
+- [`schemas/README.md`](schemas/README.md) — clickable schema catalog,
+  invariants, and evolution
+- [`schema-projections/README.md`](schema-projections/README.md) — candidate
+  YAML and GraphQL projection family
+- [`examples/example-map.json`](examples/example-map.json) — schema-to-example
+  membership
+- [`docs/ADOPTION.md`](docs/ADOPTION.md) and the migration guides in
+  [`docs/`](docs/) — downstream use and version transitions
+- [`docs/GOVERNANCE_PAGES.md`](docs/GOVERNANCE_PAGES.md) — deterministic public
+  retrieval artifact and handoff
+- [`language-policy/README.md`](language-policy/README.md) — executable language
+  policy assets and exemption lifecycle
+- [`release-receipts/README.md`](release-receipts/README.md) — historical
+  observed release records
+- [`rulesets/README.md`](rulesets/README.md) — reviewable GitHub ruleset request
+  bodies
+- [`.github/workflows/`](.github/workflows/) — bounded repository and reusable
+  validation workflows
+- [`audits/`](audits/) — repository security and dependency-automation reviews
+- [`tools/`](tools/) and [`tests/`](tests/) — validators, builders, scanners,
+  and behavior contracts
 
-## Versioning
+## Versioning and adoption
 
 Schema releases follow semantic versioning:
 
-- major: accepted documents require an intentional migration before the new
-  contracts validate them;
-- minor: accepted documents continue to validate while new contract capability
-  becomes available;
-- patch: clarification, example, or validation repair.
+- a major release can require an intentional document migration;
+- a minor release adds compatible capability; and
+- a patch release repairs validation, examples, or explanation while
+  preserving accepted document behavior.
 
-Consumers pin the annotated release tag, its accepted commit, and the SHA-256
-digest of `git archive --format=tar <commit>`. Floating branch references
-support local exploration; governed comparisons use immutable release
-coordinates.
+Governance 2.2.0 retains the stable `/v2.0/` schema identifiers. Consumers pin
+the annotated release tag, accepted commit, and SHA-256 digest of
+`git archive --format=tar <commit>`. Floating branches support exploration;
+governed comparisons use immutable release coordinates. Start downstream work
+with [`docs/ADOPTION.md`](docs/ADOPTION.md) and the matching migration guide.
 
 ## Source posture
 
 [`docs/NEGATION_AWARE_LANGUAGE.md`](docs/NEGATION_AWARE_LANGUAGE.md) is the
-public authority for this repository's applied language posture. It records the
-desired-state guidance, hard-boundary treatment, automated checks, and exact
-local verification path. Working-source lineage remains with its authorized
-steward while this repository-local guide gives public collaborators the
-complete behavior needed here.
+public authority for this repository's applied language posture. It explains
+desired-state guidance, hard-boundary treatment, automated checks, and the
+local verification path. The versioned executable policy and reviewed corpus
+live in [`language-policy/`](language-policy/).
+
+Public collaboration prose uses repository-local or accepted public sources.
+Private working coordinates remain with their authorized lineage owner while a
+semantic title, role, evidence standing, and next route preserve the useful
+relationship here.
 
 ## Confined container job
 
