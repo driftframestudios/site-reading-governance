@@ -141,5 +141,19 @@ The exercise uses the designed 144-run population: 136 attempted, 128 completed,
 and zero cancelled. It checks each source binding against its named input owner,
 retains a raw label including its surrounding spaces, reviews the fixture-level
 comparison, holds a population-effect claim, and invalidates dependent claims after
-policy and intended-use changes. The complete administrative decision, override,
-and recourse procedures remain the next exercise under Issue #39.
+policy and intended-use changes. Issue #39's additional
+[`test_assurance_exercises.py`](../tests/test_assurance_exercises.py) exercises
+the complete authored Program decision, its retained engine proposal and modeled
+override, explicit missing-input abstention, raw-label correction through fresh
+source admission, and immutable review successors. The population exercises
+retain unchanged controls, designed administrative differences, small-cell
+withholding, empty cohorts, and explicit omissions. Service interpretation
+uses the existing claim-veracity record in `local_measurement_needed` standing;
+population effects remain held in the companion.
+
+The [runbook index](../.agents/runbooks/index.md) provides the focused command
+and owner-specific stopping events. These are working source procedures pending
+independent review and accepted integration. Program's adapter remains
+`design_only`; the test results establish local synthetic behavior. Configured
+execution, operational effects, source-release acceptance, and public delivery
+keep their separately authorized receiving routes.

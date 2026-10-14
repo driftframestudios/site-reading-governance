@@ -71,7 +71,7 @@ class UpstreamAssuranceTests(unittest.TestCase):
     def test_observation_free_study_retains_planning_and_holds_output_claim(self):
         import importlib
         from assurance_companion import record_review, validate_record
-        evaluate = importlib.import_module(type(self.report).__module__).evaluate
+        from comparative_evidence.administrative_evaluation import evaluate
         planning = self.pack.study
         report = evaluate(self.pack, planning, evidence_mode='caller_supplied_synthetic')
         request, artifacts = self.inputs()
