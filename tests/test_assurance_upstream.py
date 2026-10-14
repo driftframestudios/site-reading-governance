@@ -53,7 +53,12 @@ class UpstreamAssuranceTests(unittest.TestCase):
             'source': self.pack.design.source_digest,
             'oracle': sha(canonical([entry.model_dump(mode='json', by_alias=True) for entry in self.pack.expected])),
             'specification': sha(canonical(self.study.specification.model_dump(mode='json', by_alias=True))),
-            'execution': sha(canonical(self.study.specification.expected_execution.model_dump(mode='json', by_alias=True))),
+            'execution': sha(canonical([
+                {'run_id': row.run_id, 'attempt': row.attempt,
+                 'execution': row.execution.model_dump(mode='json', by_alias=True)}
+                for row in sorted(self.study.observations, key=lambda item: (item.run_id, item.attempt))
+                if row.execution is not None
+            ])),
             'catalog': sha(canonical(self.study.specification.catalog.model_dump(mode='json', by_alias=True))),
             'policy': sha(canonical(self.study.specification.policy.model_dump(mode='json', by_alias=True))),
             'scoring': self.report.scoring_digest,
@@ -81,6 +86,7 @@ class UpstreamAssuranceTests(unittest.TestCase):
             'usable': 0, 'scored': 0,
         })
         self.assertEqual(companion['assessment']['evidence_class'], 'caller_supplied_synthetic')
+        self.assertEqual(companion['assessment']['bindings']['execution'], digest(b'[]'))
         self.assertEqual(companion['claims'][0]['review_state'], 'held')
         self.assertEqual(companion['claims'][0]['evidence_ceiling'], 'pending')
         with self.assertRaises(AssuranceError) as error:
@@ -149,6 +155,37 @@ class UpstreamAssuranceTests(unittest.TestCase):
         row['execution']['model_id']='other-fixture-model';artifacts['study']=encoded(study)
         next(x for x in request['artifacts'] if x['role']=='study')['digest']=digest(artifacts['study'])
         with self.assertRaises(AssuranceError):receive(encoded(request),artifacts)
+
+    def test_recorded_execution_changes_binding_with_a_recomputed_report(self):
+        from lims_eln_contracts.administrative_study import admit_administrative_study
+        from comparative_evidence.administrative_evaluation import evaluate
+
+        request, artifacts = self.inputs()
+        baseline = receive(encoded(request), artifacts)
+        document = self.study.model_dump(mode='json', by_alias=True)
+        changed = next(row for row in document['observations'] if row['status'] == 'completed')
+        changed['execution']['model_id'] = 'SYN-OTHER-PRODUCER'
+        execution_bindings = []
+        for reverse in (False, True):
+            with self.subTest(reversed_observations=reverse):
+                candidate = copy.deepcopy(document)
+                if reverse:
+                    candidate['observations'].reverse()
+                study = admit_administrative_study(encoded(candidate))
+                report = evaluate(self.pack, study, evidence_mode='caller_supplied_synthetic')
+                request, artifacts = self.inputs()
+                artifacts['study'] = encoded(study.model_dump(mode='json', by_alias=True))
+                artifacts['report'] = encoded(report.model_dump(mode='json', by_alias=True))
+                for reference in request['artifacts']:
+                    reference['digest'] = digest(artifacts[reference['role']])
+                companion = receive(encoded(request), artifacts)
+                self.assertEqual(companion['assessment']['population']['completed'], 128)
+                self.assertEqual(companion['assessment']['population']['scored'], 127)
+                bindings = companion['assessment']['bindings']
+                self.assertEqual(bindings['specification'], baseline['assessment']['bindings']['specification'])
+                self.assertNotEqual(bindings['execution'], baseline['assessment']['bindings']['execution'])
+                execution_bindings.append(bindings['execution'])
+        self.assertEqual(execution_bindings[0], execution_bindings[1])
 
     def test_partial_study_family(self):
         request,artifacts=self.inputs();request['artifacts']=request['artifacts'][:1];artifacts={'pack':artifacts['pack']}

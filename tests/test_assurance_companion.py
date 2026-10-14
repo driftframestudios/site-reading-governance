@@ -92,6 +92,34 @@ class AssuranceCompanionTests(unittest.TestCase):
         self.assertEqual(successor['claims'][0]['review_state'],'reviewed')
         with self.assertRaises(AssuranceError): record_review(prior,claim_id='CLAIM-EXECUTION-001',successor_id='ASSURANCE-REVIEW-003',note='Review request')
 
+    def test_successors_preserve_known_identity_and_prior_records(self):
+        prior = self.accepted()
+        prior_bytes = encoded(prior)
+        reviewed = record_review(
+            prior, claim_id='CLAIM-COMPOSITION-001', successor_id='ASSURANCE-REVIEW-002',
+            note='Review the composition within its supplied evidence.',
+        )
+        reviewed_bytes = encoded(reviewed)
+        for reused_id in (prior['companion_id'], reviewed['companion_id']):
+            with self.subTest(reused_id=reused_id), self.assertRaises(AssuranceError) as error:
+                invalidate(reviewed, changed_bindings=frozenset({'intended_use'}),
+                           successor_id=reused_id, reason='Receive the revised intended use.')
+            self.assertEqual(error.exception.code, 'successor_identity')
+        unchanged = invalidate(prior, changed_bindings=frozenset({'policy'}),
+                               successor_id='ASSURANCE-POLICY-002', reason='Receive the changed policy.')
+        unchanged_bytes = encoded(unchanged)
+        with self.assertRaises(AssuranceError) as error:
+            record_review(unchanged, claim_id='CLAIM-COMPOSITION-001',
+                          successor_id=prior['companion_id'], note='Review the retained composition.')
+        self.assertEqual(error.exception.code, 'successor_identity')
+        successor = invalidate(reviewed, changed_bindings=frozenset({'intended_use'}),
+                               successor_id='ASSURANCE-CHANGE-003', reason='Receive the revised intended use.')
+        self.assertEqual(successor['supersedes'], reviewed['companion_id'])
+        self.assertEqual(successor['prior_digest'], digest(reviewed_bytes))
+        self.assertEqual(encoded(prior), prior_bytes)
+        self.assertEqual(encoded(reviewed), reviewed_bytes)
+        self.assertEqual(encoded(unchanged), unchanged_bytes)
+
     def test_escaped_surrogates_receive_typed_json_recovery(self):
         for scalar in ('\ud800', '\udfff'):
             mutations = (

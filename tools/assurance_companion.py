@@ -240,8 +240,10 @@ def receive(request_bytes: bytes, artifacts: Mapping[str, bytes], *, study_recei
 
 def _successor(record: dict, successor_id: str, reason: str) -> dict:
     validate_record(record)
-    if record["record_kind"] != "companion" or successor_id == record["companion_id"] or not reason.strip():
-        raise AssuranceError("successor_identity", "Name a distinct companion and the decision-changing reason.")
+    if (record["record_kind"] != "companion"
+            or successor_id in (record["companion_id"], record["supersedes"])
+            or not reason.strip()):
+        raise AssuranceError("successor_identity", "Choose a fresh companion identity beyond the current record and its named predecessor, with a decision-changing reason.")
     result = copy.deepcopy(record)
     result["companion_id"] = successor_id
     result["supersedes"] = record["companion_id"]

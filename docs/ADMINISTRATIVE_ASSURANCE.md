@@ -23,13 +23,14 @@ standard output; the receiving artifact owner controls retention and publication
 
 ## Receive a complete study
 
-Use an isolated Python environment with the optional `requirements-assurance.txt`
-profile. The three source commits are explicit; package versions and source
+Use an isolated Python 3.12 or newer environment with the optional
+`requirements-assurance.txt` profile. The capability-only route above retains
+its Python 3.11 minimum. The three source commits are explicit; package versions and source
 coordinates carry separate meanings. Access to those repositories follows the
 collaborating team's existing authorization.
 
 ```sh
-python3 -m venv .venv-assurance
+python3.12 -m venv .venv-assurance
 .venv-assurance/bin/python -m pip install -r requirements-assurance.txt
 .venv-assurance/bin/python -m unittest discover -s tests -p 'test_assurance_upstream.py' -v
 .venv-assurance/bin/python tools/assurance_companion.py \
@@ -52,6 +53,12 @@ unresolved reference or changed digest returns a typed recovery code. Exact-byte
 artifact digests and upstream canonical semantic digests are labeled separately.
 A supplied commit identifies the proposed provenance coordinate; its acceptance
 comes from source review. A matching digest establishes content identity.
+
+The `specification` binding includes the requested execution identity. The
+`execution` binding covers recorded execution identities, keyed by run and
+attempt and ordered by those keys. An observation-free study binds an empty
+execution list. The complete study digest preserves observation identities,
+execution order, timing, and outcomes alongside that focused projection.
 
 JSON keys and text values carry Unicode scalar text that encodes as UTF-8.
 Admission and direct review transitions check this boundary before returning a
@@ -84,7 +91,10 @@ receiver; migration can replace this adapter while preserving the companion.
 `record_review` creates a distinct successor for one review-ready statement.
 Its modeled reviewer and evidence ceiling remain explicit. `invalidate` creates
 a successor that holds only statements depending on the changed bindings. Both
-preserve the earlier record and bind its digest. A corrected study returns
+preserve the earlier record and bind its digest. A successor uses a fresh ID
+distinct from the current record and its named predecessor. A receiving store
+owns uniqueness across the complete retained history; this local transition
+checks the identities carried by the supplied record. A corrected study returns
 through fresh source admission and scoring before review resumes.
 
 The [runbook index](../.agents/runbooks/index.md) supplies population review,

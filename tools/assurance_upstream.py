@@ -11,6 +11,8 @@ def receive_study(artifacts: Mapping[str, bytes]) -> StudyAssessment:
     Exact report equality is a receiving check, not an independent scientific
     oracle. The pack's authored expectations and accountable review retain
     their separate roles. Input sizes are bounded before these owner calls.
+    Recorded execution identities use O(N log N) ordering and O(N) space for
+    N observations; the study digest retains their complete timing and order.
     """
     try:
         from lims_eln_contracts.administrative_study import admit_administrative_study
@@ -37,11 +39,20 @@ def receive_study(artifacts: Mapping[str, bytes]) -> StudyAssessment:
     except (ValueError, TypeError, KeyError, RecursionError):
         raise AssuranceError("upstream_admission", "Return the artifact to its typed source owner for admission and identity reconciliation.") from None
     comparison = interpretation.comparison
+    executions = [
+        {
+            "run_id": observation.run_id,
+            "attempt": observation.attempt,
+            "execution": observation.execution.model_dump(mode="json", by_alias=True),
+        }
+        for observation in sorted(study.observations, key=lambda item: (item.run_id, item.attempt))
+        if observation.execution is not None
+    ]
     bindings = {
         "source": pack.design.source_digest,
         "oracle": canonical_sha256([item.model_dump(mode="json", by_alias=True) for item in pack.expected]),
         "specification": canonical_sha256(study.specification),
-        "execution": canonical_sha256(study.specification.expected_execution),
+        "execution": canonical_sha256(executions),
         "catalog": canonical_sha256(study.specification.catalog),
         "policy": canonical_sha256(study.specification.policy),
         "scoring": report.scoring_digest,
