@@ -122,6 +122,16 @@ its structural scope; migrated catalog facts, engine-specific type
 compatibility, query plans, and restart observations come from the configured
 database receiver.
 
+The example aggregate first admits each record through its mapped schema.
+Structurally valid data contracts and migration plans retain their local
+semantic checks while the complete six-record family enables evidence-chain
+checks. Other admitted example families continue to report independent
+findings. Duplicate entity and phase identifiers retain their identity
+findings; reference checks wait for a unique target. Duplicate target-field
+identifiers likewise withhold the target-key decision. Authored phase and
+migration order remains significant. Each invocation prepares its identity
+and criterion membership sets locally and preserves the input records.
+
 ## Verify
 
 From the repository root, run the focused catalog and example checks:

@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from contextlib import redirect_stdout
+from copy import deepcopy
 import importlib.util
+import io
 from hashlib import sha256
 import json
 import subprocess
@@ -1190,6 +1193,143 @@ class GovernancePackageTests(unittest.TestCase):
                     any("outside the contract" in item.message for item in findings),
                     findings,
                 )
+
+    def _validate_changed_examples(self, changed):
+        original_load = validation.load_json
+
+        def load(path):
+            if Path(path).parent == validation.EXAMPLE_DIR and Path(path).name in changed:
+                return changed[Path(path).name]
+            return original_load(path)
+
+        with patch.object(validation, "load_json", side_effect=load):
+            return validation.validate_examples()
+
+    def test_example_admission_preserves_structural_findings_and_report(self) -> None:
+        cases = (
+            ("data-contract.json", "entities", None, ".entities"),
+            ("database-migration-plan.json", "phase_sequence", None, ".phase_sequence"),
+            ("data-reconciliation.json", "criteria", None, ".criteria"),
+            ("data-contract.json", None, [], ""),
+            ("data-contract.json", "database", None, ".database"),
+            ("data-contract.json", "entities", [None], ".entities[0]"),
+            ("database-migration-plan.json", "phase_sequence", [None], ".phase_sequence[0]"),
+            ("data-reconciliation.json", "criteria", [None], ".criteria[0]"),
+        )
+        for name, field, value, suffix in cases:
+            with self.subTest(document=name, field=field, value=value):
+                record = validation.load_json(validation.EXAMPLE_DIR / name)
+                if field is None:
+                    record = value
+                else:
+                    record[field] = value
+                before = deepcopy(record)
+                findings = self._validate_changed_examples({name: record})
+                self.assertTrue(any(
+                    item.path == f"examples/{name}{suffix}" and "must have type" in item.message
+                    for item in findings
+                ), findings)
+                self.assertEqual(record, before)
+                output = io.StringIO()
+                with redirect_stdout(output):
+                    status = validation.report(findings)
+                self.assertEqual(status, 1)
+                self.assertIn(f"examples/{name}{suffix}", output.getvalue())
+                self.assertEqual(findings, self._validate_changed_examples({name: record}))
+
+    def test_example_cli_reports_malformed_record_with_independent_findings(self) -> None:
+        records = load_database_examples()
+        records["database-migration-plan.json"]["phase_sequence"] = None
+        records["data-contract.json"]["entities"][1]["constraints"][0]["referenced_entity_id"] = "ENTITY-UNKNOWN-001"
+        comparison = validation.load_json(validation.EXAMPLE_DIR / "comparison.json")
+        comparison["summary"]["total"] += 1
+        records["comparison.json"] = comparison
+        original_load = validation.load_json
+
+        def load(path):
+            if Path(path).parent == validation.EXAMPLE_DIR and Path(path).name in records:
+                return records[Path(path).name]
+            return original_load(path)
+
+        output = io.StringIO()
+        with patch.object(validation, "load_json", side_effect=load), patch.object(sys, "argv", ["validate_governance.py"]), redirect_stdout(output):
+            status = validation.main([])
+        self.assertEqual(status, 1)
+        self.assertIn("phase_sequence: value must have type array", output.getvalue())
+        self.assertIn("foreign-key target entity must resolve", output.getvalue())
+        self.assertIn("summary total must equal result count", output.getvalue())
+
+    def test_each_example_family_requires_structural_admission(self) -> None:
+        mapping = validation.load_json(validation.EXAMPLE_DIR / "example-map.json")["schema_map"]
+        for name in mapping:
+            with self.subTest(document=name):
+                findings = self._validate_changed_examples({name: None})
+                self.assertEqual(len(findings), 1, findings)
+                self.assertEqual(findings[0].path, f"examples/{name}")
+                self.assertIn("must have type object", findings[0].message)
+
+    def test_control_plane_findings_use_their_own_admitted_prerequisites(self) -> None:
+        for malformed, changed_name, field, value, message in (
+            ("effect.json", "bounded-caller.json", "authority_ceiling", "read",
+             "caller authority ceiling must cover the example operation effect"),
+            ("coordination-horizon.json", "first-receipt.json", "machine_node_id", "NODE-OTHER-001",
+             "Machine Node identifier must match the orientation receipt"),
+        ):
+            with self.subTest(malformed=malformed):
+                changed = validation.load_json(validation.EXAMPLE_DIR / changed_name)
+                changed[field] = value
+                self.assertEqual([], validation.SchemaValidator(
+                    validation.SCHEMA_DIR / changed_name.replace(".json", ".schema.json")
+                ).validate(changed))
+                findings = self._validate_changed_examples({malformed: None, changed_name: changed})
+                self.assertTrue(any(
+                    item.path == f"examples/{malformed}" and "must have type object" in item.message
+                    for item in findings
+                ), findings)
+                self.assertIn(message, [item.message for item in findings])
+
+    def test_admitted_database_faults_retain_cumulative_semantic_findings(self) -> None:
+        records = load_database_examples()
+        records["data-contract.json"]["entities"][1]["constraints"][0]["referenced_entity_id"] = "ENTITY-UNKNOWN-001"
+        records["database-migration-plan.json"]["phase_sequence"][0]["dependency_phase_ids"] = ["PHASE-CONTRACT-001"]
+        records["data-reconciliation.json"]["criteria"][1]["outcome"] = "failed"
+        records["database-release-manifest.json"]["data_contract"]["digest"] = "sha256:" + "0" * 64
+        before = deepcopy(records)
+        for name, record in records.items():
+            self.assertEqual([], validation.SchemaValidator(
+                validation.SCHEMA_DIR / name.replace(".json", ".schema.json")
+            ).validate(record))
+        findings = self._validate_changed_examples(records)
+        messages = [item.message for item in findings]
+        for message in (
+            "foreign-key target entity must resolve",
+            "each phase dependency must precede its dependent phase",
+            "passing reconciliation requires a passing result for every criterion",
+            "release manifest data-contract coordinate must match the contract example",
+        ):
+            self.assertIn(message, messages)
+        self.assertEqual(records, before)
+
+    def test_database_identity_ambiguity_preserves_local_findings(self) -> None:
+        records = load_database_examples()
+        contract = records["data-contract.json"]
+        duplicate = deepcopy(contract["entities"][0])
+        duplicate["fields"] = [duplicate["fields"][1]]
+        duplicate["primary_key_field_ids"] = [duplicate["fields"][0]["field_id"]]
+        contract["entities"].append(duplicate)
+        contract["entities"][0]["fields"][1]["physical_type"] = "text"
+        plan = records["database-migration-plan.json"]
+        repeated_phase = deepcopy(plan["phase_sequence"][0])
+        repeated_phase["sequence"] = 99
+        plan["phase_sequence"].append(repeated_phase)
+        findings = self._validate_changed_examples(records)
+        messages = [item.message for item in findings]
+        self.assertIn("entity identifiers must be unique", messages)
+        self.assertIn("migration phase identifiers must be unique", messages)
+        self.assertIn("PostgreSQL instant fields use timestamptz", messages)
+        # Ambiguous targets retain their duplicate finding; neither duplicate wins lookup.
+        self.assertNotIn("every foreign-key target field must resolve", messages)
+        self.assertNotIn("each phase dependency must precede its dependent phase", messages)
 
     def test_database_contract_resolves_native_primitives_and_foreign_keys(
         self,
