@@ -857,5 +857,32 @@ class GovernancePagesTests(unittest.TestCase):
             )
 
 
+    def test_refreshed_inventory_cannot_authorize_surplus_files(self):
+        for relative in (
+            "extra.json", "assets/extra.json", "assets/extra.txt",
+            "schemas/v2.0/unreviewed.schema.json",
+        ):
+            with self.subTest(path=relative), tempfile.TemporaryDirectory() as temporary:
+                output, _ = self.build_fixture(Path(temporary))
+                (output / relative).write_text("{}\n", encoding="utf-8")
+                refresh_inventory(output)
+                with self.assertRaisesRegex(pages.PagesBuildError, "source-owned publication membership"):
+                    pages.validate_site(output, ROOT, FIXTURE_PROOF, allow_fixture_standing=True)
+
+    def test_refreshed_inventory_cannot_remove_or_rename_owned_members(self):
+        for relative in ("assets/site.css", "schemas/v2.0/promotion-receipt.schema.json"):
+            for rename in (False, True):
+                with self.subTest(path=relative, rename=rename), tempfile.TemporaryDirectory() as temporary:
+                    output, _ = self.build_fixture(Path(temporary))
+                    target = output / relative
+                    if rename:
+                        target.rename(target.with_name("renamed-" + target.name))
+                    else:
+                        target.unlink()
+                    refresh_inventory(output)
+                    with self.assertRaisesRegex(pages.PagesBuildError, "source-owned publication membership"):
+                        pages.validate_site(output, ROOT, FIXTURE_PROOF, allow_fixture_standing=True)
+
+
 if __name__ == "__main__":
     unittest.main()
