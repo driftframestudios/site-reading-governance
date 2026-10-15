@@ -858,7 +858,10 @@ class GovernancePagesTests(unittest.TestCase):
 
 
     def test_refreshed_inventory_cannot_authorize_surplus_files(self):
-        for relative in ("extra.json", "assets/extra.json", "assets/extra.txt"):
+        for relative in (
+            "extra.json", "assets/extra.json", "assets/extra.txt",
+            "schemas/v2.0/unreviewed.schema.json",
+        ):
             with self.subTest(path=relative), tempfile.TemporaryDirectory() as temporary:
                 output, _ = self.build_fixture(Path(temporary))
                 (output / relative).write_text("{}\n", encoding="utf-8")
