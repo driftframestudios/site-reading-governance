@@ -27,7 +27,7 @@ Every build begins with a structured proof supplied by the release receiver:
   "releaseVersion": "2.2.0",
   "repository": "driftframestudios/site-reading-governance",
   "schemaCoordinate": "v2.0",
-  "sourceRevision": "<accepted 40-character lowercase Git SHA>",
+  "sourceRevision": "<selected 40-character lowercase Git SHA>",
   "standing": "clean"
 }
 ```
@@ -39,8 +39,9 @@ neutralizes caller-supplied Git redirection, reads the commit without local
 replacement mappings, and resolves `HEAD^{commit}`. It rejects index flags that
 mask worktree standing, compares every tracked regular file's bytes and
 executable mode with its exact HEAD blob, and requires a zero-change tracked and
-untracked worktree. The release authority supplies the accepted status; the
-builder establishes the exact local source coordinate and clean standing.
+untracked worktree. The release fields retain the historical accepted 2.2.0 baseline. The builder
+establishes the selected local source coordinate and clean standing; a separate
+promotion record establishes acceptance of that selected source.
 Branch names alone carry neither claim.
 
 Supply direct source, proof, and artifact paths. The builder keeps symbolic-link
@@ -55,7 +56,7 @@ standing.
 
 ## Build and verify
 
-Use a clean worktree at the accepted source revision, a proof stored outside
+Use a clean worktree at the selected source revision, a proof stored outside
 that worktree, and a new output path outside the worktree:
 
 ```bash
@@ -63,12 +64,12 @@ python3 -m pip install --disable-pip-version-check --require-hashes \
   -r requirements-projections.txt
 
 python3 tools/build_governance_pages.py build \
-  --source-root /path/to/accepted-governance-source \
+  --source-root /path/to/selected-governance-source \
   --source-proof /path/to/governance-2.2.0-source-proof.json \
   --output /tmp/governance-pages-2.2.0
 
 python3 tools/build_governance_pages.py verify \
-  --source-root /path/to/accepted-governance-source \
+  --source-root /path/to/selected-governance-source \
   --source-proof /path/to/governance-2.2.0-source-proof.json \
   --output /tmp/governance-pages-2.2.0
 ```
@@ -81,12 +82,12 @@ compare every path and byte:
 
 ```bash
 python3 tools/build_governance_pages.py build \
-  --source-root /path/to/accepted-governance-source \
+  --source-root /path/to/selected-governance-source \
   --source-proof /path/to/governance-2.2.0-source-proof.json \
   --output /tmp/governance-pages-first
 
 python3 tools/build_governance_pages.py build \
-  --source-root /path/to/accepted-governance-source \
+  --source-root /path/to/selected-governance-source \
   --source-proof /path/to/governance-2.2.0-source-proof.json \
   --output /tmp/governance-pages-second
 
@@ -104,7 +105,7 @@ The generated directory contains:
 
 - `index.html`, `guidance/index.html`, two progressively deeper schema
   discovery pages, and two collaboration-guide pages;
-- `schemas/v2.0/*.schema.json`, copied byte for byte from the accepted source;
+- `schemas/v2.0/*.schema.json`, copied byte for byte from the selected source;
 - `schemas/v2.0/projections/promotion-receipt/v1.0.0/`, containing the
   deterministic YAML 1.2 semantic twin, bounded authored GraphQL SDL, and exact
   source-constraint ledger at version-bearing retrieval paths;
@@ -119,7 +120,7 @@ The generated directory contains:
   and hostname.
 
 Every internal visitor link is relative. Every repository source link contains
-the named repository and complete accepted SHA. Every artifact entry is a
+the named repository and complete selected-source SHA. Every artifact entry is a
 self-contained regular file. Every HTML page carries organization author and
 publisher metadata, one main landmark, one top-level heading, a skip link, the
 two evaluation-data markers in their required order, a calm data-use
@@ -140,21 +141,21 @@ change qualifies them.
 
 Human-readable governance explains meaning, decision rights, evidence stages,
 review, and recovery. The published JSON Schema bytes define machine-checkable
-structure for Governance 2.2.0. A passing validation establishes structural
+structure for the selected Governance records. A passing validation establishes structural
 agreement with the selected schema. Scientific suitability, Quality or
 Regulatory acceptance, environment qualification, and production authorization
 receive their own evidence and accountable decision.
 
 The deterministic manifest keeps these jobs distinct:
 
-- `release` records the accepted version, coordinate, status, and accountable
-  release role;
+- `release` records the historical accepted version, coordinate, source revision,
+  status, and accountable release role;
 - `source` records the full revision, clean or fixture standing, and exact
   source-tree link;
 - `authority` records human-readable, machine-validation, and publication
   roles;
 - `schemas` records each identifier, source path and URL, output path, byte
-  length, and SHA-256 digest;
+  length, SHA-256 digest, and selected-source release standing;
 - `schemaFamilies` records the candidate promotion-receipt projection version,
   its versioned family identifier, its JSON validation authority, and each
   representation's versioned identifier, format, media type, relation, source,
@@ -178,7 +179,7 @@ explicit HTTPS origin adds canonical metadata to every HTML page:
 
 ```bash
 python3 tools/build_governance_pages.py build \
-  --source-root /path/to/accepted-governance-source \
+  --source-root /path/to/selected-governance-source \
   --source-proof /path/to/governance-2.2.0-source-proof.json \
   --output /tmp/governance-pages-canonical \
   --canonical-origin https://governance.example.org/contracts
@@ -189,7 +190,7 @@ canonical HTTPS hostname:
 
 ```bash
 python3 tools/build_governance_pages.py build \
-  --source-root /path/to/accepted-governance-source \
+  --source-root /path/to/selected-governance-source \
   --source-proof /path/to/governance-2.2.0-source-proof.json \
   --output /tmp/governance-pages-domain \
   --canonical-origin https://governance.example.org/contracts \
@@ -211,3 +212,40 @@ python3 tools/scan_secret_shapes.py --root /tmp/governance-pages-2.2.0
 A clean scan establishes zero detector matches in the named artifact. Service
 settings, hosted responses, unfetched history, forks, and later receiving
 copies retain their own observation paths.
+
+## Visitor orientation and build-source standing
+
+The overview starts with a result and a review task. Its SVG separates meaning,
+document structure and accountable acceptance; the existing authority table
+provides the ordinary-HTML companion. Public downloads and guidance precede
+collaborator-only repository links. The page shell, stylesheet and layered
+canary footer retain their existing owners.
+
+Manifest 1.2.0 makes the older proof's meaning explicit: `release.scope` is
+`historical_schema_edition`, with accepted edition 2.2.0 bound to its recorded
+source `c8d7150b8c4e6277bc504a7c69289cb5b949b0ee`. Stable v2.0 identifiers keep
+their existing identities. Selected catalog membership is independent of that
+historical baseline. The builder explicitly declares
+`administrative-assurance.schema.json` as a candidate, consistent with the
+source catalog\'s candidate profile 0.1. Each selected schema carries
+`releaseStanding`: `candidate` for that declared profile, `unrecorded` for
+other selected-source schemas. Neither a shared filename nor a stable
+identifier establishes equality with the accepted historical bytes. `source.standing` establishes clean-source integrity or
+explicit fixture standing. `source.promotionStanding` is `unrecorded`: this
+builder receives no independent source-promotion decision. A separately
+reviewed release receipt supplies that acceptance; hosted delivery has its own
+observation.
+
+Proof contract 1.0.0 remains accepted with its existing closed fields.
+Historical manifests and release receipts retain their original version and
+bytes. A receiver of the new prepared artifact uses the 1.2.0 validator;
+comparison with an older carrier uses that carrier's matching source tooling.
+The new manifest rejects substituted promotion, historical-source and
+schema-acceptance claims even when its file inventory is internally consistent.
+Declared candidate names must remain present in the selected source catalog. Source promotion, site tags and publishing
+remain separately authorized actions.
+
+The isolated visitor change must be reconciled with the complete-membership
+repair in #63 before final carrier acceptance. Its focused source/build and
+browser results describe this preparation branch, rather than an integrated
+release.
