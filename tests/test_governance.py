@@ -1268,6 +1268,26 @@ class GovernancePackageTests(unittest.TestCase):
                 self.assertEqual(findings[0].path, f"examples/{name}")
                 self.assertIn("must have type object", findings[0].message)
 
+    def test_control_plane_findings_use_their_own_admitted_prerequisites(self) -> None:
+        for malformed, changed_name, field, value, message in (
+            ("effect.json", "bounded-caller.json", "authority_ceiling", "read",
+             "caller authority ceiling must cover the example operation effect"),
+            ("coordination-horizon.json", "first-receipt.json", "machine_node_id", "NODE-OTHER-001",
+             "Machine Node identifier must match the orientation receipt"),
+        ):
+            with self.subTest(malformed=malformed):
+                changed = validation.load_json(validation.EXAMPLE_DIR / changed_name)
+                changed[field] = value
+                self.assertEqual([], validation.SchemaValidator(
+                    validation.SCHEMA_DIR / changed_name.replace(".json", ".schema.json")
+                ).validate(changed))
+                findings = self._validate_changed_examples({malformed: None, changed_name: changed})
+                self.assertTrue(any(
+                    item.path == f"examples/{malformed}" and "must have type object" in item.message
+                    for item in findings
+                ), findings)
+                self.assertIn(message, [item.message for item in findings])
+
     def test_admitted_database_faults_retain_cumulative_semantic_findings(self) -> None:
         records = load_database_examples()
         records["data-contract.json"]["entities"][1]["constraints"][0]["referenced_entity_id"] = "ENTITY-UNKNOWN-001"

@@ -819,39 +819,36 @@ def _validate_control_plane_examples(records: dict[str, Any]) -> list[Finding]:
                 )
             )
 
-    if {"bounded-caller.json", "operation.json", "approval.json", "effect.json", "call-receipt.json"}.issubset(records):
-        caller = records.get("bounded-caller.json", {})
-        operation = records.get("operation.json", {})
-        approval = records.get("approval.json", {})
-        effect = records.get("effect.json", {})
-        call = records.get("call-receipt.json", {})
+    if "operation.json" in records:
+        operation = records["operation.json"]
         operation_id = operation.get("operation_id")
         operation_version = operation.get("version")
         effect_class = operation.get("effect_class")
-        if operation_id not in caller.get("permitted_operation_ids", []):
-            findings.append(
-                Finding(
-                    "examples/bounded-caller.json",
-                    "the example caller must permit the example operation",
+        if "bounded-caller.json" in records:
+            caller = records["bounded-caller.json"]
+            if operation_id not in caller.get("permitted_operation_ids", []):
+                findings.append(
+                    Finding(
+                        "examples/bounded-caller.json",
+                        "the example caller must permit the example operation",
+                    )
                 )
-            )
-        ceiling = caller.get("authority_ceiling")
-        if (
-            ceiling in EFFECT_CLASS_RANK
-            and effect_class in EFFECT_CLASS_RANK
-            and EFFECT_CLASS_RANK[ceiling] < EFFECT_CLASS_RANK[effect_class]
-        ):
-            findings.append(
-                Finding(
-                    "examples/bounded-caller.json",
-                    "caller authority ceiling must cover the example operation effect",
+            ceiling = caller.get("authority_ceiling")
+            if (
+                ceiling in EFFECT_CLASS_RANK
+                and effect_class in EFFECT_CLASS_RANK
+                and EFFECT_CLASS_RANK[ceiling] < EFFECT_CLASS_RANK[effect_class]
+            ):
+                findings.append(
+                    Finding(
+                        "examples/bounded-caller.json",
+                        "caller authority ceiling must cover the example operation effect",
+                    )
                 )
-            )
-        for label, record in (
-            ("examples/approval.json", approval),
-            ("examples/effect.json", effect),
-            ("examples/call-receipt.json", call),
-        ):
+        for name in ("approval.json", "effect.json", "call-receipt.json"):
+            if name not in records:
+                continue
+            label, record = f"examples/{name}", records[name]
             if record.get("operation_id") != operation_id:
                 findings.append(
                     Finding(label, "operation identifier must match the operation example")
@@ -864,6 +861,10 @@ def _validate_control_plane_examples(records: dict[str, Any]) -> list[Finding]:
                 findings.append(
                     Finding(label, "effect class must match the operation example")
                 )
+
+    if {"bounded-caller.json", "call-receipt.json"}.issubset(records):
+        caller = records["bounded-caller.json"]
+        call = records["call-receipt.json"]
         if call.get("caller_id") != caller.get("caller_id"):
             findings.append(
                 Finding(
@@ -871,6 +872,10 @@ def _validate_control_plane_examples(records: dict[str, Any]) -> list[Finding]:
                     "caller identifier must match the bounded-caller example",
                 )
             )
+
+    if {"approval.json", "call-receipt.json"}.issubset(records):
+        approval = records["approval.json"]
+        call = records["call-receipt.json"]
         if approval.get("approval_id") not in call.get("approval_ids", []):
             findings.append(
                 Finding(
@@ -878,6 +883,10 @@ def _validate_control_plane_examples(records: dict[str, Any]) -> list[Finding]:
                     "authorized broad-write call must reference the approval example",
                 )
             )
+
+    if {"effect.json", "call-receipt.json"}.issubset(records):
+        effect = records["effect.json"]
+        call = records["call-receipt.json"]
         if effect.get("effect_id") not in call.get("effect_ids", []):
             findings.append(
                 Finding(
@@ -893,10 +902,9 @@ def _validate_control_plane_examples(records: dict[str, Any]) -> list[Finding]:
                 )
             )
 
-    if {"machine-node.json", "first-receipt.json", "coordination-horizon.json"}.issubset(records):
-        horizon = records.get("coordination-horizon.json", {})
-        node = records.get("machine-node.json", {})
-        first_receipt = records.get("first-receipt.json", {})
+    if {"machine-node.json", "first-receipt.json"}.issubset(records):
+        node = records["machine-node.json"]
+        first_receipt = records["first-receipt.json"]
         if node.get("machine_node_id") != first_receipt.get("machine_node_id"):
             findings.append(
                 Finding(
@@ -913,13 +921,15 @@ def _validate_control_plane_examples(records: dict[str, Any]) -> list[Finding]:
                     "first-receipt identifier must resolve to the orientation example",
                 )
             )
-        for label, record in (
-            ("examples/machine-node.json", node),
-            ("examples/first-receipt.json", first_receipt),
-        ):
-            if record.get("coordination_horizon_id") != horizon.get("horizon_id"):
+
+    if "coordination-horizon.json" in records:
+        horizon = records["coordination-horizon.json"]
+        for name in ("machine-node.json", "first-receipt.json"):
+            if name not in records:
+                continue
+            if records[name].get("coordination_horizon_id") != horizon.get("horizon_id"):
                 findings.append(
-                    Finding(label, "Coordination Horizon identifier must resolve")
+                    Finding(f"examples/{name}", "Coordination Horizon identifier must resolve")
                 )
 
     if "simulated-receipt-closure.json" in records:
