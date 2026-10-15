@@ -25,6 +25,16 @@ def tree(root):
     return {p.relative_to(root).as_posix(): p.read_bytes() for p in root.rglob("*") if p.is_file()}
 
 
+class CompleteSourceTests(unittest.TestCase):
+    def test_complete_repository_families_have_explicit_receiving_owners(self):
+        _, profile = projection.selected_profile(ROOT)
+        projection.validate_source_families(ROOT, profile)
+        projection.validate_examples(ROOT, complete_source=True)
+        self.assertNotIn("examples/database-lifecycle-assurance.json", profile.files)
+        self.assertEqual(projection.RECEIVER_EXAMPLES["database-lifecycle-assurance.json"],
+                         "tools/lifecycle_assurance.py")
+
+
 @unittest.skipUnless(PARSERS, "install requirements-projections.txt for projection behavior")
 class ProjectionTests(unittest.TestCase):
     def setUp(self):
@@ -32,7 +42,10 @@ class ProjectionTests(unittest.TestCase):
         self.source = self.root / "source"
         self.source.mkdir()
         self.profile = json.loads((ROOT / projection.PROFILE).read_bytes())
-        for name in self.profile["files"]:
+        source_inputs = (set(self.profile["files"])
+                         | {"examples/" + name for name in projection.RECEIVER_EXAMPLES}
+                         | set(projection.RECEIVER_EXAMPLES.values()))
+        for name in source_inputs:
             if name == projection.REQUEST:
                 continue
             target = self.source / name
@@ -150,9 +163,52 @@ class ProjectionTests(unittest.TestCase):
         self.assertEqual(provenance["capability_schema"]["byte_digest"], "sha256:" + sha256(copied.read_bytes()).hexdigest())
 
     def test_support_inputs_use_native_schema_admission_without_site_packages(self):
-        code = "import sys; sys.path.insert(0,'infra'); import container_projection as p; from pathlib import Path; p.validate_examples(Path('.')); assert not {'schema_projections', 'assurance_upstream', 'graphql', 'ruamel'} & sys.modules.keys()"
+        code = "import sys; sys.path.insert(0,'infra'); import container_projection as p; from pathlib import Path; p.validate_examples(Path('.'), complete_source=True); assert not {'schema_projections', 'assurance_upstream', 'lifecycle_assurance', 'lims_eln_contracts', 'graphql', 'ruamel'} & sys.modules.keys()"
         subprocess.run([sys.executable, "-B", "-S", "-c", code], cwd=self.source,
                        check=True, capture_output=True)
+
+    def test_lifecycle_example_retains_its_separate_receiver_and_source_bytes(self):
+        example = self.source / "examples/database-lifecycle-assurance.json"
+        owner = self.source / "tools/lifecycle_assurance.py"
+        before = (example.read_bytes(), owner.read_bytes())
+        context = self.prepare()
+        self.assertFalse((context / "source/examples/database-lifecycle-assurance.json").exists())
+        self.assertFalse((context / "source/tools/lifecycle_assurance.py").exists())
+        self.publish(context)
+        self.assertEqual((example.read_bytes(), owner.read_bytes()), before)
+
+    def test_complete_source_requires_each_declared_receiver_input_and_owner(self):
+        for name in ("examples/database-lifecycle-assurance.json", "tools/lifecycle_assurance.py"):
+            with self.subTest(name=name):
+                path = self.source / name
+                content = path.read_bytes()
+                path.unlink()
+                self.commit()
+                with self.assertRaises((ValueError, OSError)):
+                    self.prepare()
+                self.assertFalse((self.root / "context").exists())
+                path.write_bytes(content)
+                self.commit()
+
+    def test_lifecycle_example_keeps_its_owner_outside_the_projection_profile_and_map(self):
+        example = "examples/database-lifecycle-assurance.json"
+        profile_path = self.source / projection.PROFILE
+        original = profile_path.read_bytes()
+        profile_path.write_bytes(projection.encoded({
+            **self.profile, "files": sorted([*self.profile["files"], example]),
+        }))
+        self.commit()
+        with self.assertRaisesRegex(ValueError, "projection-receiver-example"):
+            self.prepare()
+        profile_path.write_bytes(original)
+        mapping_path = self.source / "examples/example-map.json"
+        mapping = json.loads(mapping_path.read_bytes())
+        mapping["schema_map"][Path(example).name] = "administrative-assurance.schema.json"
+        mapping_path.write_bytes(projection.encoded(mapping))
+        self.commit()
+        with self.assertRaisesRegex(ValueError, "projection-support-example-map"):
+            self.prepare()
+        self.assertFalse((self.root / "context").exists())
 
     def test_missing_malformed_and_schema_invalid_support_inputs_hold_preparation(self):
         for name in ("assurance-request.json", "assurance-capability.json"):

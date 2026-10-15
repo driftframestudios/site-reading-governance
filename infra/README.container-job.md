@@ -183,9 +183,20 @@ explicit support inputs remain outside that Governance example map:
 
 The profile also retains `contract-resources/assurance-source-map.json` as the
 copied capability schema's provenance record. The existing standard-library
-schema-pair validator admits both support inputs. Every example belongs to the
-Governance map or this explicit support set; an additional profile entry alone
-does not admit another support input. Full assurance execution, cross-record
+schema-pair validator admits both support inputs. Complete-source admission
+partitions the root examples into the Governance map, this structural support
+set, and the following optional receiver input:
+
+| Receiver input | Semantic admission owner |
+| --- | --- |
+| `examples/database-lifecycle-assurance.json` | [`tools/lifecycle_assurance.py`](../tools/lifecycle_assurance.py), using its separately pinned Program profile |
+
+Preparation requires the declared receiver input and its source owner to remain
+regular files in the complete clean source. The lifecycle example and receiver
+stay with their optional profile; the prepared projection contains its mapped
+and structural-support inputs. Complete-family checks retain every declared
+member and hold unclassified additions. A profile entry alone leaves an
+additional support input awaiting its explicit owner. Full assurance execution, cross-record
 binding, review transitions, and release suites retain their existing owners
 and dependency profiles. Projection preparation installs only the parser lock.
 
@@ -245,6 +256,8 @@ output and local paths in the operator's local evidence directory.
 "$LIMS_PYTHON" -B -m unittest discover -s tests -p 'test_schema_projections.py' -v
 ```
 
+The complete-source regression checks the actual repository families before
+fixture selection, so a new example requires an explicit receiving owner.
 The projection fixtures use real clean temporary Git sources, native builders,
 and independent complete byte maps. Synthetic wheel and patch bytes exercise
 admission only; configured image installation supplies package-execution

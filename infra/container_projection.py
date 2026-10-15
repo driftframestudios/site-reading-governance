@@ -34,6 +34,11 @@ SUPPORT_EXAMPLES = {
     "assurance-request.json": "schemas/administrative-assurance.schema.json",
     "assurance-capability.json": "contract-resources/workbench-capabilities.v1.schema.json",
 }
+# These complete-source examples retain their optional receiving API owner.
+# Projection construction selects the mapped and structural-support inputs.
+RECEIVER_EXAMPLES = {
+    "database-lifecycle-assurance.json": "tools/lifecycle_assurance.py",
+}
 REQUIRED = {
     PROFILE, REQUEST, "AUTHORS", "LICENSE", "requirements-projections.txt",
     "infra/container_entry.py", "infra/container_projection.py",
@@ -64,7 +69,22 @@ def selected_profile(source: Path) -> tuple[bytes, job.Profile]:
             or list(profile.files) != sorted(profile.files)
             or not REQUIRED.issubset(profile.files)):
         raise job.ContextError("projection-profile")
+    if {"examples/" + name for name in RECEIVER_EXAMPLES} & set(profile.files):
+        raise job.ContextError("projection-receiver-example")
     return content, profile
+
+
+def validate_source_families(source: Path, profile: job.Profile) -> None:
+    """Reconcile the complete source before selecting the projection snapshot."""
+    for pattern in ("schemas/*.schema.json", "examples/*.json", ".agents/skills/*/SKILL.md"):
+        expected = {name for name in profile.files if Path(name).match(pattern)}
+        if pattern == "examples/*.json":
+            expected |= {"examples/" + name for name in RECEIVER_EXAMPLES}
+        if {path.relative_to(source).as_posix() for path in source.glob(pattern)} != expected:
+            raise job.ContextError("projection-source-membership")
+    for name, owner in RECEIVER_EXAMPLES.items():
+        job.regular_bytes(source, "examples/" + name)
+        job.regular_bytes(source, owner)
 
 
 def exact_tree(root: Path, expected: set[str]) -> None:
@@ -131,8 +151,8 @@ def wheel_closure(lock: bytes, wheels: object) -> None:
         raise job.ContextError("projection-wheel-membership")
 
 
-def validate_examples(source: Path) -> None:
-    """Validate mapped Governance examples and the two declared support inputs."""
+def validate_examples(source: Path, *, complete_source: bool = False) -> None:
+    """Validate projection inputs; optional receiver examples keep their owner."""
     document = job.strict_document(job.regular_bytes(source, "examples/example-map.json"))
     if not isinstance(document, dict) or set(document) != {"schema_map"}:
         raise job.ContextError("projection-example-map")
@@ -144,9 +164,12 @@ def validate_examples(source: Path) -> None:
                 or not isinstance(schema, str)
                 or re.fullmatch(r"[a-z][a-z0-9-]*[.]schema[.]json", schema) is None):
             raise job.ContextError("projection-example-path")
-    if set(mapping) & SUPPORT_EXAMPLES.keys():
+    if set(mapping) & (SUPPORT_EXAMPLES.keys() | RECEIVER_EXAMPLES.keys()):
         raise job.ContextError("projection-support-example-map")
-    if set(mapping) | SUPPORT_EXAMPLES.keys() | {"example-map.json"} != {p.name for p in (source / "examples").glob("*.json")}:
+    expected = set(mapping) | SUPPORT_EXAMPLES.keys() | {"example-map.json"}
+    if complete_source:
+        expected |= RECEIVER_EXAMPLES.keys()
+    if expected != {p.name for p in (source / "examples").glob("*.json")}:
         raise job.ContextError("projection-example-membership")
     if set(mapping.values()) != {p.name for p in (source / "schemas").glob("*.schema.json") if p.name != "common.schema.json"}:
         raise job.ContextError("projection-schema-coverage")
@@ -182,14 +205,8 @@ def prepare(source: Path, proof_path: Path, destination: Path, dependencies: Pat
     wheels = [{"file": name, "sha256": digest} for name, digest in sorted(wheel_records)]
     wheel_closure(lock, wheels)
     exact_tree(dependencies, {"requirements.lock", "wheel-manifest.json", *(w["file"] for w in wheels)})
-    # Globbing owners receive their entire selected source family, including
-    # non-public skills, so selection cannot conceal an added public-ready guide.
-    for pattern in ("schemas/*.schema.json", "examples/*.json", ".agents/skills/*/SKILL.md"):
-        if {p.relative_to(source).as_posix() for p in source.glob(pattern)} != {
-            p for p in profile.files if Path(p).match(pattern)
-        }:
-            raise job.ContextError("projection-source-membership")
-    validate_examples(source)
+    validate_source_families(source, profile)
+    validate_examples(source, complete_source=True)
     acquired = False
     # Defer termination until the temporary directory owns cleanup and the
     # context manager has installed its exit handler.
