@@ -371,6 +371,93 @@ class ProjectionTests(unittest.TestCase):
         self.assertEqual(tree(prior), before)
         self.assertEqual(list(self.root.glob(".projection-*")), [])
 
+    def test_preparation_outer_acquisition_sigterm_and_normal_signal_restoration(self):
+        prior = self.prepare()
+        before = tree(prior)
+        names_before = {path.name for path in self.root.iterdir()}
+        code = '''import pathlib, signal, sys
+sys.path.insert(0, sys.argv[1])
+sys.path.insert(0, str(pathlib.Path(sys.argv[1]).parent / "tests"))
+import container_projection as p
+from container_patch_fixtures import patch_inputs
+source, proof, destination, dependencies = map(pathlib.Path, sys.argv[2:6])
+phase = sys.argv[6]
+with patch_inputs() as child_patches:
+    print("synthetic-patches-bound", flush=True)
+    def prior_handler(number, frame):
+        raise AssertionError("preparation must use its own termination handler")
+    signal.signal(signal.SIGTERM, prior_handler)
+    signal.pthread_sigmask(signal.SIG_UNBLOCK, {signal.SIGTERM})
+    signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGUSR1})
+    expected_mask = signal.pthread_sigmask(signal.SIG_BLOCK, set())
+    allocate = p.tempfile.mkdtemp
+    def acquire(*args, **kwargs):
+        created = allocate(*args, **kwargs)
+        prefix = kwargs.get("prefix", args[1] if len(args) > 1 else None)
+        if prefix == ".projection-" and phase == "termination":
+            print("outer-acquired-before-return", flush=True)
+            signal.raise_signal(signal.SIGTERM)
+            assert signal.SIGTERM in signal.sigpending(), "termination must wait for cleanup ownership"
+        return created
+    p.tempfile.mkdtemp = acquire
+    sys.argv = ["container_projection", str(destination), "--source", str(source),
+                "--source-proof", str(proof), "--dependencies", str(dependencies),
+                "--patches", str(child_patches), "--architecture", "arm64"]
+    try:
+        status = p.main()
+    except SystemExit as error:
+        status = error.code
+    assert signal.getsignal(signal.SIGTERM) is prior_handler, "handler was not restored"
+    assert signal.pthread_sigmask(signal.SIG_BLOCK, set()) == expected_mask, "mask was not restored"
+    assert signal.SIGTERM not in signal.sigpending(), "termination was not delivered"
+    assert status == (143 if phase == "termination" else 0), f"unexpected preparation result: phase={phase}, status={status}"
+    print("signal-state-restored", flush=True)
+raise SystemExit(status)
+'''
+        for phase, status in (("termination", 143), ("normal", 0)):
+            with self.subTest(phase=phase):
+                destination = self.root / phase
+                process = subprocess.run(
+                    [sys.executable, "-B", "-c", code, str(ROOT / "infra"),
+                     str(self.source), str(self.proof_path), str(destination),
+                     str(self.dependencies), phase],
+                    capture_output=True, text=True, timeout=10,
+                )
+                diagnostics = f"stdout:\n{process.stdout[-4000:]}\nstderr:\n{process.stderr[-4000:]}"
+                self.assertEqual(process.returncode, status, diagnostics)
+                self.assertEqual(process.stderr, "")
+                self.assertIn("signal-state-restored", process.stdout)
+                if phase == "termination":
+                    self.assertIn("outer-acquired-before-return", process.stdout)
+                    self.assertNotIn('"prepared"', process.stdout)
+                    self.assertFalse(destination.exists())
+                    self.assertEqual({path.name for path in self.root.iterdir()}, names_before)
+                else:
+                    self.assertIn('"prepared"', process.stdout)
+                    self.assertEqual(tree(destination), before)
+                    self.assertEqual({path.name for path in self.root.iterdir()}, names_before | {phase})
+                self.assertEqual(tree(prior), before)
+                self.assertEqual(list(self.root.glob(".projection-*")), [])
+
+    def test_preparation_outer_acquisition_error_restores_signal_mask(self):
+        prior = self.prepare()
+        before = tree(prior)
+        original_handler = signal.getsignal(signal.SIGTERM)
+        original_mask = signal.pthread_sigmask(signal.SIG_UNBLOCK, {signal.SIGTERM})
+        try:
+            with patch.object(projection.tempfile, "TemporaryDirectory",
+                              side_effect=OSError("outer-acquisition-fixture")):
+                with self.assertRaisesRegex(OSError, "outer-acquisition-fixture"):
+                    self.prepare("failed-acquisition")
+            self.assertEqual(signal.pthread_sigmask(signal.SIG_BLOCK, set()),
+                             original_mask - {signal.SIGTERM})
+            self.assertIs(signal.getsignal(signal.SIGTERM), original_handler)
+        finally:
+            signal.pthread_sigmask(signal.SIG_SETMASK, original_mask)
+        self.assertFalse((self.root / "failed-acquisition").exists())
+        self.assertEqual(tree(prior), before)
+        self.assertEqual(list(self.root.glob(".projection-*")), [])
+
     def test_deadline_during_acquisition_records_ownership_before_cleanup(self):
         context = self.prepare()
         prior = self.publish(context)

@@ -191,8 +191,12 @@ def prepare(source: Path, proof_path: Path, destination: Path, dependencies: Pat
             raise job.ContextError("projection-source-membership")
     validate_examples(source)
     acquired = False
+    # Defer termination until the temporary directory owns cleanup and the
+    # context manager has installed its exit handler.
+    acquisition_mask = signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGTERM})
     try:
         with tempfile.TemporaryDirectory(prefix=".projection-", dir=destination.parent) as temporary:
+            signal.pthread_sigmask(signal.SIG_SETMASK, acquisition_mask)
             work = Path(temporary)
             staged = work / "source"
             members = []
@@ -239,6 +243,8 @@ def prepare(source: Path, proof_path: Path, destination: Path, dependencies: Pat
         if acquired:
             shutil.rmtree(destination)
         raise
+    finally:
+        signal.pthread_sigmask(signal.SIG_SETMASK, acquisition_mask)
 
 
 def admit_prepared(source: Path, receipt_path: Path) -> tuple[pages.SourceProof, dict, dict]:
