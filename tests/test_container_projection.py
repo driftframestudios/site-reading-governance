@@ -162,6 +162,28 @@ class ProjectionTests(unittest.TestCase):
         provenance = json.loads((context / "source/contract-resources/assurance-source-map.json").read_bytes())
         self.assertEqual(provenance["capability_schema"]["byte_digest"], "sha256:" + sha256(copied.read_bytes()).hexdigest())
 
+    def test_confined_publication_rejects_self_declared_surplus_site_member(self):
+        context = self.prepare()
+
+        def produce_surplus(output):
+            projection.produce(output, context / "source", context / "context-receipt.json")
+            site = output / "site"
+            (site / "assets/extra.json").write_text("{}\n", encoding="utf-8")
+            manifest_path = site / "manifest.json"
+            manifest = json.loads(manifest_path.read_bytes())
+            records = projection.pages.inventory_records(site)
+            schema_paths = {record["outputPath"] for record in manifest["schemas"]}
+            manifest["inventory"]["files"] = records
+            manifest["digests"] = {
+                "schemas": projection.pages.records_digest([r for r in records if r["path"] in schema_paths]),
+                "content": projection.pages.records_digest([r for r in records if r["path"] not in schema_paths]),
+            }
+            manifest_path.write_bytes(projection.encoded(manifest))
+
+        with self.assertRaisesRegex(ValueError, "source-owned publication membership"):
+            self.publish(context, produce_surplus)
+        self.assertEqual(list((self.root / "output").iterdir()), [])
+
     def test_support_inputs_use_native_schema_admission_without_site_packages(self):
         code = "import sys; sys.path.insert(0,'infra'); import container_projection as p; from pathlib import Path; p.validate_examples(Path('.'), complete_source=True); assert not {'schema_projections', 'assurance_upstream', 'lifecycle_assurance', 'lims_eln_contracts', 'graphql', 'ruamel'} & sys.modules.keys()"
         subprocess.run([sys.executable, "-B", "-S", "-c", code], cwd=self.source,

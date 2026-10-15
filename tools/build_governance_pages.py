@@ -1846,6 +1846,28 @@ def validate_site(
     schemas = collect_schemas(source_root, proof)
     skills = collect_public_skills(source_root, proof)
     schema_families, projection_artifacts = collect_schema_families(source_root, proof)
+    actual_files = set(_artifact_file_paths(output_root, include_manifest=True))
+    actual_html = tuple(sorted(path for path in actual_files if path.endswith(".html")))
+    if actual_html != HTML_PATHS:
+        raise PagesBuildError("artifact HTML inventory differs from the publication contract")
+    expected_skill_paths = {"skills/index.html"}
+    for skill in skills:
+        expected_skill_paths.update({skill.page_path, skill.output_path})
+    actual_skill_paths = {path for path in actual_files if path.startswith("skills/")}
+    if actual_skill_paths != expected_skill_paths:
+        raise PagesBuildError("artifact skill paths differ from the accepted public set")
+    # The source authorizes membership; the artifact inventory attests its bytes.
+    expected_files = (
+        {"manifest.json", ".nojekyll", "assets/site.css"}
+        | set(HTML_PATHS)
+        | expected_skill_paths
+        | {schema.output_path for schema in schemas}
+        | set(projection_artifacts)
+    )
+    if cname is not None:
+        expected_files.add("CNAME")
+    if actual_files != expected_files:
+        raise PagesBuildError("artifact differs from source-owned publication membership")
     if manifest.get("schemas") != [schema.manifest_record() for schema in schemas]:
         raise PagesBuildError("manifest schema records differ from accepted source")
     for schema in schemas:
@@ -1900,21 +1922,6 @@ def validate_site(
     if manifest.get("digests") != expected_digests:
         raise PagesBuildError("manifest schema or content digest differs from the inventory")
 
-    actual_files = set(_artifact_file_paths(output_root, include_manifest=True))
-    declared_files = {item["path"] for item in actual_inventory} | {"manifest.json"}
-    if actual_files != declared_files:
-        raise PagesBuildError("artifact contains a file outside the closed inventory")
-    actual_html = tuple(sorted(path for path in actual_files if path.endswith(".html")))
-    if actual_html != HTML_PATHS:
-        raise PagesBuildError("artifact HTML inventory differs from the publication contract")
-    expected_skill_paths = {"skills/index.html"}
-    for skill in skills:
-        expected_skill_paths.update({skill.page_path, skill.output_path})
-    actual_skill_paths = {
-        path for path in actual_files if path.startswith("skills/")
-    }
-    if actual_skill_paths != expected_skill_paths:
-        raise PagesBuildError("artifact skill paths differ from the accepted public set")
     for record in expected_html:
         _validate_html_page(
             output_root,
