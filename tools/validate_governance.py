@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import datetime as dt
 from hashlib import sha256
 import json
@@ -717,6 +718,14 @@ def validate_examples() -> list[Finding]:
         schema_path = SCHEMA_DIR / schema_name
         try:
             record = load_json(example_path)
+            structural = SchemaValidator(schema_path).validate(record)
+            findings.extend(
+                Finding(f"examples/{example_name}{item.path[1:]}", item.message)
+                for item in structural
+            )
+            if structural:
+                continue
+            # Semantic consumers receive only records admitted by their own schema.
             records[example_name] = record
             metadata = record.get("metadata", {})
             if metadata.get("schema_version") != SCHEMA_RELEASE:
@@ -726,10 +735,6 @@ def validate_examples() -> list[Finding]:
                         f"governance schema version must equal {SCHEMA_RELEASE}",
                     )
                 )
-            for finding in SchemaValidator(schema_path).validate(record):
-                findings.append(
-                    Finding(f"examples/{example_name}{finding.path[1:]}", finding.message)
-                )
         except (
             OSError,
             json.JSONDecodeError,
@@ -738,37 +743,39 @@ def validate_examples() -> list[Finding]:
         ) as exc:
             findings.append(Finding(f"examples/{example_name}", str(exc)))
 
-    machine_node = records.get("machine-node.json", {})
-    if machine_node.get("schema_release") != SCHEMA_RELEASE:
-        findings.append(
-            Finding(
-                "examples/machine-node.json.schema_release",
-                f"current example must select schema release {SCHEMA_RELEASE}",
+    if "machine-node.json" in records:
+        machine_node = records.get("machine-node.json", {})
+        if machine_node.get("schema_release") != SCHEMA_RELEASE:
+            findings.append(
+                Finding(
+                    "examples/machine-node.json.schema_release",
+                    f"current example must select schema release {SCHEMA_RELEASE}",
+                )
             )
-        )
 
     constellation = records.get("constellation.json", {})
     roles = [item["role"] for item in constellation.get("repositories", [])]
     if len(roles) != len(set(roles)):
         findings.append(Finding("examples/constellation.json", "repository roles must be unique"))
 
-    comparison = records.get("comparison.json", {})
-    results = comparison.get("results", [])
-    summary = comparison.get("summary", {})
-    if summary.get("total") != len(results):
-        findings.append(
-            Finding("examples/comparison.json", "summary total must equal result count")
-        )
-    pending = sum(
-        item.get("classification") == "receipt_pending" for item in results
-    )
-    if summary.get("pending_receipts") != pending:
-        findings.append(
-            Finding(
-                "examples/comparison.json",
-                "pending receipt count must match result classifications",
+    if "comparison.json" in records:
+        comparison = records.get("comparison.json", {})
+        results = comparison.get("results", [])
+        summary = comparison.get("summary", {})
+        if summary.get("total") != len(results):
+            findings.append(
+                Finding("examples/comparison.json", "summary total must equal result count")
             )
+        pending = sum(
+            item.get("classification") == "receipt_pending" for item in results
         )
+        if summary.get("pending_receipts") != pending:
+            findings.append(
+                Finding(
+                    "examples/comparison.json",
+                    "pending receipt count must match result classifications",
+                )
+            )
     findings.extend(_validate_control_plane_examples(records))
     findings.extend(_validate_database_examples(records))
     return findings
@@ -778,245 +785,249 @@ def _validate_control_plane_examples(records: dict[str, Any]) -> list[Finding]:
     """Check relationships that JSON Schema represents only within one record."""
     findings: list[Finding] = []
 
-    horizon = records.get("coordination-horizon.json", {})
-    work_items = horizon.get("work_items", [])
-    work_ids = {item.get("item_id") for item in work_items}
-    current_ids = set(horizon.get("current_item_ids", []))
-    if not current_ids.issubset(work_ids):
-        findings.append(
-            Finding(
-                "examples/coordination-horizon.json",
-                "every current item must resolve to one declared work item",
-            )
-        )
-    sequences = [item.get("sequence") for item in work_items]
-    if len(sequences) != len(set(sequences)):
-        findings.append(
-            Finding(
-                "examples/coordination-horizon.json",
-                "work-item sequence values must be unique",
-            )
-        )
-
-    probe = records.get("practitioner-probe.json", {})
-    levels = sorted(
-        item.get("level") for item in probe.get("proficiency_levels", [])
-    )
-    if levels != [1, 2, 3, 4, 5]:
-        findings.append(
-            Finding(
-                "examples/practitioner-probe.json",
-                "proficiency levels must represent the complete one-through-five ladder",
-            )
-        )
-
-    caller = records.get("bounded-caller.json", {})
-    operation = records.get("operation.json", {})
-    approval = records.get("approval.json", {})
-    effect = records.get("effect.json", {})
-    call = records.get("call-receipt.json", {})
-    operation_id = operation.get("operation_id")
-    operation_version = operation.get("version")
-    effect_class = operation.get("effect_class")
-    if operation_id not in caller.get("permitted_operation_ids", []):
-        findings.append(
-            Finding(
-                "examples/bounded-caller.json",
-                "the example caller must permit the example operation",
-            )
-        )
-    ceiling = caller.get("authority_ceiling")
-    if (
-        ceiling in EFFECT_CLASS_RANK
-        and effect_class in EFFECT_CLASS_RANK
-        and EFFECT_CLASS_RANK[ceiling] < EFFECT_CLASS_RANK[effect_class]
-    ):
-        findings.append(
-            Finding(
-                "examples/bounded-caller.json",
-                "caller authority ceiling must cover the example operation effect",
-            )
-        )
-    for label, record in (
-        ("examples/approval.json", approval),
-        ("examples/effect.json", effect),
-        ("examples/call-receipt.json", call),
-    ):
-        if record.get("operation_id") != operation_id:
+    if "coordination-horizon.json" in records:
+        horizon = records.get("coordination-horizon.json", {})
+        work_items = horizon.get("work_items", [])
+        work_ids = {item.get("item_id") for item in work_items}
+        current_ids = set(horizon.get("current_item_ids", []))
+        if not current_ids.issubset(work_ids):
             findings.append(
-                Finding(label, "operation identifier must match the operation example")
+                Finding(
+                    "examples/coordination-horizon.json",
+                    "every current item must resolve to one declared work item",
+                )
             )
-        if record.get("operation_version") != operation_version:
+        sequences = [item.get("sequence") for item in work_items]
+        if len(sequences) != len(set(sequences)):
             findings.append(
-                Finding(label, "operation version must match the operation example")
-            )
-        if record.get("effect_class") != effect_class:
-            findings.append(
-                Finding(label, "effect class must match the operation example")
-            )
-    if call.get("caller_id") != caller.get("caller_id"):
-        findings.append(
-            Finding(
-                "examples/call-receipt.json",
-                "caller identifier must match the bounded-caller example",
-            )
-        )
-    if approval.get("approval_id") not in call.get("approval_ids", []):
-        findings.append(
-            Finding(
-                "examples/call-receipt.json",
-                "authorized broad-write call must reference the approval example",
-            )
-        )
-    if effect.get("effect_id") not in call.get("effect_ids", []):
-        findings.append(
-            Finding(
-                "examples/call-receipt.json",
-                "completed call must reference the effect example",
-            )
-        )
-    if effect.get("call_id") != call.get("call_id"):
-        findings.append(
-            Finding(
-                "examples/effect.json",
-                "effect call identifier must match the call-receipt example",
-            )
-        )
-
-    node = records.get("machine-node.json", {})
-    first_receipt = records.get("first-receipt.json", {})
-    if node.get("machine_node_id") != first_receipt.get("machine_node_id"):
-        findings.append(
-            Finding(
-                "examples/first-receipt.json",
-                "Machine Node identifier must match the orientation receipt",
-            )
-        )
-    if node.get("first_receipt_contract_id") != first_receipt.get(
-        "first_receipt_id"
-    ):
-        findings.append(
-            Finding(
-                "examples/machine-node.json",
-                "first-receipt identifier must resolve to the orientation example",
-            )
-        )
-    for label, record in (
-        ("examples/machine-node.json", node),
-        ("examples/first-receipt.json", first_receipt),
-    ):
-        if record.get("coordination_horizon_id") != horizon.get("horizon_id"):
-            findings.append(
-                Finding(label, "Coordination Horizon identifier must resolve")
+                Finding(
+                    "examples/coordination-horizon.json",
+                    "work-item sequence values must be unique",
+                )
             )
 
-    closure = records.get("simulated-receipt-closure.json", {})
-    receipt_closures = closure.get("receipt_closures", [])
-    families = [item.get("family") for item in receipt_closures]
-    if set(families) != SUBSTANTIVE_SIMULATED_RECEIPT_FAMILIES:
-        findings.append(
-            Finding(
-                "examples/simulated-receipt-closure.json",
-                "simulated closure must cover each substantive receipt family exactly once",
-            )
+    if "practitioner-probe.json" in records:
+        probe = records.get("practitioner-probe.json", {})
+        levels = sorted(
+            item.get("level") for item in probe.get("proficiency_levels", [])
         )
-    if len(families) != len(set(families)):
-        findings.append(
-            Finding(
-                "examples/simulated-receipt-closure.json",
-                "simulated receipt families must be unique",
+        if levels != [1, 2, 3, 4, 5]:
+            findings.append(
+                Finding(
+                    "examples/practitioner-probe.json",
+                    "proficiency levels must represent the complete one-through-five ladder",
+                )
             )
-        )
-    acceptance_roles = {
-        role
-        for item in receipt_closures
-        if item.get("family")
-        == "accountable_scientific_quality_regulatory_acceptance"
-        for role in item.get("modeled_authority_roles", [])
-    }
-    required_roles = {
-        "Scientific authority",
-        "Quality authority",
-        "Regulatory authority",
-    }
-    if not required_roles.issubset(acceptance_roles):
-        findings.append(
-            Finding(
-                "examples/simulated-receipt-closure.json",
-                "simulated accountable acceptance must represent Scientific, Quality, and Regulatory authority roles",
-            )
-        )
-    closure_artifact_ids = {
-        artifact.get("artifact_id")
-        for item in receipt_closures
-        for artifact in item.get("artifacts", [])
-    }
-    check_artifact_ids = {
-        artifact_id
-        for check in closure.get("executable_checks", [])
-        for artifact_id in check.get("artifact_ids", [])
-    }
-    if not closure_artifact_ids.issubset(check_artifact_ids):
-        findings.append(
-            Finding(
-                "examples/simulated-receipt-closure.json",
-                "each family closure artifact must be produced by an executable check",
-            )
-        )
 
-    decision = records.get("decision.json", {})
-    probability_horizon = decision.get("probability_horizon", {})
-    if probability_horizon.get("ends_on", "") < probability_horizon.get(
-        "begins_on", ""
-    ):
-        findings.append(
-            Finding(
-                "examples/decision.json",
-                "probability horizon end must be on or after its beginning",
+    if {"bounded-caller.json", "operation.json", "approval.json", "effect.json", "call-receipt.json"}.issubset(records):
+        caller = records.get("bounded-caller.json", {})
+        operation = records.get("operation.json", {})
+        approval = records.get("approval.json", {})
+        effect = records.get("effect.json", {})
+        call = records.get("call-receipt.json", {})
+        operation_id = operation.get("operation_id")
+        operation_version = operation.get("version")
+        effect_class = operation.get("effect_class")
+        if operation_id not in caller.get("permitted_operation_ids", []):
+            findings.append(
+                Finding(
+                    "examples/bounded-caller.json",
+                    "the example caller must permit the example operation",
+                )
             )
-        )
+        ceiling = caller.get("authority_ceiling")
+        if (
+            ceiling in EFFECT_CLASS_RANK
+            and effect_class in EFFECT_CLASS_RANK
+            and EFFECT_CLASS_RANK[ceiling] < EFFECT_CLASS_RANK[effect_class]
+        ):
+            findings.append(
+                Finding(
+                    "examples/bounded-caller.json",
+                    "caller authority ceiling must cover the example operation effect",
+                )
+            )
+        for label, record in (
+            ("examples/approval.json", approval),
+            ("examples/effect.json", effect),
+            ("examples/call-receipt.json", call),
+        ):
+            if record.get("operation_id") != operation_id:
+                findings.append(
+                    Finding(label, "operation identifier must match the operation example")
+                )
+            if record.get("operation_version") != operation_version:
+                findings.append(
+                    Finding(label, "operation version must match the operation example")
+                )
+            if record.get("effect_class") != effect_class:
+                findings.append(
+                    Finding(label, "effect class must match the operation example")
+                )
+        if call.get("caller_id") != caller.get("caller_id"):
+            findings.append(
+                Finding(
+                    "examples/call-receipt.json",
+                    "caller identifier must match the bounded-caller example",
+                )
+            )
+        if approval.get("approval_id") not in call.get("approval_ids", []):
+            findings.append(
+                Finding(
+                    "examples/call-receipt.json",
+                    "authorized broad-write call must reference the approval example",
+                )
+            )
+        if effect.get("effect_id") not in call.get("effect_ids", []):
+            findings.append(
+                Finding(
+                    "examples/call-receipt.json",
+                    "completed call must reference the effect example",
+                )
+            )
+        if effect.get("call_id") != call.get("call_id"):
+            findings.append(
+                Finding(
+                    "examples/effect.json",
+                    "effect call identifier must match the call-receipt example",
+                )
+            )
+
+    if {"machine-node.json", "first-receipt.json", "coordination-horizon.json"}.issubset(records):
+        horizon = records.get("coordination-horizon.json", {})
+        node = records.get("machine-node.json", {})
+        first_receipt = records.get("first-receipt.json", {})
+        if node.get("machine_node_id") != first_receipt.get("machine_node_id"):
+            findings.append(
+                Finding(
+                    "examples/first-receipt.json",
+                    "Machine Node identifier must match the orientation receipt",
+                )
+            )
+        if node.get("first_receipt_contract_id") != first_receipt.get(
+            "first_receipt_id"
+        ):
+            findings.append(
+                Finding(
+                    "examples/machine-node.json",
+                    "first-receipt identifier must resolve to the orientation example",
+                )
+            )
+        for label, record in (
+            ("examples/machine-node.json", node),
+            ("examples/first-receipt.json", first_receipt),
+        ):
+            if record.get("coordination_horizon_id") != horizon.get("horizon_id"):
+                findings.append(
+                    Finding(label, "Coordination Horizon identifier must resolve")
+                )
+
+    if "simulated-receipt-closure.json" in records:
+        closure = records.get("simulated-receipt-closure.json", {})
+        receipt_closures = closure.get("receipt_closures", [])
+        families = [item.get("family") for item in receipt_closures]
+        if set(families) != SUBSTANTIVE_SIMULATED_RECEIPT_FAMILIES:
+            findings.append(
+                Finding(
+                    "examples/simulated-receipt-closure.json",
+                    "simulated closure must cover each substantive receipt family exactly once",
+                )
+            )
+        if len(families) != len(set(families)):
+            findings.append(
+                Finding(
+                    "examples/simulated-receipt-closure.json",
+                    "simulated receipt families must be unique",
+                )
+            )
+        acceptance_roles = {
+            role
+            for item in receipt_closures
+            if item.get("family")
+            == "accountable_scientific_quality_regulatory_acceptance"
+            for role in item.get("modeled_authority_roles", [])
+        }
+        required_roles = {
+            "Scientific authority",
+            "Quality authority",
+            "Regulatory authority",
+        }
+        if not required_roles.issubset(acceptance_roles):
+            findings.append(
+                Finding(
+                    "examples/simulated-receipt-closure.json",
+                    "simulated accountable acceptance must represent Scientific, Quality, and Regulatory authority roles",
+                )
+            )
+        closure_artifact_ids = {
+            artifact.get("artifact_id")
+            for item in receipt_closures
+            for artifact in item.get("artifacts", [])
+        }
+        check_artifact_ids = {
+            artifact_id
+            for check in closure.get("executable_checks", [])
+            for artifact_id in check.get("artifact_ids", [])
+        }
+        if not closure_artifact_ids.issubset(check_artifact_ids):
+            findings.append(
+                Finding(
+                    "examples/simulated-receipt-closure.json",
+                    "each family closure artifact must be produced by an executable check",
+                )
+            )
+
+    if "decision.json" in records:
+        decision = records.get("decision.json", {})
+        probability_horizon = decision.get("probability_horizon", {})
+        if probability_horizon.get("ends_on", "") < probability_horizon.get(
+            "begins_on", ""
+        ):
+            findings.append(
+                Finding(
+                    "examples/decision.json",
+                    "probability horizon end must be on or after its beginning",
+                )
+            )
     return findings
 
 
 def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
-    """Prove the database contract, plan, evidence, and release chain agrees."""
-    if not DATABASE_EXAMPLE_NAMES.issubset(records):
-        return []
-
+    """Evaluate admitted local records, then the complete six-record evidence chain."""
     findings: list[Finding] = []
-    contract = records["data-contract.json"]
-    finding = records["database-refactor-finding.json"]
-    plan = records["database-migration-plan.json"]
-    receipt = records["database-migration-receipt.json"]
-    reconciliation = records["data-reconciliation.json"]
-    manifest = records["database-release-manifest.json"]
+    if "data-contract.json" in records:
+        findings.extend(_validate_database_contract(records["data-contract.json"]))
+    if "database-migration-plan.json" in records:
+        findings.extend(_validate_database_plan(records["database-migration-plan.json"]))
+    if DATABASE_EXAMPLE_NAMES.issubset(records):
+        findings.extend(_validate_database_evidence_chain(records))
+    return findings
 
-    contract_id = contract.get("data_contract_id")
-    plan_id = plan.get("migration_plan_id")
-    receipt_id = receipt.get("migration_receipt_id")
-    reconciliation_id = reconciliation.get("reconciliation_id")
 
-    for label, record in (
-        ("examples/database-refactor-finding.json", finding),
-        ("examples/database-migration-plan.json", plan),
-        ("examples/database-migration-receipt.json", receipt),
-        ("examples/data-reconciliation.json", reconciliation),
-    ):
-        if record.get("data_contract_id") != contract_id:
-            findings.append(
-                Finding(label, "data-contract identifier must resolve to the contract example")
-            )
-
+def _validate_database_contract(contract: dict[str, Any]) -> list[Finding]:
+    """Check primitive/key meaning; resolve references through unique identities."""
+    findings: list[Finding] = []
     entity_ids = [entity.get("entity_id") for entity in contract.get("entities", [])]
-    if len(entity_ids) != len(set(entity_ids)):
+    entity_counts = Counter(entity_ids)
+    ambiguous_entities = {identity for identity, count in entity_counts.items() if count > 1}
+    if ambiguous_entities:
         findings.append(
             Finding("examples/data-contract.json.entities", "entity identifiers must be unique")
         )
     entities = {
         entity.get("entity_id"): entity for entity in contract.get("entities", [])
+        if entity.get("entity_id") not in ambiguous_entities
     }
     fields_by_entity = {
-        entity_id: {field.get("field_id"): field for field in entity.get("fields", [])}
+        entity_id: {field.get("field_id") for field in entity.get("fields", [])}
+        for entity_id, entity in entities.items()
+    }
+    ambiguous_fields_by_entity = {
+        entity_id: {
+            identity for identity, count in Counter(
+                field.get("field_id") for field in entity.get("fields", [])
+            ).items() if count > 1
+        }
         for entity_id, entity in entities.items()
     }
     keys_by_entity = {
@@ -1114,7 +1125,10 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
                             "foreign-key source and target require equal column counts",
                         )
                     )
-                target = entities.get(constraint.get("referenced_entity_id"))
+                target_id = constraint.get("referenced_entity_id")
+                if target_id in ambiguous_entities:
+                    continue
+                target = entities.get(target_id)
                 if target is None:
                     findings.append(
                         Finding(
@@ -1124,7 +1138,6 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
                         )
                     )
                 else:
-                    target_id = constraint.get("referenced_entity_id")
                     target_field_ids = fields_by_entity[target_id]
                     if not set(referenced_ids).issubset(target_field_ids):
                         findings.append(
@@ -1134,7 +1147,10 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
                                 "every foreign-key target field must resolve",
                             )
                         )
-                    elif frozenset(referenced_ids) not in keys_by_entity[target_id]:
+                    elif (
+                        not set(referenced_ids).intersection(ambiguous_fields_by_entity[target_id])
+                        and frozenset(referenced_ids) not in keys_by_entity[target_id]
+                    ):
                         findings.append(
                             Finding(
                                 f"examples/data-contract.json.entities[{entity_index}]"
@@ -1143,18 +1159,18 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
                             )
                         )
 
-    if plan_id not in finding.get("target_migration_ids", []):
-        findings.append(
-            Finding(
-                "examples/database-refactor-finding.json.target_migration_ids",
-                "planned finding must reference the migration-plan example",
-            )
-        )
+    return findings
 
+
+def _validate_database_plan(plan: dict[str, Any]) -> list[Finding]:
+    """Check phase identity and dependency order in the authored sequence."""
+    findings: list[Finding] = []
     phases = plan.get("phase_sequence", [])
     phase_ids = [phase.get("phase_id") for phase in phases]
     phase_sequences = [phase.get("sequence") for phase in phases]
-    if len(phase_ids) != len(set(phase_ids)):
+    phase_counts = Counter(phase_ids)
+    ambiguous_phases = {identity for identity, count in phase_counts.items() if count > 1}
+    if ambiguous_phases:
         findings.append(
             Finding(
                 "examples/database-migration-plan.json.phase_sequence",
@@ -1170,9 +1186,12 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
         )
     phase_sequence_by_id = {
         phase.get("phase_id"): phase.get("sequence") for phase in phases
+        if phase.get("phase_id") not in ambiguous_phases
     }
     for index, phase in enumerate(phases):
         for dependency_id in phase.get("dependency_phase_ids", []):
+            if dependency_id in ambiguous_phases:
+                continue
             dependency_sequence = phase_sequence_by_id.get(dependency_id)
             if dependency_sequence is None:
                 findings.append(
@@ -1197,6 +1216,47 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
                 "rollback boundary must resolve to one migration phase",
             )
         )
+
+    return findings
+
+
+def _validate_database_evidence_chain(records: dict[str, Any]) -> list[Finding]:
+    """Prove the database contract, plan, evidence, and release chain agrees."""
+    findings: list[Finding] = []
+    contract = records["data-contract.json"]
+    finding = records["database-refactor-finding.json"]
+    plan = records["database-migration-plan.json"]
+    receipt = records["database-migration-receipt.json"]
+    reconciliation = records["data-reconciliation.json"]
+    manifest = records["database-release-manifest.json"]
+
+    contract_id = contract.get("data_contract_id")
+    plan_id = plan.get("migration_plan_id")
+    receipt_id = receipt.get("migration_receipt_id")
+    reconciliation_id = reconciliation.get("reconciliation_id")
+
+    for label, record in (
+        ("examples/database-refactor-finding.json", finding),
+        ("examples/database-migration-plan.json", plan),
+        ("examples/database-migration-receipt.json", receipt),
+        ("examples/data-reconciliation.json", reconciliation),
+    ):
+        if record.get("data_contract_id") != contract_id:
+            findings.append(
+                Finding(label, "data-contract identifier must resolve to the contract example")
+            )
+
+    if plan_id not in finding.get("target_migration_ids", []):
+        findings.append(
+            Finding(
+                "examples/database-refactor-finding.json.target_migration_ids",
+                "planned finding must reference the migration-plan example",
+            )
+        )
+
+    phases = plan.get("phase_sequence", [])
+    phase_ids = [phase.get("phase_id") for phase in phases]
+    phase_sequences = [phase.get("sequence") for phase in phases]
 
     receipt_matches = {
         "migration_plan_id": plan_id,
@@ -1286,14 +1346,15 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
         )
     criteria = reconciliation.get("criteria", [])
     criterion_ids = [criterion.get("criterion_id") for criterion in criteria]
-    if len(criterion_ids) != len(set(criterion_ids)):
+    criterion_id_set = set(criterion_ids)
+    if len(criterion_ids) != len(criterion_id_set):
         findings.append(
             Finding(
                 "examples/data-reconciliation.json.criteria",
                 "reconciliation criterion identifiers must be unique",
             )
         )
-    if set(criterion_ids) != set(plan.get("verification_criteria", [])):
+    if criterion_id_set != set(plan.get("verification_criteria", [])):
         findings.append(
             Finding(
                 "examples/data-reconciliation.json.criteria",
@@ -1310,7 +1371,7 @@ def _validate_database_examples(records: dict[str, Any]) -> list[Finding]:
             )
         )
     for index, exception in enumerate(reconciliation.get("exceptions", [])):
-        if exception.get("criterion_id") not in set(criterion_ids):
+        if exception.get("criterion_id") not in criterion_id_set:
             findings.append(
                 Finding(
                     f"examples/data-reconciliation.json.exceptions[{index}].criterion_id",
