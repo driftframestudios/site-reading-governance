@@ -26,7 +26,7 @@ python3 -m unittest discover -s tests -v
 ```
 
 Vale `3.15.2` can provide advisory author feedback with
-`vale --config=.vale.ini .`. The deterministic commands above remain the
+`vale --config=.vale.ini --no-global .`. The deterministic commands above remain the
 candidate-eligibility controls.
 
 ## Schema design

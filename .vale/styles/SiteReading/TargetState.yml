@@ -1,9 +1,11 @@
 extends: existence
-message: "Lead with the observable target state; pair a hard boundary with safe replacement behavior."
+message: "Check which action the reader can take. Keep a necessary boundary and name the available action nearby."
 level: warning
 nonword: true
 scope:
   - paragraph
   - comment
+# Vale joins raw fragments into one expression. Each branch matches a visible wording cue.
 raw:
-  - '(?is)\A(?![\s\S]{0,1600}\b(?:replacement behavior|safe path|recovery path)\b)[\s\S]{0,1600}?(?:\A\s*do\s+not\b|\b(?:don[''’]t|must\s+not|should\s+not|avoid|never)\b)'
+  - '(?i)\A\s*(?:(?:do\s+not|don[''’]t|never|avoid)\b|\p{L}[^,.;:!?\n]{0,72}?\s+(?:must|should)\s+not\b)[^,.;:!?\n]*[.!?]?\s*\z'
+  - '|(?i)\b(?:recovery path|safe path|replacement behavior)\s+is\s+(?:documented|described|specified)\s+(?:somewhere|elsewhere)\s*[.!?]?\s*\z'
