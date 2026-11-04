@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and verify the deterministic Governance 2.2.0 retrieval site."""
+"""Build and verify the deterministic selected-source Governance retrieval site."""
 
 from __future__ import annotations
 
@@ -27,6 +27,10 @@ REPOSITORY = "driftframestudios/site-reading-governance"
 REPOSITORY_URL = f"https://github.com/{REPOSITORY}"
 RELEASE_VERSION = "2.2.0"
 RELEASE_STATUS = "accepted"
+MANIFEST_VERSION = "1.2.0"
+BUILD_PROMOTION_STANDING = "unrecorded"
+HISTORICAL_SCHEMA_REVISION = "c8d7150b8c4e6277bc504a7c69289cb5b949b0ee"
+CANDIDATE_SCHEMA_NAMES = frozenset({"administrative-assurance.schema.json"})
 RELEASE_AUTHORITY = "Constellation release steward"
 SCHEMA_COORDINATE = "v2.0"
 SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
@@ -141,6 +145,7 @@ class SchemaRecord:
     identifier: str
     title: str
     description: str
+    release_standing: str
     byte_length: int
     digest: str
     source_url: str
@@ -150,6 +155,7 @@ class SchemaRecord:
             "bytes": self.byte_length,
             "description": self.description,
             "identifier": self.identifier,
+            "releaseStanding": self.release_standing,
             "outputPath": self.output_path,
             "sha256": self.digest,
             "sourcePath": self.source_path,
@@ -220,7 +226,7 @@ class ProjectionRecord:
 
 @dataclass(frozen=True)
 class SchemaFamilyRecord:
-    """Bind one candidate projection family to its accepted JSON authority."""
+    """Bind one candidate projection family to its selected JSON authority."""
 
     family: str
     family_identifier: str
@@ -744,7 +750,7 @@ def _catalog_descriptions(source_root: Path) -> dict[str, str]:
 
 
 def collect_schemas(source_root: Path, proof: SourceProof) -> list[SchemaRecord]:
-    """Read and validate the complete source-owned Governance 2.2.0 schema set."""
+    """Read selected source schemas and preserve their explicit release standing."""
     schema_root = source_root / "schemas"
     schema_paths = sorted(schema_root.glob("*.schema.json"), key=lambda item: item.name)
     descriptions = _catalog_descriptions(source_root)
@@ -756,7 +762,9 @@ def collect_schemas(source_root: Path, proof: SourceProof) -> list[SchemaRecord]
             f"schema catalog and source inventory differ; missing={missing}, extra={extra}"
         )
     if not schema_paths:
-        raise PagesBuildError("the accepted source contains no JSON schemas")
+        raise PagesBuildError("the selected source contains no JSON schemas")
+    if not CANDIDATE_SCHEMA_NAMES.issubset(names):
+        raise PagesBuildError("declared candidate schema is missing from the source catalog")
 
     records: list[SchemaRecord] = []
     for path in schema_paths:
@@ -767,7 +775,7 @@ def collect_schemas(source_root: Path, proof: SourceProof) -> list[SchemaRecord]
         if document.get("$schema") != SCHEMA_DIALECT:
             raise PagesBuildError(f"{path.name} does not declare JSON Schema 2020-12")
         if document.get("$id") != expected_identifier:
-            raise PagesBuildError(f"{path.name} does not retain its accepted identifier")
+            raise PagesBuildError(f"{path.name} does not retain its declared identifier")
         title = document.get("title")
         if not isinstance(title, str) or not title.strip():
             raise PagesBuildError(f"{path.name} needs a non-empty title")
@@ -780,6 +788,9 @@ def collect_schemas(source_root: Path, proof: SourceProof) -> list[SchemaRecord]
                 identifier=expected_identifier,
                 title=title.strip(),
                 description=descriptions[path.name],
+                release_standing=(
+                    "candidate" if path.name in CANDIDATE_SCHEMA_NAMES else "unrecorded"
+                ),
                 byte_length=len(content),
                 digest=sha256_bytes(content),
                 source_url=source_url(proof.source_revision, source_path),
@@ -1051,7 +1062,7 @@ def _page(
 
 def _release_coordinate(proof: SourceProof) -> str:
     return (
-        '<p class="coordinate"><span>Accepted source</span> '
+        '<p class="coordinate"><span>Build source (collaborator access)</span> '
         f'<a href="{source_url(proof.source_revision)}"><code>{proof.source_revision}</code></a>'
         "</p>"
     )
@@ -1094,31 +1105,59 @@ def render_pages(
 
     index_body = f"""
     <section class="hero">
-      <p class="eyebrow">Governance {RELEASE_VERSION}</p>
-      <h1>Find the governance contract you need</h1>
-      <p class="lede">This retrieval surface keeps the accepted JSON Schema bytes, plain-language orientation, and their exact source coordinate together.</p>
-      {_release_coordinate(proof)}
+      <p class="eyebrow">Site Reading Governance</p>
+      <h1>Carry a result into accountable review</h1>
+      <p class="lede">Give a laboratory workflow's next reviewer the record, evidence, intended use and decision owner together. Shared schemas make the record inspectable; guidance and accountable roles give the review its meaning.</p>
       <div class="actions">
-        <a class="button" href="schemas/index.html">Browse schemas</a>
-        <a class="button button--quiet" href="guidance/index.html">Read use and authority guidance</a>
+        <a class="button" href="schemas/index.html">Choose a record shape</a>
+        <a class="button button--quiet" href="guidance/index.html">Follow the review guide</a>
       </div>
     </section>
     <section aria-labelledby="start-heading">
-      <h2 id="start-heading">A steady path from question to check</h2>
+      <h2 id="start-heading">Start with one result and one decision</h2>
+      <p>For a synthetic laboratory comparison, identify the source observations, the proposed use, the role that can accept that use, and the evidence that would reopen the decision. The <a href="https://cometspectrum.io/reports/golden-specimen/comparison.html">public Golden Specimen comparison</a> supplies a concrete result to inspect.</p>
       <div class="card-grid">
-        <article class="card"><p class="step">1</p><h3>Choose the record</h3><p>Start with the catalog description that matches the decision, receipt, or evidence relationship you need to carry.</p></article>
-        <article class="card"><p class="step">2</p><h3>Use the accepted bytes</h3><p>Download the schema from this release path and keep its stable identifier with your validation record.</p></article>
-        <article class="card"><p class="step">3</p><h3>Keep authority visible</h3><p>Schema validation establishes structural agreement. Named governance roles still own meaning, suitability, acceptance, and authorization.</p></article>
+        <article class="card"><p class="step">1</p><h3>Choose the record</h3><p>Match a catalog description to the decision, receipt or evidence relationship being carried.</p></article>
+        <article class="card"><p class="step">2</p><h3>Check its structure</h3><p>Use the selected schema bytes and record their identifier and digest beside the validation result.</p></article>
+        <article class="card"><p class="step">3</p><h3>Carry the review boundary</h3><p>Name the intended use, accountable role, available evidence and event that would prompt revision.</p></article>
       </div>
     </section>
-    <section class="authority-callout" aria-labelledby="authority-heading">
-      <div><p class="eyebrow">Two useful jobs</p><h2 id="authority-heading">Guidance explains; schemas validate</h2></div>
-      <p><a href="{governance_link}">Human-readable governance</a> explains purpose, roles, evidence, and review. The byte-identical JSON Schema files define machine-checkable structure for this release. Each can do its own job without asking one signal to establish the other.</p>
+    <section aria-labelledby="authority-heading">
+      <p class="eyebrow">Three complementary jobs</p>
+      <h2 id="authority-heading">Meaning, structure and acceptance stay distinguishable</h2>
+      <figure class="evidence-figure">
+        <div class="figure-scroll" role="region" tabindex="0" aria-label="Governance evidence roles diagram">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220" role="img" aria-labelledby="roles-title roles-desc">
+            <title id="roles-title">Guidance, schema and accountable review</title>
+            <desc id="roles-desc">Guidance explains meaning and use. A schema checks document structure. Accountable review decides intended use from evidence. A structural pass supplies one input to review.</desc>
+            <g fill="#e7efff" stroke="currentColor" stroke-width="2">
+              <rect x="10" y="20" width="230" height="165"/>
+              <rect x="265" y="20" width="230" height="165"/>
+              <rect x="520" y="20" width="230" height="165"/>
+            </g>
+            <g fill="currentColor" font-family="sans-serif" font-size="20">
+              <text x="28" y="60" font-weight="700">Guidance</text>
+              <text x="28" y="100" font-size="18">Meaning and use</text>
+              <text x="28" y="140" font-size="18">Roles and recovery</text>
+              <text x="283" y="60" font-weight="700">Schema</text>
+              <text x="283" y="100" font-size="18">Document structure</text>
+              <text x="283" y="140" font-size="18">Fields and relations</text>
+              <text x="538" y="60" font-weight="700">Accountable review</text>
+              <text x="538" y="100" font-size="18">Evidence and scope</text>
+              <text x="538" y="140" font-size="18">Intended-use decision</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>A structural pass establishes agreement with a selected schema. The <a href="guidance/index.html">authority table and practical validation record</a> explain how that result supports a separately accountable decision.</figcaption>
+      </figure>
+      <p>The <a href="skills/index.html">schema-lineage guide</a> helps collaborators follow one contract through source, release and retrieval. The <a href="https://cometspectrum.org/">Program guide</a> places this review within the five-repository workflow.</p>
     </section>
-    <section aria-labelledby="source-heading">
-      <h2 id="source-heading">Source you can inspect</h2>
-      <p>The release contains {len(schemas)} schemas. The <a href="{catalog_link}">source catalog</a>, <a href="{release_source}">accepted source tree</a>, and <a href="manifest.json">deterministic manifest</a> preserve the route back to the exact revision.</p>
-      <p>The <a href="skills/index.html">repository collaboration guide</a> shows how to follow one schema across these source, release, and retrieval roles.</p>
+    <section class="note" aria-labelledby="source-heading">
+      <h2 id="source-heading">Historical edition and selected-source standing</h2>
+      <p>The historical accepted edition {RELEASE_VERSION} belongs to source <code>{HISTORICAL_SCHEMA_REVISION}</code>. This selected-source catalog retrieves {len(schemas)} schemas with stable identifiers under <code>/{SCHEMA_COORDINATE}/</code>; each row names its standing. The <a href="manifest.json">manifest</a> records the baseline separately from the selected source and exact downloaded bytes.</p>
+      {_release_coordinate(proof)}
+      <p>Build-source promotion is unrecorded by this builder. A separately reviewed release receipt establishes source acceptance; a hosted delivery observation establishes publication. Acceptance of the selected-source schema bytes remains unrecorded; the administrative-assurance profile is a declared candidate.</p>
+      <p>Authorized repository collaborators can inspect the <a href="{catalog_link}">source catalog</a> and <a href="{release_source}">build source tree</a>. The schema downloads and guidance on this site provide the public starting route.</p>
     </section>
 """
 
@@ -1126,17 +1165,17 @@ def render_pages(
     <section class="hero hero--compact">
       <p class="eyebrow">Use and authority</p>
       <h1>Use a governance schema with its authority in view</h1>
-      <p class="lede">The pages make selection and retrieval easier. The accepted repository sources retain meaning, validation, review, and release roles at the exact revision shown below.</p>
+      <p class="lede">The pages make selection and retrieval easier. The named repository sources retain meaning, validation, review and release roles. The exact build revision appears below; source promotion has its separate release record.</p>
       {_release_coordinate(proof)}
     </section>
     <section aria-labelledby="jobs-heading">
       <h2 id="jobs-heading">What each surface establishes</h2>
-      <div class="table-wrap"><table>
-        <caption>Governance authority and evidence roles</caption>
+      <div class="table-wrap" role="region" tabindex="0" aria-labelledby="authority-caption"><table data-label="Governance authority and evidence roles">
+        <caption id="authority-caption">Governance authority and evidence roles</caption>
         <thead><tr><th scope="col">Surface</th><th scope="col">Useful job</th><th scope="col">Evidence boundary</th></tr></thead>
         <tbody>
           <tr><th scope="row"><a href="{governance_link}">Governance guidance</a></th><td>Explains purpose, decision rights, evidence stages, review, and recovery in human-readable terms.</td><td>Meaning and use remain reviewable by the named governance authorities.</td></tr>
-          <tr><th scope="row"><a href="../schemas/v2.0/index.html">Accepted JSON Schemas</a></th><td>Define machine-checkable document structure through stable identifiers and exact release bytes.</td><td>A passing validation establishes structural agreement with the selected schema.</td></tr>
+          <tr><th scope="row"><a href="../schemas/v2.0/index.html">Selected JSON Schemas</a></th><td>Define machine-checkable document structure through stable identifiers and exact selected-source bytes.</td><td>A passing validation establishes structural agreement with the selected schema.</td></tr>
           <tr><th scope="row">Accountable records</th><td>Carry scientific, Quality, Regulatory, security, operational, and business decisions in their governed context.</td><td>Acceptance and authorization come from the named accountable role and its evidence.</td></tr>
         </tbody>
       </table></div>
@@ -1145,7 +1184,7 @@ def render_pages(
       <h2 id="use-heading">A practical validation record</h2>
       <ol class="prose-list">
         <li>Select one schema from the <a href="../schemas/v2.0/index.html">versioned catalog</a>.</li>
-        <li>Record its stable identifier, release version, source revision, and SHA-256 digest from the <a href="../manifest.json">manifest</a>.</li>
+        <li>Record its stable identifier, release standing, selected source revision, and SHA-256 digest from the <a href="../manifest.json">manifest</a>.</li>
         <li>Run a JSON Schema 2020-12 validator with default insertion, coercion, and property removal disabled.</li>
         <li>Keep the validation result beside the human review or accountable decision it supports.</li>
       </ol>
@@ -1153,55 +1192,63 @@ def render_pages(
     </section>
     <section aria-labelledby="lineage-heading">
       <h2 id="lineage-heading">Recover the source</h2>
-      <p>Every schema row links to the <a href="{release_source}">full-SHA source tree</a>. The <a href="{catalog_link}">accepted schema catalog</a> supplies the ordinary-language record descriptions used by this site.</p>
+      <p>Every schema row links to the <a href="{release_source}">full-SHA source tree</a>. The <a href="{catalog_link}">selected-source schema catalog</a> supplies the ordinary-language record descriptions used by this site.</p>
     </section>
 """
 
     schemas_body = f"""
     <section class="hero hero--compact">
       <p class="eyebrow">Schema discovery</p>
-      <h1>Governance 2.2.0 schema retrieval</h1>
-      <p class="lede">Choose the accepted release coordinate first, then select the JSON Schema that matches the record you need to validate.</p>
+      <h1>Choose a governance record shape</h1>
+      <p class="lede">Select the JSON Schema that matches the record being carried, then retain its source revision, standing and digest with the validation result.</p>
       {_release_coordinate(proof)}
     </section>
     <section aria-labelledby="release-heading">
-      <h2 id="release-heading">Available release</h2>
+      <h2 id="release-heading">Selected-source schema catalog</h2>
       <article class="release-card">
-        <div><p class="eyebrow">Accepted · JSON Schema 2020-12</p><h3>Governance {RELEASE_VERSION}</h3><p>Stable identifier coordinate <code>/{SCHEMA_COORDINATE}/</code> · {len(schemas)} schemas · byte-identical source projection</p></div>
-        <a class="button" href="v2.0/index.html">Open the versioned catalog</a>
+        <div><p class="eyebrow">Selected source · JSON Schema 2020-12</p><h3>Governance record shapes</h3><p>Stable identifier coordinate <code>/{SCHEMA_COORDINATE}/</code> · {len(schemas)} schemas · exact selected-source bytes</p></div>
+        <a class="button" href="v2.0/index.html">Inspect the schema catalog</a>
       </article>
+    </section>
+    <section class="note" aria-labelledby="baseline-heading">
+      <h2 id="baseline-heading">Historical accepted edition {RELEASE_VERSION}</h2>
+      <p>Source <code>{HISTORICAL_SCHEMA_REVISION}</code> identifies that accepted baseline. Current catalog membership and selected-source acceptance have separate records in the <a href="../manifest.json">manifest</a>.</p>
     </section>
     <section class="authority-callout" aria-labelledby="schema-authority-heading">
       <div><p class="eyebrow">Authority</p><h2 id="schema-authority-heading">Exact bytes support exact checks</h2></div>
-      <p>The versioned files preserve each accepted <code>$id</code> and source byte. The <a href="../guidance/index.html">use and authority guide</a> shows how a structural result travels with the human decision it supports.</p>
+      <p>The files preserve each declared <code>$id</code> and selected source byte. The <a href="../guidance/index.html">use and authority guide</a> shows how a structural result travels with the human decision it supports.</p>
     </section>
     <section aria-labelledby="projection-heading">
       <p class="eyebrow">Candidate projection family</p>
       <h2 id="projection-heading">Promotion receipt in three supporting forms</h2>
-      <p>The accepted JSON Schema remains the validation authority. A deterministic <a href="{projection_link('yaml-1.2')}">YAML 1.2 semantic twin</a>, bounded <a href="{projection_link('graphql-sdl')}">GraphQL SDL</a>, and exact <a href="{projection_link('constraint-coverage-ledger')}">constraint coverage ledger</a> make the pilot available for review before a later release decision.</p>
+      <p>The selected JSON Schema remains the validation authority. A deterministic <a href="{projection_link('yaml-1.2')}">YAML 1.2 semantic twin</a>, bounded <a href="{projection_link('graphql-sdl')}">GraphQL SDL</a>, and exact <a href="{projection_link('constraint-coverage-ledger')}">constraint coverage ledger</a> make the pilot available for review before a later release decision.</p>
     </section>
 """
 
     rows: list[str] = []
     for schema in schemas:
+        standing_label = (
+            "Candidate" if schema.release_standing == "candidate"
+            else "Acceptance unrecorded"
+        )
         rows.append(
             "<tr>"
             f'<th scope="row"><a href="{html.escape(PurePosixPath(schema.output_path).name)}">{html.escape(schema.title)}</a><span class="filename">{html.escape(PurePosixPath(schema.output_path).name)}</span></th>'
-            f"<td>{html.escape(schema.description)}</td>"
-            f'<td><a href="{html.escape(schema.source_url)}">Source</a><code>{html.escape(schema.identifier)}</code></td>'
+            f'<td data-label="Use"><strong>{standing_label}.</strong> {html.escape(schema.description)}</td>'
+            f'<td data-label="Identity and source"><a href="{html.escape(schema.source_url)}">Source (collaborator access)</a><code>{html.escape(schema.identifier)}</code></td>'
             "</tr>"
         )
     catalog_body = f"""
     <section class="hero hero--compact">
-      <p class="eyebrow">Accepted release · {len(schemas)} schemas</p>
-      <h1>JSON Schema catalog — Governance {RELEASE_VERSION}</h1>
-      <p class="lede">Each download is copied byte for byte from the accepted source revision. Source links name the same full Git SHA so retrieval and review stay connected.</p>
+      <p class="eyebrow">Selected source · {len(schemas)} schemas</p>
+      <h1>Selected-source JSON Schema catalog</h1>
+      <p class="lede">Each download is copied byte for byte from the selected build source revision. Source links name the same full Git SHA so retrieval and review stay connected. Candidate profiles are labelled; acceptance of other selected-source bytes remains unrecorded by this builder.</p>
       {_release_coordinate(proof)}
     </section>
     <section aria-labelledby="catalog-heading">
       <div class="section-heading"><div><p class="eyebrow">Stable coordinate /{SCHEMA_COORDINATE}/</p><h2 id="catalog-heading">Choose a contract</h2></div><a href="../../manifest.json">Open manifest</a></div>
-      <div class="table-wrap table-wrap--catalog"><table>
-        <caption>Governance {RELEASE_VERSION} JSON Schema files</caption>
+      <div class="table-wrap table-wrap--catalog" role="region" tabindex="0" aria-labelledby="catalog-caption"><table data-label="Governance schema catalog">
+        <caption id="catalog-caption">Selected Governance schemas and release standing</caption>
         <thead><tr><th scope="col">Schema</th><th scope="col">Use</th><th scope="col">Identity and source</th></tr></thead>
         <tbody>{''.join(rows)}</tbody>
       </table></div>
@@ -1258,7 +1305,7 @@ def render_pages(
       <p>This repository-local derivative narrows a shared source-authority method to Governance schema release and retrieval. Public lineage key <code>{html.escape(skill.lineage_key)}</code> identifies the selected method within an authorized resolver. Exact gated lineage remains recoverable through that resolver.</p>
     </section>
     <section aria-labelledby="skill-companions-heading">
-      <h2 id="skill-companions-heading">Use it with the accepted sources</h2>
+      <h2 id="skill-companions-heading">Use it with the selected sources</h2>
       <ul class="prose-list">
         <li><a href="../../schemas/v2.0/index.html">Choose a versioned schema</a> and retain its stable identifier.</li>
         <li><a href="../../guidance/index.html">Read the use and authority guide</a> for the schema's evidence boundary.</li>
@@ -1274,8 +1321,8 @@ def render_pages(
 
     content = {
         "index.html": _page(
-            title="Site Reading Governance 2.2.0",
-            description="Accepted Governance 2.2.0 JSON Schema retrieval and ordinary-language orientation.",
+            title="Site Reading Governance",
+            description="Selected-source Governance schemas, review guidance and explicit release standing.",
             stylesheet="assets/site.css",
             canonical=canonical_url(canonical_origin, "index.html"),
             prefix="",
@@ -1293,7 +1340,7 @@ def render_pages(
         ),
         "schemas/index.html": _page(
             title="Schema retrieval · Site Reading Governance",
-            description="Discover the accepted Governance 2.2.0 JSON Schema release.",
+            description="Choose a governance record shape with its source and release standing.",
             stylesheet="../assets/site.css",
             canonical=canonical_url(canonical_origin, "schemas/index.html"),
             prefix="../",
@@ -1301,8 +1348,8 @@ def render_pages(
             body=schemas_body,
         ),
         "schemas/v2.0/index.html": _page(
-            title="Governance 2.2.0 JSON Schema catalog",
-            description="Versioned, byte-identical Governance 2.2.0 JSON Schema downloads.",
+            title="Selected-source Governance JSON Schema catalog",
+            description="Exact selected-source Governance schema downloads with explicit release standing.",
             stylesheet="../../assets/site.css",
             canonical=canonical_url(canonical_origin, "schemas/v2.0/index.html"),
             prefix="../../",
@@ -1487,6 +1534,19 @@ tbody th { min-width: 14rem; }
   h1 { max-width: 18ch; }
 }
 
+
+.evidence-figure { margin: 1.5rem 0; }
+.figure-scroll { overflow-x: auto; border: 1px solid var(--line); padding: .5rem; }
+.figure-scroll:focus-visible, .table-wrap:focus-visible { outline: .2rem solid var(--forest); outline-offset: .2rem; }
+.evidence-figure svg { display: block; width: 100%; min-width: 40rem; height: auto; color: #17345f; }
+.evidence-figure figcaption { max-width: 66ch; margin-top: .75rem; color: var(--muted); }
+@media print {
+  .skip-link { display: none; }
+  .figure-scroll, .table-wrap { overflow: visible; }
+  .evidence-figure svg, tbody th, .table-wrap--catalog td:nth-child(2), .table-wrap--catalog td:nth-child(3) { min-width: 0; }
+  tr { break-inside: avoid; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
@@ -1546,7 +1606,7 @@ def _authority(proof: SourceProof) -> dict[str, Any]:
         "machineValidation": {
             "dialect": SCHEMA_DIALECT,
             "identifierPrefix": SCHEMA_ID_PREFIX,
-            "role": "structural validation authority for Governance 2.2.0 documents",
+            "role": "structural validation authority for selected schema documents",
         },
         "publication": {
             "role": "byte-identical retrieval projection",
@@ -1587,7 +1647,7 @@ def _manifest(
             "excludes": ["manifest.json"],
             "files": inventory,
         },
-        "manifestVersion": "1.1.0",
+        "manifestVersion": MANIFEST_VERSION,
         "publication": {
             "canonicalHtmlPaths": [
                 record["path"] for record in html_records if record["canonicalUrl"]
@@ -1599,6 +1659,8 @@ def _manifest(
             "jekyll": False,
         },
         "release": {
+            "scope": "historical_schema_edition",
+            "sourceRevision": HISTORICAL_SCHEMA_REVISION,
             "authority": proof.release_authority,
             "schemaCoordinate": proof.schema_coordinate,
             "status": proof.release_status,
@@ -1610,6 +1672,7 @@ def _manifest(
         "schemas": [schema.manifest_record() for schema in schemas],
         "skills": [skill.manifest_record() for skill in skills],
         "source": {
+            "promotionStanding": BUILD_PROMOTION_STANDING,
             "repository": proof.repository,
             "sourceRevision": proof.source_revision,
             "sourceUrl": source_url(proof.source_revision),
@@ -1784,10 +1847,12 @@ def validate_site(
     manifest = load_json(manifest_path)
     if not isinstance(manifest, dict) or set(manifest) != MANIFEST_FIELDS:
         raise PagesBuildError("manifest fields differ from the closed artifact contract")
-    if manifest.get("manifestVersion") != "1.1.0":
+    if manifest.get("manifestVersion") != MANIFEST_VERSION:
         raise PagesBuildError("manifest version differs from the builder contract")
 
     expected_release = {
+        "scope": "historical_schema_edition",
+        "sourceRevision": HISTORICAL_SCHEMA_REVISION,
         "authority": proof.release_authority,
         "schemaCoordinate": proof.schema_coordinate,
         "status": proof.release_status,
@@ -1796,6 +1861,7 @@ def validate_site(
     if manifest.get("release") != expected_release:
         raise PagesBuildError("manifest release authority differs from the source proof")
     expected_source = {
+        "promotionStanding": BUILD_PROMOTION_STANDING,
         "repository": proof.repository,
         "sourceRevision": proof.source_revision,
         "sourceUrl": source_url(proof.source_revision),
@@ -1847,7 +1913,7 @@ def validate_site(
     skills = collect_public_skills(source_root, proof)
     schema_families, projection_artifacts = collect_schema_families(source_root, proof)
     if manifest.get("schemas") != [schema.manifest_record() for schema in schemas]:
-        raise PagesBuildError("manifest schema records differ from accepted source")
+        raise PagesBuildError("manifest schema records differ from selected source")
     for schema in schemas:
         source_bytes = (source_root / schema.source_path).read_bytes()
         output_bytes = (output_root / schema.output_path).read_bytes()

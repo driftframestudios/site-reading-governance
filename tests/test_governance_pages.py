@@ -10,6 +10,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import re
+import xml.etree.ElementTree as ET
 from unittest import mock
 from pathlib import Path
 
@@ -357,6 +359,8 @@ class GovernancePagesTests(unittest.TestCase):
             output, manifest = self.build_fixture(Path(temporary))
             self.assertEqual(
                 {
+                    "scope": "historical_schema_edition",
+                    "sourceRevision": pages.HISTORICAL_SCHEMA_REVISION,
                     "authority": pages.RELEASE_AUTHORITY,
                     "schemaCoordinate": pages.SCHEMA_COORDINATE,
                     "status": pages.RELEASE_STATUS,
@@ -370,7 +374,7 @@ class GovernancePagesTests(unittest.TestCase):
                 manifest["source"]["sourceRevision"],
             )
             self.assertEqual(["manifest.json"], manifest["inventory"]["excludes"])
-            self.assertEqual("1.1.0", manifest["manifestVersion"])
+            self.assertEqual("1.2.0", manifest["manifestVersion"])
             declared = {item["path"] for item in manifest["inventory"]["files"]}
             actual = {
                 path.relative_to(output).as_posix()
@@ -780,6 +784,100 @@ class GovernancePagesTests(unittest.TestCase):
                     FIXTURE_PROOF,
                     allow_fixture_standing=True,
                 )
+
+
+    def test_schema_edition_and_build_promotion_remain_distinct(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output, manifest = self.build_fixture(Path(temporary))
+            self.assertEqual("1.2.0", manifest["manifestVersion"])
+            self.assertEqual("historical_schema_edition", manifest["release"]["scope"])
+            self.assertEqual("2.2.0", manifest["release"]["version"])
+            self.assertEqual("accepted", manifest["release"]["status"])
+            self.assertEqual("unrecorded", manifest["source"]["promotionStanding"])
+            self.assertEqual("1.0.0", pages._parse_source_proof(fixture_proof()).contract_version)
+            document = (output / "index.html").read_text(encoding="utf-8")
+            self.assertNotIn("Accepted source", document)
+            self.assertIn("Build-source promotion is unrecorded by this builder.", document)
+            self.assertLess(document.index('id="start-heading"'), document.index('id="source-heading"'))
+            figure = ET.fromstring(re.search(r"<svg\b.*?</svg>", document, re.S).group())
+            namespace = {"s": "http://www.w3.org/2000/svg"}
+            self.assertEqual("roles-title roles-desc", figure.attrib["aria-labelledby"])
+            self.assertIn("Accountable review", "".join(figure.find("s:desc", namespace).itertext()))
+            for claimed in ("accepted", "pending_review", None):
+                with self.subTest(claimed=claimed):
+                    changed = json.loads(json.dumps(manifest))
+                    changed["source"]["promotionStanding"] = claimed
+                    write_json(output / "manifest.json", changed)
+                    with self.assertRaisesRegex(pages.PagesBuildError, "standing"):
+                        pages.validate_site(output, ROOT, FIXTURE_PROOF, allow_fixture_standing=True)
+
+
+    def test_selected_schema_standing_is_independent_of_historical_acceptance(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output, manifest = self.build_fixture(Path(temporary))
+            self.assertEqual(
+                "c8d7150b8c4e6277bc504a7c69289cb5b949b0ee",
+                manifest["release"]["sourceRevision"],
+            )
+            self.assertEqual("f" * 40, manifest["source"]["sourceRevision"])
+            by_name = {
+                Path(record["sourcePath"]).name: record
+                for record in manifest["schemas"]
+            }
+            candidate = by_name["administrative-assurance.schema.json"]
+            self.assertEqual("candidate", candidate["releaseStanding"])
+            for name, record in by_name.items():
+                if name != "administrative-assurance.schema.json":
+                    with self.subTest(schema=name):
+                        self.assertEqual("unrecorded", record["releaseStanding"])
+                self.assertEqual(
+                    (ROOT / record["sourcePath"]).read_bytes(),
+                    (output / record["outputPath"]).read_bytes(),
+                )
+            catalog = (output / "schemas/v2.0/index.html").read_text(encoding="utf-8")
+            self.assertIn("Selected-source JSON Schema catalog", catalog)
+            row_start = catalog.index("administrative-assurance.schema.json")
+            candidate_row = catalog[row_start:catalog.index("</tr>", row_start)]
+            self.assertIn("<strong>Candidate.</strong>", candidate_row)
+            self.assertIn("Acceptance unrecorded", catalog)
+            self.assertIn("Historical accepted edition 2.2.0",
+                          (output / "schemas/index.html").read_text(encoding="utf-8"))
+
+    def test_forged_schema_acceptance_or_historical_source_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output, original = self.build_fixture(Path(temporary))
+            for name in ("administrative-assurance.schema.json", "promotion-receipt.schema.json"):
+                with self.subTest(schema=name):
+                    changed = json.loads(json.dumps(original))
+                    record = next(item for item in changed["schemas"]
+                                  if item["sourcePath"] == f"schemas/{name}")
+                    record["releaseStanding"] = "accepted"
+                    write_json(output / "manifest.json", changed)
+                    refresh_inventory(output)
+                    with self.assertRaisesRegex(pages.PagesBuildError, "schema records"):
+                        pages.validate_site(output, ROOT, FIXTURE_PROOF, allow_fixture_standing=True)
+            changed = json.loads(json.dumps(original))
+            changed["release"]["sourceRevision"] = changed["source"]["sourceRevision"]
+            write_json(output / "manifest.json", changed)
+            refresh_inventory(output)
+            with self.assertRaisesRegex(pages.PagesBuildError, "release authority"):
+                pages.validate_site(output, ROOT, FIXTURE_PROOF, allow_fixture_standing=True)
+
+    def test_declared_candidate_must_exist_in_selected_catalog(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary)
+            shutil.copytree(ROOT / "schemas", source / "schemas")
+            candidate = "administrative-assurance.schema.json"
+            (source / "schemas" / candidate).unlink()
+            catalog = source / "schemas/README.md"
+            catalog.write_text(
+                "".join(line for line in catalog.read_text(encoding="utf-8").splitlines(keepends=True)
+                        if candidate not in line),
+                encoding="utf-8",
+            )
+            proof = pages._parse_source_proof(fixture_proof())
+            with self.assertRaisesRegex(pages.PagesBuildError, "declared candidate schema"):
+                pages.collect_schemas(source, proof)
 
     def test_release_authority_mutation_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
