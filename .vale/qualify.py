@@ -29,6 +29,27 @@ SHARED_CASES = {
             (9, "SiteReading.SentenceComplexity", "suggestion"),
         ],
     ),
+    "procedure.md": (
+        "Never discard the plate during the transfer.\n\n"
+        "Never discard the plate\nduring the transfer.\n\n"
+        "- Never discard the plate.\n"
+        "- Never discard the plate\n  during the transfer.\n"
+        "- Never discard the plate.\n  Place it on the return rack.\n\n"
+        "1. Never discard the plate.\n"
+        "2. Keep the plate on the return rack.\n\n"
+        "> - Never discard the plate.\n\n"
+        "- `Never discard the plate.`\n\n"
+        "- Never discard the plate,\n  unless the reviewer records a reason.\n"
+        "- Never discard the plate. The recovery\n  path is documented elsewhere.\n",
+        [
+            (1, "SiteReading.TargetState", "warning"),
+            (3, "SiteReading.TargetState", "warning"),
+            (6, "SiteReading.TargetState", "warning"),
+            (7, "SiteReading.TargetState", "warning"),
+            (12, "SiteReading.TargetState", "warning"),
+            (21, "SiteReading.TargetState", "warning"),
+        ],
+    ),
     "instructions.py": (
         "# Never release an unverified result.\n\n"
         'example = "Never release an unverified result."\n\n'

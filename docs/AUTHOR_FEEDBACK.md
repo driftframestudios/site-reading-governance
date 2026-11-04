@@ -14,7 +14,7 @@ the surrounding paragraph, heading or example before deciding what to retain.
 
 | Rule | Severity | What to inspect |
 | --- | --- | --- |
-| `SiteReading.TargetState` | warning | A paragraph contains a short directive such as “Never …” on its own, or ends with a vague pointer such as “the recovery path is documented somewhere.” Can the reader identify the available action? |
+| `SiteReading.TargetState` | warning | A paragraph or list item contains a short directive such as “Never …” on its own, or ends with a vague pointer such as “the recovery path is documented somewhere.” Can the reader identify the available action? |
 | `SiteReading.EvidenceGrounding` | suggestion | Does the passage give the reader grounds for a claim introduced by emphasis? |
 | `SiteReading.AmbiguousReferent` | suggestion | Can the reader identify which subject a phrase such as “This is” refers to? |
 | `SiteReading.SentenceComplexity` | suggestion | Can the reader follow the decision through a sentence with several commas? |
@@ -22,9 +22,15 @@ the surrounding paragraph, heading or example before deciding what to retain.
 Keep the precise wording of a safety instruction. When a reviewer cannot tell
 what to do next, name the action, its object and the person or procedure that
 receives it. A concrete instruction like “Send it to the designated reviewer”
-can supply that direction in the same paragraph. A quiet result establishes
-only that the selected wording patterns did not match. A reviewer can still
-inspect an important instruction that uses different words.
+can supply that direction in the same paragraph or list item, including across
+wrapped lines.
+
+Read modal wording in its domain context. “The instrument must not drift” may
+state an acceptance condition. An “unless” clause can identify an exception
+that an author needs to preserve. The rule can flag either one. A comma, an
+internal period or a second sentence can also take a directive outside the
+standalone pattern. A quiet result means the selected patterns did not match.
+Review the actual action and condition when either matters to the reader.
 
 ## Run the pinned tool
 
