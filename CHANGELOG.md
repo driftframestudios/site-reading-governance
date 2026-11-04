@@ -8,6 +8,7 @@ The format follows Keep a Changelog, and releases follow Semantic Versioning.
 
 - Qualified the shared Vale rules on synthetic Markdown and Python. Target-state
   feedback now distinguishes a concrete follow-up action from a vague pointer.
+  The qualifier preserves repeated findings and reports incomplete engine runs.
 
 ## [2.2.0] — 2026-09-04
 
