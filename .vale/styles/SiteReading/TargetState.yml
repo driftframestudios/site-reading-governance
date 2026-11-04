@@ -2,10 +2,17 @@ extends: existence
 message: "Check which action the reader can take. Keep a necessary boundary and name the available action nearby."
 level: warning
 nonword: true
+ignorecase: true
 scope:
   - paragraph
+  - list
   - comment
-# Vale joins raw fragments into one expression. Each branch matches a visible wording cue.
+# Vale concatenates these fragments. Inspect the whole unit but locate the alert
+# on one word so Markdown continuation indentation preserves the source position.
 raw:
-  - '(?i)\A\s*(?:(?:do\s+not|don[''’]t|never|avoid)\b|\p{L}[^,.;:!?\n]{0,72}?\s+(?:must|should)\s+not\b)[^,.;:!?\n]*[.!?]?\s*\z'
-  - '|(?i)\b(?:recovery path|safe path|replacement behavior)\s+is\s+(?:documented|described|specified)\s+(?:somewhere|elsewhere)\s*[.!?]?\s*\z'
+  - '\A\s*(?=(?:'
+  - '(?:do\s+not|don[''’]t|never|avoid)\b'
+  - '|\p{L}[^,.;:!?]{0,72}?\s+(?:must|should)\s+not\b'
+  - ')[^,.;:!?]*[.!?]?\s*\z)\p{L}+'
+  - '|\b(?=(?:recovery\s+path|safe\s+path|replacement\s+behavior)\s+is\s+'
+  - '(?:documented|described|specified)\s+(?:somewhere|elsewhere)\s*[.!?]?\s*\z)\p{L}+'
