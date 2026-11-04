@@ -1,0 +1,460 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.driftframe.org/site-reading-governance/v2.0/administrative-assurance.schema.json",
+  "title": "Administrative assurance companion profile 0.1",
+  "description": "Candidate receiving profile; scoped review preserves upstream meanings and evidence classes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "companion_id",
+    "profile_version",
+    "record_kind",
+    "intended_use",
+    "omitted_dimensions",
+    "reviewer",
+    "authority_kind",
+    "artifacts",
+    "claims",
+    "assessment",
+    "supersedes",
+    "prior_digest",
+    "change",
+    "metadata"
+  ],
+  "properties": {
+    "companion_id": {
+      "$ref": "common.schema.json#/$defs/identifier"
+    },
+    "profile_version": {
+      "const": "0.1.0"
+    },
+    "record_kind": {
+      "enum": [
+        "request",
+        "companion"
+      ]
+    },
+    "intended_use": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1200
+    },
+    "omitted_dimensions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1200
+      }
+    },
+    "reviewer": {
+      "$ref": "common.schema.json#/$defs/actor"
+    },
+    "authority_kind": {
+      "const": "modeled_review_role"
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_id",
+          "role",
+          "schema_id",
+          "digest",
+          "source_commit"
+        ],
+        "properties": {
+          "artifact_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "role": {
+            "enum": [
+              "pack",
+              "study",
+              "report",
+              "capability"
+            ]
+          },
+          "schema_id": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 240
+          },
+          "digest": {
+            "$ref": "common.schema.json#/$defs/digest"
+          },
+          "source_commit": {
+            "$ref": "common.schema.json#/$defs/commit"
+          }
+        }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim_id",
+          "claim_type",
+          "statement",
+          "depends_on",
+          "review_state",
+          "evidence_ceiling",
+          "review_note"
+        ],
+        "properties": {
+          "claim_id": {
+            "$ref": "common.schema.json#/$defs/identifier"
+          },
+          "claim_type": {
+            "enum": [
+              "harness_behavior",
+              "output_comparison",
+              "population_effect",
+              "capability_composition",
+              "configured_execution"
+            ]
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1200
+          },
+          "depends_on": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 32,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "pack",
+                "study",
+                "report",
+                "source",
+                "oracle",
+                "specification",
+                "execution",
+                "catalog",
+                "policy",
+                "scoring",
+                "intended_use",
+                "capability"
+              ]
+            }
+          },
+          "review_state": {
+            "enum": [
+              "pending",
+              "review_ready",
+              "reviewed",
+              "held"
+            ]
+          },
+          "evidence_ceiling": {
+            "enum": [
+              "pending",
+              "composition_only",
+              "fixture_demonstration",
+              "caller_supplied_synthetic"
+            ]
+          },
+          "review_note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1200
+          }
+        }
+      }
+    },
+    "assessment": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "evidence_class",
+            "bindings",
+            "population",
+            "represented_dimensions",
+            "scientific_disagreements",
+            "configured_execution",
+            "remote_authority"
+          ],
+          "properties": {
+            "evidence_class": {
+              "enum": [
+                "composition_only",
+                "fixture_demonstration",
+                "caller_supplied_synthetic"
+              ]
+            },
+            "bindings": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "intended_use"
+              ],
+              "properties": {
+                "pack": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "study": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "report": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "source": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "oracle": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "specification": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "execution": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "catalog": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "policy": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "scoring": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "intended_use": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                },
+                "capability": {
+                  "$ref": "common.schema.json#/$defs/digest"
+                }
+              }
+            },
+            "population": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "planned",
+                    "attempted",
+                    "completed",
+                    "usable",
+                    "scored",
+                    "pending",
+                    "abstained",
+                    "failed",
+                    "cancelled",
+                    "excluded"
+                  ],
+                  "properties": {
+                    "planned": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 512
+                    },
+                    "attempted": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 512
+                    },
+                    "completed": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 512
+                    },
+                    "usable": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 512
+                    },
+                    "scored": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 512
+                    },
+                    "pending": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 512
+                    },
+                    "abstained": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 512
+                    },
+                    "failed": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 512
+                    },
+                    "cancelled": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 512
+                    },
+                    "excluded": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 512
+                    }
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "represented_dimensions": {
+              "type": "array",
+              "maxItems": 32,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1200
+              }
+            },
+            "scientific_disagreements": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 512
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "configured_execution": {
+              "const": "pending"
+            },
+            "remote_authority": {
+              "const": "pending"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "supersedes": {
+      "anyOf": [
+        {
+          "$ref": "common.schema.json#/$defs/identifier"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "prior_digest": {
+      "anyOf": [
+        {
+          "$ref": "common.schema.json#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "change": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "bindings",
+            "reason"
+          ],
+          "properties": {
+            "bindings": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 32,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "pack",
+                  "study",
+                  "report",
+                  "source",
+                  "oracle",
+                  "specification",
+                  "execution",
+                  "catalog",
+                  "policy",
+                  "scoring",
+                  "intended_use",
+                  "capability"
+                ]
+              }
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1200
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/recordMetadata"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "record_kind": {
+            "const": "request"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "assessment": {
+            "type": "null"
+          },
+          "supersedes": {
+            "type": "null"
+          },
+          "prior_digest": {
+            "type": "null"
+          },
+          "change": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "assessment": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  ]
+}

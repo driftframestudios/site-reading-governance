@@ -53,11 +53,18 @@ validation.
 | [`database-migration-receipt.schema.json`](database-migration-receipt.schema.json) | Plan-bound execution, phase outcomes, environment coordinate, measurements, and recovery evidence |
 | [`data-reconciliation.schema.json`](data-reconciliation.schema.json) | Cohort-bound exact comparisons, scientific invariants, exceptions, and accountable review |
 | [`database-release-manifest.schema.json`](database-release-manifest.schema.json) | Contract, ordered migration, receipt, acceptance, finding, and evidence-bundle release coordinate |
+| [`administrative-assurance.schema.json`](administrative-assurance.schema.json) | Candidate profile 0.1: source-bound evidence, population accounting, scoped review, and successor recovery |
 | [`common.schema.json`](common.schema.json) | Shared identifiers, actors, artifacts, metrics, and boundaries |
 
 [`../examples/example-map.json`](../examples/example-map.json) owns the mapping
 from each standalone record schema to its synthetic example. `common.schema.json`
 supplies shared definitions and therefore has no standalone example.
+
+Program owns the external database lifecycle 1.0.0 schema and semantic rules.
+Governance's [lifecycle receiver](../docs/DATABASE_LIFECYCLE_ASSURANCE.md)
+binds its reviewed package and schema bytes through a separate optional
+profile, then keeps declared operations distinct from configured execution
+and accountable acceptance.
 
 ### Contract invariants
 
@@ -105,6 +112,15 @@ Date-time values carry an RFC 3339 timezone, migration evidence serializes
 instants in canonical UTC, and numeric values remain finite. Database contracts
 express native temporal and exact-numeric storage separately from interchange
 encoding.
+
+The repository's six-record database example check also reconciles key
+membership, foreign-key column counts and declared target uniqueness,
+primary-key nullability, PostgreSQL numeric precision/scale, and each receipt
+phase's identity with its planned sequence. These are cross-record semantic
+checks in `tools/validate_governance.py`. Individual schema validation retains
+its structural scope; migrated catalog facts, engine-specific type
+compatibility, query plans, and restart observations come from the configured
+database receiver.
 
 ## Verify
 

@@ -1,9 +1,18 @@
 extends: existence
-message: "Lead with the observable target state; pair a hard boundary with safe replacement behavior."
+message: "Check which action the reader can take. Keep a necessary boundary and name the available action nearby."
 level: warning
 nonword: true
+ignorecase: true
 scope:
   - paragraph
+  - list
   - comment
+# Vale concatenates these fragments. Inspect the whole unit but locate the alert
+# on one word so Markdown continuation indentation preserves the source position.
 raw:
-  - '(?is)\A(?![\s\S]{0,1600}\b(?:replacement behavior|safe path|recovery path)\b)[\s\S]{0,1600}?(?:\A\s*do\s+not\b|\b(?:don[''’]t|must\s+not|should\s+not|avoid|never)\b)'
+  - '\A\s*(?=(?:'
+  - '(?:do\s+not|don[''’]t|never|avoid)\b'
+  - '|\p{L}[^,.;:!?]{0,72}?\s+(?:must|should)\s+not\b'
+  - ')[^,.;:!?]*[.!?]?\s*\z)\p{L}+'
+  - '|\b(?=(?:recovery\s+path|safe\s+path|replacement\s+behavior)\s+is\s+'
+  - '(?:documented|described|specified)\s+(?:somewhere|elsewhere)\s*[.!?]?\s*\z)\p{L}+'

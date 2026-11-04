@@ -27,6 +27,7 @@
     "database-migration-plan.json": "database-migration-plan.schema.json",
     "database-migration-receipt.json": "database-migration-receipt.schema.json",
     "data-reconciliation.json": "data-reconciliation.schema.json",
-    "database-release-manifest.json": "database-release-manifest.schema.json"
+    "database-release-manifest.json": "database-release-manifest.schema.json",
+    "administrative-assurance.json": "administrative-assurance.schema.json"
   }
 }

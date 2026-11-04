@@ -108,3 +108,187 @@ observations identify their exercised platform separately. A package update
 provides evidence for its addressed findings; remaining findings retain their
 component-specific review and human acceptance boundary. Image approval, main
 promotion, and public source tagging remain separately owned decisions.
+
+## Confined Governance Pages projection
+
+Issue #52 adds a separately selected `governance-projection` profile. The
+default `container_job.py` route above remains standard-library-only. The
+[projection adapter](container_projection.py) selects the exact files in
+[container-projection-profile.json](container-projection-profile.json), admits
+the existing hash-locked parser closure, and calls the existing
+[`build_governance_pages.py`](../tools/build_governance_pages.py) builder and
+verifier. It introduces no second renderer or projection implementation.
+
+The source receiver supplies the existing external
+[Pages source proof](../docs/GOVERNANCE_PAGES.md#source-proof). Preparation checks
+its exact clean Git worktree before and after staging. The proof's release
+authority and acceptance fields remain receiver assertions; a successful build
+establishes construction, not a new release acceptance. The runtime carries
+that proof and an exact content inventory in `infra/projection-input.json`.
+The builder's private admission hook rechecks that snapshot at its ordinary
+before-build, verification, and before-handoff gates. The public builder CLI
+continues to require its external proof and Git checks. Fixture standing remains
+test-only. Git history, credentials, and daemon sockets stay outside the image.
+
+### Prepare the selected inputs
+
+Use a clean, named source revision and an isolated Python 3.12 environment.
+Select fresh external context and dependency directories and an existing owned
+patch directory. The lock currently names three universal wheels: the YAML and
+GraphQL parsers plus the declared typing dependency. Downloading happens before
+the offline image build:
+
+```sh
+mkdir -m 700 "$LIMS_PROJECTION_DEPENDENCIES" &&
+"$LIMS_PYTHON" -m pip download --require-hashes --only-binary=:all: --no-deps \
+  -r requirements-projections.txt -d "$LIMS_PROJECTION_DEPENDENCIES" &&
+cp requirements-projections.txt "$LIMS_PROJECTION_DEPENDENCIES/requirements.lock"
+
+"$LIMS_PYTHON" - "$LIMS_PROJECTION_DEPENDENCIES" <<'PY'
+from hashlib import sha256
+import json
+from pathlib import Path
+import sys
+root = Path(sys.argv[1])
+document = {
+    "version": "1.0.0",
+    "requirementsSha256": sha256((root / "requirements.lock").read_bytes()).hexdigest(),
+    "wheels": [{"file": p.name, "sha256": sha256(p.read_bytes()).hexdigest()}
+               for p in sorted(root.glob("*.whl"))],
+}
+with (root / "wheel-manifest.json").open("x") as stream:
+    json.dump(document, stream, sort_keys=True, indent=2)
+    stream.write("\n")
+PY
+
+"$LIMS_PYTHON" infra/container_projection.py "$LIMS_JOB_CONTEXT" \
+  --source-proof "$LIMS_PROJECTION_PROOF" \
+  --dependencies "$LIMS_PROJECTION_DEPENDENCIES" \
+  --patches "$LIMS_JOB_PATCHES" --architecture "$LIMS_JOB_ARCHITECTURE"
+```
+
+The preparer admits exactly one universal wheel per source pin and its allowed
+hash, and rejects surplus dependency entries. Every executed Python owner,
+schema, mapped example, source catalog, GraphQL/coverage input, and scanned skill
+source is declared. Templates and CSS remain constants in the source-owned
+builder. Source-family omissions, changed prepared bytes, surplus prepared
+files/directories, and lock drift hold the job. Mapped examples pass their native
+schema-pair validator, including the administrative-assurance companion. Two
+explicit support inputs remain outside that Governance example map:
+
+| Support input | Structural validation owner |
+| --- | --- |
+| `examples/assurance-request.json` | `schemas/administrative-assurance.schema.json` |
+| `examples/assurance-capability.json` | Program's copied `contract-resources/workbench-capabilities.v1.schema.json` |
+
+The profile also retains `contract-resources/assurance-source-map.json` as the
+copied capability schema's provenance record. The existing standard-library
+schema-pair validator admits both support inputs. Complete-source admission
+partitions the root examples into the Governance map, this structural support
+set, and the following optional receiver input:
+
+| Receiver input | Semantic admission owner |
+| --- | --- |
+| `examples/database-lifecycle-assurance.json` | [`tools/lifecycle_assurance.py`](../tools/lifecycle_assurance.py), using its separately pinned Program profile |
+
+Preparation requires the declared receiver input and its source owner to remain
+regular files in the complete clean source. The lifecycle example and receiver
+stay with their optional profile; the prepared projection contains its mapped
+and structural-support inputs. Complete-family checks retain every declared
+member and hold unclassified additions. A profile entry alone leaves an
+additional support input awaiting its explicit owner. Full assurance execution, cross-record
+binding, review transitions, and release suites retain their existing owners
+and dependency profiles. Projection preparation installs only the parser lock.
+
+Optional `--canonical-origin` and `--cname` keep the existing HTTPS and matching
+hostname contract and default to absent. Use identical settings for each build.
+
+### Build, run, and inspect
+
+Use the same Compose command and confinement settings as the core job. The
+projection context selects `--profile projection` through its image command.
+The finite projection process adds a 120-second wall-clock deadline to the
+existing process, CPU, memory, and scratch limits. Dependencies install from the
+prepared closure with network disabled. The runtime has network disabled and a
+read-only image; its writable paths remain the owned output mount and bounded
+scratch space.
+
+Keep preparation, native-generation, and runtime temporary/output parents under
+exclusive operator control until cleanup finishes. Directory ownership alone
+does not establish that condition: permissions, ACLs, shared mounts, and other
+same-user processes can introduce concurrent writers. The builder and adapter
+use `TemporaryDirectory`; Program #67's saved CPython cleanup qualification
+therefore needs projection-specific disposition under Governance #43. The
+deadline fixture establishes interruption cleanup, not adversarial race
+resistance. Host preparation uses its separately identified interpreter and
+storage; runtime confinement describes the container stage. Preserve the saved
+advisory observations and exact dependency/base coordinates for that decision.
+
+```sh
+mkdir -m 700 "$LIMS_JOB_OUTPUT" &&
+export LIMS_RUNTIME_UID="$(id -u)" LIMS_RUNTIME_GID="$(id -g)" &&
+docker compose -p governance-projection -f infra/container-compose.yml build &&
+docker compose -p governance-projection -f infra/container-compose.yml run --rm job
+```
+
+Each completed run contains `payload/site/`, the unchanged native Pages family,
+and `payload/construction.json`, its source/platform/context/dependency binding.
+The existing `job-receipt.json` inventories both. Pages `manifest.json` retains
+its self-hash exclusion; the outer job receipt includes that manifest's bytes.
+The native verifier runs before the finite-job publisher renames the complete
+run. Retry uses a new run name and preserves every prior run. Partial writes,
+producer errors, native verification failures, output collisions, SIGTERM, and
+the projection deadline clean only owned pending work. Forced-kill/host-failure
+recovery follows the pending-directory inspection route above.
+
+Inspect the actual container configuration and final image ID locally. Bind
+that observed image ID and platform to the context receipt digest, job receipt
+digest, source revision, dependency lock/wheel hashes, and site manifest digest
+in the receiving evidence record. A source declaration or base digest alone
+does not establish the final image's identity or confinement. Keep raw inspect
+output and local paths in the operator's local evidence directory.
+
+### Focused acceptance and recovery evidence
+
+```sh
+"$LIMS_PYTHON" -B -m unittest discover -s tests -p 'test_container_projection.py' -v
+"$LIMS_PYTHON" -B -m unittest discover -s tests -p 'test_governance_pages.py' -v
+"$LIMS_PYTHON" -B -m unittest discover -s tests -p 'test_schema_projections.py' -v
+```
+
+The complete-source regression checks the actual repository families before
+fixture selection, so a new example requires an explicit receiving owner.
+The projection fixtures use real clean temporary Git sources, native builders,
+and independent complete byte maps. Synthetic wheel and patch bytes exercise
+admission only; configured image installation supplies package-execution
+evidence. Fault fixtures cover source and dependency membership, exact lock
+binding, malformed/missing mapped and support examples, support-owner separation,
+surplus input rejection, projection drift, changed source/proof,
+observed dependency versions, partial output, real termination, collisions, and
+retention of prior context/output bytes.
+
+With the integrated assurance schema and a CNAME, the native site contains 44
+files and the job receipt covers 45 payload members, including the construction
+record. These exact inventory assertions accompany complete byte equality.
+
+For configured acceptance, build the native site once and run two separately
+prepared contexts in isolated containers, then compare complete relative path
+sets and every byte of both `payload/site/` trees with the native result. Verify
+each site with the public native verifier against the original clean source and
+external proof. Run the repository secret-shape scanner against the generated
+artifact, first demonstrating its detector with a fresh non-issued canary in an
+owned temporary fixture. Record the exact platform and final image, actual
+runtime controls, dependency/image scan scope and database age, normalized
+findings, and accountable dispositions. Prior base/installer exceptions retain
+their component-specific scope; new parser/runtime findings receive their own
+review.
+
+The resulting evidence and independent review return to Issue #43. Its remaining
+projection criterion and the all-five carrier gate in Program #65 stay with
+their named receivers. Source acceptance, construction evidence, carrier
+readiness, merge, tagging, and publication remain distinct decisions. This
+profile projects the integrated assurance schema and structurally admits its
+support fixtures; Issue #39's stateful assurance behavior keeps its own checks.
+Program #77 coordinates tagged SITE delivery through the existing Pages
+publication owners. Construction evidence leaves security disposition and
+release/publication approval with their accountable receivers.

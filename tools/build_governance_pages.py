@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
 import hashlib
 import html
 from html.parser import HTMLParser
@@ -534,16 +535,8 @@ def _verify_clean_source(source_root: Path) -> str:
     return revision
 
 
-def load_source_proof(
-    proof_path: Path,
-    source_root: Path,
-    *,
-    allow_fixture_standing: bool = False,
-) -> SourceProof:
-    """Validate one structured release proof and its source-worktree standing."""
-    proof_path = _reject_symlink_components(proof_path, "source proof")
-    source_root = _reject_symlink_components(source_root, "source root")
-    raw = load_json(proof_path)
+def _parse_source_proof(raw: Any) -> SourceProof:
+    """Admit the shared proof fields; the selected source owner proves standing."""
     if not isinstance(raw, dict):
         raise PagesBuildError("source proof must be one JSON object")
     if set(raw) != PROOF_FIELDS:
@@ -585,6 +578,19 @@ def load_source_proof(
         raise PagesBuildError("source proof release authority does not match Governance 2.2.0")
     if not SHA_PATTERN.fullmatch(proof.source_revision):
         raise PagesBuildError("sourceRevision must be one lowercase full Git SHA")
+    return proof
+
+
+def load_source_proof(
+    proof_path: Path,
+    source_root: Path,
+    *,
+    allow_fixture_standing: bool = False,
+) -> SourceProof:
+    """Validate one structured release proof and its source-worktree standing."""
+    proof_path = _reject_symlink_components(proof_path, "source proof")
+    source_root = _reject_symlink_components(source_root, "source root")
+    proof = _parse_source_proof(load_json(proof_path))
 
     resolved_source = source_root.resolve()
     if proof.standing == "clean":
@@ -1765,16 +1771,15 @@ def validate_site(
     proof_path: Path,
     *,
     allow_fixture_standing: bool = False,
+    _proof_loader: Callable[[], SourceProof] | None = None,
 ) -> dict[str, Any]:
     """Verify manifest authority, copied bytes, metadata, links, and digests."""
     output_root = _reject_symlink_components(output_root, "artifact root").resolve()
     source_root = _reject_symlink_components(source_root, "source root").resolve()
     proof_path = _reject_symlink_components(proof_path, "source proof")
-    proof = load_source_proof(
-        proof_path,
-        source_root,
-        allow_fixture_standing=allow_fixture_standing,
-    )
+    proof = (_proof_loader or (lambda: load_source_proof(
+        proof_path, source_root, allow_fixture_standing=allow_fixture_standing,
+    )))()
     manifest_path = output_root / "manifest.json"
     manifest = load_json(manifest_path)
     if not isinstance(manifest, dict) or set(manifest) != MANIFEST_FIELDS:
@@ -1928,6 +1933,7 @@ def build_site(
     canonical_origin: str | None = None,
     cname: str | None = None,
     allow_fixture_standing: bool = False,
+    _proof_loader: Callable[[], SourceProof] | None = None,
 ) -> dict[str, Any]:
     """Build one new artifact directory and verify it before handoff."""
     source_root = _reject_symlink_components(source_root, "source root").resolve()
@@ -1939,11 +1945,12 @@ def build_site(
         raise PagesBuildError("output directory must remain outside the verified source worktree")
     if source_root.is_relative_to(output_root):
         raise PagesBuildError("output directory cannot contain the source worktree")
-    proof = load_source_proof(
-        proof_path,
-        source_root,
-        allow_fixture_standing=allow_fixture_standing,
-    )
+    # The confined adapter rechecks its admitted snapshot at these same gates.
+    # The public CLI retains the external, clean Git-worktree proof exclusively.
+    load_proof = _proof_loader or (lambda: load_source_proof(
+        proof_path, source_root, allow_fixture_standing=allow_fixture_standing,
+    ))
+    proof = load_proof()
     origin = normalize_canonical_origin(canonical_origin)
     normalized_cname = normalize_cname(cname, origin)
     schemas = collect_schemas(source_root, proof)
@@ -1989,12 +1996,10 @@ def build_site(
             source_root,
             proof_path,
             allow_fixture_standing=allow_fixture_standing,
+            _proof_loader=load_proof,
         )
-        load_source_proof(
-            proof_path,
-            source_root,
-            allow_fixture_standing=allow_fixture_standing,
-        )
+        if load_proof() != proof:
+            raise PagesBuildError("source proof changed during construction")
         os.replace(staging, output_root)
     return manifest
 

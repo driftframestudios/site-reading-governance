@@ -31,6 +31,23 @@ assurance extensions are owned by
 The shared administrative meanings stay with Program; Governance describes
 how evidence, review, recourse, and acceptance support their use.
 
+## Review an administrative evidence packet
+
+The [assurance guide](docs/ADMINISTRATIVE_ASSURANCE.md) receives digest-bound
+scenario, study, comparison, and capability records. Start with the local
+capability example, then use the optional upstream profile for a complete
+study. Each companion separates the proposed statement, evidence class,
+review authority, omitted dimensions, and correction route.
+
+The [runbook index](.agents/runbooks/index.md) routes population review,
+decision recourse, invalidation, and contract handoff. These source-level
+profiles prepare reviewed work; publication follows its tagged release gate.
+
+The [database lifecycle receiver](docs/DATABASE_LIFECYCLE_ASSURANCE.md) uses a
+separate pinned Program profile to receive declared resource ownership,
+operation outcomes, and recovery state. It keeps configured execution and
+accountable acceptance visible as separate pending claims.
+
 ## Current state
 
 The release line and the later evidence line answer different questions:
@@ -58,7 +75,8 @@ recover.
 | Resume repository work | [`first-receipt.json`](first-receipt.json) and [`coordination-horizon.json`](coordination-horizon.json) | [`repository-reentry`](.agents/skills/repository-reentry/SKILL.md) |
 | Audit a schema release from source to retrieval | [`promotion-receipt.json`](promotion-receipt.json) | [`governance-schema-release-lineage`](.agents/skills/governance-schema-release-lineage/SKILL.md) and [`docs/GOVERNANCE_PAGES.md`](docs/GOVERNANCE_PAGES.md) |
 | Distinguish meaning, validation, release, delivery, and use | [`source-authority-mapping`](.agents/skills/source-authority-mapping/SKILL.md) | The [evidence and authority map](#evidence-and-authority) |
-| Review public or cross-repository wording | [`docs/NEGATION_AWARE_LANGUAGE.md`](docs/NEGATION_AWARE_LANGUAGE.md) | [`language-policy/README.md`](language-policy/README.md) and [`contextual-jargon-scan`](.agents/skills/contextual-jargon-scan/SKILL.md) |
+| Review a passage or qualify an author-feedback rule | [Run Vale on a passage](docs/AUTHOR_FEEDBACK.md#run-the-pinned-tool) | [Exercise the qualifier](docs/AUTHOR_FEEDBACK.md#test-the-qualifier) or use the [contextual jargon review](.agents/skills/contextual-jargon-scan/SKILL.md) |
+| Check the language requirements for candidate eligibility | [Negation-aware language](docs/NEGATION_AWARE_LANGUAGE.md) | [Deterministic language policy and qualification corpus](language-policy/README.md) |
 | Change schemas, documentation, or repository policy | [`CONTRIBUTING.md`](CONTRIBUTING.md) | [`BRANCHING.md`](BRANCHING.md), [`SECURITY.md`](SECURITY.md), and [`rulesets/README.md`](rulesets/README.md) |
 
 ## Quickest proof
