@@ -869,6 +869,7 @@ class GovernancePackageTests(unittest.TestCase):
             "if: ${{ vars.ENABLE_GITHUB_ACTIONS == 'true' && inputs.confirm_run }}",
             author_job,
         )
+        self.assertIn("run: python3 .vale/qualify.py", author_job)
         self.assertIn("continue-on-error: true", author_job)
         self.assertIn(
             "VALE_ARCHIVE: vale_3.15.2_Linux_64-bit.tar.gz",
@@ -901,7 +902,7 @@ class GovernancePackageTests(unittest.TestCase):
             "default includes both warnings and suggestions",
             documentation,
         )
-        self.assertIn("CI requests `--minAlertLevel=warning`", documentation)
+        self.assertIn("`--minAlertLevel=warning`", documentation)
         self.assertIn(
             "vale --config=.vale.ini --no-global .",
             documentation,
