@@ -51,12 +51,43 @@ python3 .vale/qualify.py
 ```
 
 The qualifier writes synthetic `.md` and `.py` files into a temporary directory,
-checks the running Vale version, and compares the exact rule, severity and line
-for every expected finding. Each file exercises a known match alongside
-examples whose wording should stay quiet. A successful run establishes that
-these fixtures received the expected findings. When it fails, restore the
-pinned executable or compare the changed rule with the named fixture before
+checks the running Vale version, then runs the fixtures together in one engine
+process. Each file exercises a known match alongside examples whose wording
+should stay quiet. The comparison matches the exact fixture paths and counts
+each occurrence of a rule, severity and positive integer line. The order of
+rows and their explanatory text can vary. A successful run establishes that
+these fixtures received the expected findings.
+
+The version check and fixture run each have a ten-second timeout. A process
+that cannot run, a malformed report, or a difference from the authored
+expectations stops qualification. Restore the pinned executable for a process
+failure. For a fixture difference, inspect the named file and the rule before
 using that rule to review a passage.
+
+## Test the qualifier
+
+A rule author can exercise the report comparison directly with Python's
+standard library. From the repository root, run:
+
+```sh
+python3 -m doctest .vale/qualify.py
+```
+
+To reproduce the optional parameterized tests on macOS or Linux, use `uv` and
+an isolated CPython 3.12 environment. The following commands create a temporary
+environment, install its hash-pinned test dependencies and run the tests.
+
+```sh
+vale_test_env="$(mktemp -d)"
+uv venv --python 3.12 --managed-python "$vale_test_env"
+uv pip install --python "$vale_test_env/bin/python" --require-hashes -r .vale/requirements-pytest.txt
+"$vale_test_env/bin/python" -m pytest -q -p no:cacheprovider --doctest-modules .vale/qualify.py .vale/test_qualify.py
+```
+
+These tests exercise duplicate findings, malformed JSON, type and file
+mismatches, and the recovery from a missing or stalled process using synthetic
+inputs. The separate pinned-engine qualification exercises Vale's own markup
+handling and rule execution.
 
 ## Manual workflow and downstream use
 
@@ -68,10 +99,10 @@ Its advisory prose pass uses `--minAlertLevel=warning`. The automatic
 pull-request workflow runs the deterministic checker. Reviewers can run the
 local suggestion tier on the files they are changing.
 
-Governance owns `.vale.ini`, `.vale/styles/SiteReading/`, and `.vale/qualify.py`.
-A receiving repository can copy those files from one reviewed revision, compare
-the bytes, and run the same qualification. The receiving owner reviews local
-terminology and retains its own configuration for additional styles. When a
+Governance owns `.vale.ini`, `.vale/styles/SiteReading/`, and the qualifier and
+test files in `.vale/`. A receiving repository can copy those files from one
+reviewed revision, compare the bytes, and run the same qualification. The
+receiving owner reviews local terminology and retains its own configuration for additional styles. When a
 rule or the Vale version changes, review the fixtures, release coordinate,
 checksum and rule behavior together. A receiver can restore its preceding
 reviewed files and rerun the same examples.
